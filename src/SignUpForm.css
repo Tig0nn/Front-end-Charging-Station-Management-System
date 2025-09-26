@@ -182,18 +182,8 @@ Button{
   pointer-events: none;
 }
 
-.left-container{
-  text-align: center;
-  margin-right:2%;
-}
-.left-container h1,h2{
-  cursor: default;
-  color:white;
-  font-weight: bold;
-  text-shadow: 0 0 5px rgb(74, 245, 220), 0 0 10px rgb(74, 245, 220), 0 0 15px rgb(74, 245, 220);;
-}
 .logo{
-  width:10%;
+  width:96px;
   position: absolute;
 }
 
