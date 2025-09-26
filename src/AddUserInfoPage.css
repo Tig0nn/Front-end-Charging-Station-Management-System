@@ -29,6 +29,7 @@
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
   width: 100%;
   max-width: 420px;
+  margin-top:2px;
 }
 
 
@@ -98,7 +99,7 @@ Button{
   color:#00ffc6;
   text-align: center;
   font-weight: bold;
-  font-size: 20px;;
+  font-size: 25px;;
 }
 
 .title{
@@ -190,10 +191,42 @@ Button{
     
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(35%) sepia(90%) saturate(300%) hue-rotate(120deg); 
+  /* xanh lá: hue-rotate 120deg */
+  cursor: pointer;
+}
+
+
 @media (max-width: 480px) {
   .form-container {
     padding: 20px;
   }
+}
+
+.fullname{
+  display:flex;
+  width: 100%;
+}
+
+.last-name{
+  width:170%;
+  margin-right:5px;
+}
+
+.last-name::placeholder, .first-name::placeholder{
+    color: transparent;
+}
+
+.last-name:focus::placeholder, .first-name:focus::placeholder{
+  content: attr(data-placeholder);
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6bfbdc;
+  opacity: 70%;
+  pointer-events: none;
 }
 
 

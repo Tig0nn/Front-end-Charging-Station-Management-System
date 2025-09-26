@@ -18,8 +18,11 @@ function AddUserInfoForm() {
                         <h1>Vui lòng nhập thông tin</h1>
                     </div>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>Tên người dùng</Form.Label>
-                        <Form.Control className="placeholdertxt" type="fullname" placeholder="Nguyễn Văn A" />
+                        <Form.Label>Họ và tên</Form.Label>
+                        <div className="fullname">
+                        <Form.Control className="last-name" type="fullname" placeholder="Nguyễn Văn" />
+                         <Form.Control className="first-name" type="fullname" placeholder="A" />
+                        </div>
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formBasicGender">
@@ -30,15 +33,16 @@ function AddUserInfoForm() {
                         </div>
                     </Form.Group>
 
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>Ngày tháng năm sinh</Form.Label>
+                        <Form.Control className="placeholdertxt" lang="vi" type="date" />
+                    </Form.Group>
+
                     <Form.Group className="mb-3" controlId="formBasicPassword">
                         <Form.Label>Số điện thoại</Form.Label>
                         <Form.Control className="placeholdertxt" type="phoneNumber" placeholder="+84-XXX-XXX-XXX" />
                     </Form.Group>
 
-                    <Form.Group className="mb-3" controlId="formBasicPassword">
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control className="placeholdertxt" type="email" placeholder="example123@gmail.com" />
-                    </Form.Group>
 
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" />
