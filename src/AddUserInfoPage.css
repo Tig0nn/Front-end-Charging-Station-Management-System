@@ -7,20 +7,20 @@
 .Background {
   display: block;
   margin: 0;
-  height: 100vh;
+  height: 120vh;
   background: linear-gradient(270deg, #79ffdb, #56d1f7, #31ffa9);
   background-size: 600% 600%;
   animation: gradientShift 12s ease infinite;
 }
 .container {
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
   align-items: center;
   min-height: 100vh;
   font-family: "Segoe UI", sans-serif;
   position: relative;
 }
-
 
 .form-container {
   background-color: #2C3E50;
@@ -228,10 +228,43 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 70%;
   pointer-events: none;
 }
-
-
+.mb-3{
+  height:90px;
+}
 @keyframes gradientShift {
   0% {background-position: 0% 50%;}
   50% {background-position: 100% 50%;}
   100% {background-position: 0% 50%;}
+}
+
+/* tăng kích cỡ radio */
+.form-check-input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.btn-logout{
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  margin-top: 4px;
+  background: linear-gradient(90deg, #e82a2a, #f00707);
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  color: #ffffff;
+  width:420px;
+  transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.1s ease;
+}
+
+.btn-logout:hover {
+  color:#ffffff;
+  background: linear-gradient(90deg, #e66161, #ff2819);
+  box-shadow: 0 0 8px #f00707, 0 0 16px #f00707, 0 0 24px #f00707;
+}
+
+.btn-logout:active {
+  transform: scale(0.97);
 }
