@@ -74,7 +74,7 @@ export class AddUserInfoPage extends Component {
         if (!phoneNum || phoneNum.trim() === '') {
             errors.phoneNum = 'Số điện thoại không được để trống';
         } else if (!/^\+84-\d{3}-\d{3}-\d{3}$/.test(phoneNum)) {
-            errors.phoneNum = 'Số điện thoại phải theo định dạng +84-XXX-XXX-XXX';
+            errors.phoneNum = 'Không đúng định dạng +84-XXX-XXX-XXX';
         }
 
         this.setState({ errors });
