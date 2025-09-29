@@ -1,31 +1,37 @@
+// ...existing code...
+const LOGIN_API = "https://overintense-hee-unaxiomatic.ngrok-free.dev/auth/login";
+
 async function CheckCredentials(username, password) {
+  if (!username || !password) return false;
+
+  let res;
   try {
-    const response = await fetch(
-      "https://68d23b63cc7017eec542f589.mockapi.io/USER"
-    );
-
-    if (!response.ok) {
-      throw new Error(`Lỗi HTTP: ${response.status}`);
-    }
-
-    const users = await response.json();
-
-    // Tìm người dùng có username và password khớp
-    const foundUser = users.find(
-      (user) => user.username === username && user.password === password
-    );
-
-    if (foundUser) {
-      console.log("Đăng nhập thành công:", foundUser);
-      return foundUser; // Trả về thông tin người dùng nếu thành công
-    } else {
-      console.log("Tên đăng nhập hoặc mật khẩu không đúng.");
-      return null; // Trả về null nếu không tìm thấy
-    }
-  } catch (error) {
-    console.error("Lỗi khi kiểm tra đăng nhập:", error);
-    return null; // Trả về null nếu có lỗi xảy ra
+    res = await fetch(LOGIN_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: username.trim(), password }),
+    });
+  } catch (e) {
+    // Lỗi mạng / không kết nối được
+    throw new Error("NETWORK_ERROR");
   }
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    // Không parse được JSON: vẫn tiếp tục
+  }
+
+  if (!res.ok) {
+    // Sai thông tin hoặc server trả lỗi logic: coi là đăng nhập thất bại
+    return false;
+  }
+
+  if (typeof data === "boolean") return data;
+  if (data && typeof data.success === "boolean") return data.success;
+  if (data && typeof data.authenticated === "boolean") return data.authenticated;
+  return false;
 }
 
 export default CheckCredentials;

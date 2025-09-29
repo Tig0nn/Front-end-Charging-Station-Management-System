@@ -10,7 +10,7 @@ function LoginPage() {
   const directToSignUp = (
     <p className="text-white text-xs text-center mt-4 ">
       Nếu bạn chưa có tài khoản, bạn có thể đăng ký
-      <span className="text-[#68ffc2] font-semibold cursor-pointer hover:underline">
+      <span className="text-[#68ffc2] ml-1 font-semibold cursor-pointer hover:underline">
         Tại đây
       </span>
     </p>
