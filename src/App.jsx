@@ -6,7 +6,7 @@ import SignUpForm from "./SignupForm";
 function App() {
   return (
     <div>
-      {SignUpForm()}
+      <SignUpForm/>
     </div>
   );
 }
