@@ -1,5 +1,5 @@
-// ...existing code...
-const LOGIN_API = "https://overintense-hee-unaxiomatic.ngrok-free.dev/auth/login";
+const LOGIN_API =
+  "https://unendued-somnolent-rosemarie.ngrok-free.dev/evchargingstation/api/auth/login";
 
 async function CheckCredentials(username, password) {
   if (!username || !password) return false;
@@ -8,11 +8,17 @@ async function CheckCredentials(username, password) {
   try {
     res = await fetch(LOGIN_API, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username.trim(), password }),
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+      body: JSON.stringify({
+        email: username.trim(), // đổi thành username: nếu backend yêu cầu
+        password: password,
+      }),
     });
   } catch (e) {
-    // Lỗi mạng / không kết nối được
     throw new Error("NETWORK_ERROR");
   }
 
@@ -20,17 +26,35 @@ async function CheckCredentials(username, password) {
   try {
     data = await res.json();
   } catch {
-    // Không parse được JSON: vẫn tiếp tục
+    // Không parse được JSON
   }
 
   if (!res.ok) {
-    // Sai thông tin hoặc server trả lỗi logic: coi là đăng nhập thất bại
     return false;
   }
 
-  if (typeof data === "boolean") return data;
-  if (data && typeof data.success === "boolean") return data.success;
-  if (data && typeof data.authenticated === "boolean") return data.authenticated;
+  let token = null;
+
+  if (data && data.result) {
+    token = data.result.token;
+    const authenticated = data.result.authenticated;
+
+    if (authenticated && token) {
+      try {
+        localStorage.setItem("auth_token", token);
+      } catch {}
+      return true;
+    }
+  }
+
+  if (token) {
+    try {
+      localStorage.setItem("auth_token", token);
+    } catch {}
+    return true; // Có token => success
+  }
+
+  // Không có token => không cho qua
   return false;
 }
 
