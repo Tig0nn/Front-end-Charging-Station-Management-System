@@ -1,11 +1,7 @@
 // Thay thế URL này bằng API endpoint CẬP NHẬT THÔNG TIN của bạn
 const UPDATE_USER_API = "https://unendued-somnolent-rosemarie.ngrok-free.dev/evchargingstation/api/user/update-info";
 
-export async function updateUserInfo(formData, token) {
-  if (!token) {
-    throw new Error("Không tìm thấy token xác thực. Vui lòng đăng nhập lại.");
-  }
-
+export async function updateUserInfo(last_name, first_name, gender, dob, phoneNum) {
   try {
     const response = await fetch(UPDATE_USER_API, {
       method: "POST", // Hoặc 'PUT' tùy theo thiết kế API của bạn
@@ -14,7 +10,13 @@ export async function updateUserInfo(formData, token) {
         "Accept": "application/json",
         "ngrok-skip-browser-warning": "true",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        last_name: last_name.trim(),
+        first_name: first_name.trim(),
+        gender: gender.trim(),
+        dob: dob.trim(),
+        phoneNum: phoneNum.trim()
+      }),
     });
 
     // Nếu server trả về lỗi (vd: token hết hạn, dữ liệu không hợp lệ)

@@ -78,11 +78,10 @@ export default function AddUserInfoPage() {
             setIsSubmitting(true);
             try {
                 // Giả sử bạn lưu token trong localStorage sau khi đăng nhập
-                const token = localStorage.getItem('user_token');
 
                 // Gọi hàm từ file dịch vụ. Nếu thành công, code sẽ chạy tiếp.
                 // Nếu thất bại, nó sẽ nhảy vào khối catch.
-                await updateUserInfo(form, token);
+                await updateUserInfo(last_name, first_name, gender, dob, phoneNum);
 
                 alert("Cập nhật thông tin thành công!");
                 // Tùy chọn: Chuyển người dùng đến trang chủ hoặc trang cá nhân
@@ -91,7 +90,7 @@ export default function AddUserInfoPage() {
             } catch (err) {
                 console.error("Lỗi khi cập nhật thông tin:", err);
                 // Kiểm tra xem có phải lỗi mạng không
-                if (err.message.includes('Lỗi mạng')) {
+                if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
                     alert("Không thể kết nối tới server (lỗi mạng hoặc server không phản hồi)!");
                 } else {
                     // Hiển thị lỗi cụ thể từ server (vd: token hết hạn, dữ liệu sai...)
