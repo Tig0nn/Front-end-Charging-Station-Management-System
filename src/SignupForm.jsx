@@ -81,7 +81,7 @@ export default function SignupForm() {
       try {
         // Gọi hàm đăng ký từ file CheckRegister.jsx
         // Hàm này sẽ ném lỗi nếu thất bại, nên ta không cần kiểm tra giá trị trả về
-        await registerUser(email, password);
+        await registerUser(email, password, confirmed_password);
         
         alert("Đăng ký thành công!");
         // Tùy chọn: Chuyển người dùng đến trang đăng nhập hoặc trang chủ

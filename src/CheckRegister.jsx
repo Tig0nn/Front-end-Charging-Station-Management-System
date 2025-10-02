@@ -1,8 +1,8 @@
 // URL API đăng ký của bạn
-const REGISTER_API = "https://unendued-somnolent-rosemarie.ngrok-free.dev/evchargingstation/api/auth/register";
+const REGISTER_API = "https://unendued-somnolent-rosemarie.ngrok-free.dev/evchargingstation/api/users";
 
 // Hàm này gửi yêu cầu đăng ký người dùng đến server và xử lý phản hồi. 
-export async function registerUser(email, password) {
+export async function registerUser(email, password, confirmed_password) {
   try {
     const response = await fetch(REGISTER_API, {
       method: "POST",
@@ -14,6 +14,7 @@ export async function registerUser(email, password) {
       body: JSON.stringify({
         email: email.trim(),
         password: password,
+        confirmPassword: confirmed_password.trim(),
       }),
     });
 
