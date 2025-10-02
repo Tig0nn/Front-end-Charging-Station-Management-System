@@ -38,7 +38,8 @@ async function CheckCredentials(username, password) {
   if (data && data.result) {
     token = data.result.token;
     const authenticated = data.result.authenticated;
-
+    console.log("token:", token);
+    console.log("authenticated:", authenticated);
     if (authenticated && token) {
       try {
         localStorage.setItem("auth_token", token);
