@@ -1,5 +1,5 @@
 // Thay thế URL này bằng API endpoint CẬP NHẬT THÔNG TIN của bạn
-const UPDATE_USER_API = "https://unendued-somnolent-rosemarie.ngrok-free.dev/evchargingstation/api/user/update-info";
+const UPDATE_USER_API = "https://unendued-somnolent-rosemarie.ngrok-free.dev/evchargingstation/api/users/myInfo";
 
 export async function updateUserInfo(last_name, first_name, gender, dob, phoneNum) {
   try {
@@ -11,6 +11,7 @@ export async function updateUserInfo(last_name, first_name, gender, dob, phoneNu
         "ngrok-skip-browser-warning": "true",
       },
       body: JSON.stringify({
+        token: "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJldi1jaGFyZ2luZy1zdGF0aW9uIiwic3ViIjoiaGVsbG8xMjNAZ21haWwuY29tIiwiZXhwIjoxNzU5NDc3NzcyLCJpYXQiOjE3NTk0NzQxNzIsInNjb3BlIjoiRFJJVkVSIn0.1DnBU-wtxP5mL5eckRLwzwY4GSRf_Woq3iky1zkmbk22WG11_ohT4YJQ2f8oTKSBHMfVfDQFmIJuKWf083d5Kg",
         last_name: last_name.trim(),
         first_name: first_name.trim(),
         gender: gender.trim(),
