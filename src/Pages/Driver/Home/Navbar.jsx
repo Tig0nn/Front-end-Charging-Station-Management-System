@@ -1,11 +1,18 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Profile from "./Profile";
 function Navbar() {
+   const navigate = useNavigate();
    const [open, setOpen] = useState(false);
    let popup=null;
     function HandleProfile(){
        setOpen(true);
+    }
+    function handleLogout(){
+       try{
+         localStorage.removeItem("auth_token");
+       }catch{}
+       navigate("/", { replace: true });
     }
     if(open){
         popup=<Profile/>;
@@ -39,6 +46,15 @@ function Navbar() {
               Info
             </NavLink>
            
+          </li>
+          <li className="ml-auto">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm"
+            >
+              Đăng xuất
+            </button>
           </li>
         </ul>
         {popup}

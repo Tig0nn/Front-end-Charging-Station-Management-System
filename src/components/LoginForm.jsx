@@ -21,7 +21,7 @@ function LoginForm() {
       const ok = await CheckCredentials(username, password);
       if (ok) {
         alert("Đăng nhập thành công!");
-        navigate("/");
+        navigate("/Admin");
       } else {
         setLoginErr("Sai tài khoản hoặc mật khẩu!");
       }

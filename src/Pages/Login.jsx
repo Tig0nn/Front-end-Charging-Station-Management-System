@@ -1,4 +1,4 @@
-import LoginForm from "../Utils/Form";
+import LoginForm from "../components/LoginForm";
 import { Link } from "react-router-dom";
 function LoginPage() {
   const suggestion = (
@@ -56,7 +56,7 @@ function LoginPage() {
       <div className=" p-6 space-y-6 sm:p-8 rounded-xl shadow-lg w-full max-w-sm bg-[#2C3E50]">
         {suggestion}
         {directToSignUp}
-        <LoginForm />
+        <LoginForm/>
         {helper}
       </div>
     </div>
