@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import "../css/SignUpForm.css";
+import "./SignUp.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Link } from "react-router-dom";
 import { authAPI } from "../lib/apiServices";
 
-export default function SignupForm() {
+export default function Signup() {
   // Khai báo state 'form' để lưu trữ dữ liệu người dùng nhập vào các ô input.
   // Bao gồm email, password, và confirmed_password.
   const [form, setForm] = useState({

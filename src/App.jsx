@@ -1,9 +1,8 @@
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Routes, Route, Navigate } from "react-router-dom"; 
-import LoginPage from "./Pages/Login";
-import SignupForm from "./Pages/SignUp";
-import Navbar from "./Pages/Driver/Home/Navbar";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./Pages/Login";
+import Signup from "./Pages/SignUp";
 import { MainLayout } from "./components/layoutAdmin";
 import {
   AddStation,
@@ -18,12 +17,11 @@ function App() {
   return (
     <Routes>
       {/* Authentication Routes */}
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupForm />} />
-      
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+
       {/* Legacy Admin Route */}
-      <Route path="/Admin" element={<Navbar />} />
 
       {/* New Admin Routes with Layout */}
       <Route

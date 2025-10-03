@@ -1,13 +1,13 @@
 import LoginForm from "../components/LoginForm";
 import { Link } from "react-router-dom";
-function LoginPage() {
+function Login() {
   const suggestion = (
     <div className=" text-[#2bf0b5] mb-6 text-center">
       <h3 className=" text-[#68ffc2] text-xl font-bold ">Đăng Nhập</h3>
     </div>
   );
 
- const directToSignUp = (
+  const directToSignUp = (
     <p className="text-white text-xs text-center mt-4">
       Nếu bạn chưa có tài khoản, bạn có thể đăng ký
       <Link
@@ -56,11 +56,11 @@ function LoginPage() {
       <div className=" p-6 space-y-6 sm:p-8 rounded-xl shadow-lg w-full max-w-sm bg-[#2C3E50]">
         {suggestion}
         {directToSignUp}
-        <LoginForm/>
+        <LoginForm />
         {helper}
       </div>
     </div>
   );
 }
 
-export default LoginPage;
+export default Login;
