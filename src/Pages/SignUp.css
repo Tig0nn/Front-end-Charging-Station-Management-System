@@ -3,14 +3,7 @@
   margin: 0;
   padding: 0;
 }
-.signup-page .Background {
-  display: block;
-  margin: 0;
-  height: 100vh;
-  background: linear-gradient(270deg, #79ffdb, #56d1f7, #31ffa9);
-  background-size: 600% 600%;
-  animation: gradientShift 12s ease infinite;
-}
+
 .signup-page .container {
   display: flex;
   justify-content: space-around;
@@ -180,18 +173,6 @@
 @media (max-width: 480px) {
   .form-container {
     padding: 20px;
-  }
-}
-
- @keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
   }
 }
 

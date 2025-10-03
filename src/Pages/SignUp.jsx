@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import "../css/SignUpForm.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Link } from "react-router-dom";
 import { registerUser } from "../FetchApi/CheckRegister";
+import  "./SignUp.css";
+import "./BackGround.css";
 
 export default function SignupForm() {
   // Khai báo state 'form' để lưu trữ dữ liệu người dùng nhập vào các ô input.
@@ -108,8 +109,8 @@ export default function SignupForm() {
   };
   return (
     <div className="signup-page">
-    <div className="Background">
-      <img className="logo" src="src/image/logo.png" />
+    <div className="background">
+      <img className="logo" src="src/assets/image/logo.png" />
       <div className="container">
         <Form className="form-container" onSubmit={handleSubmit}>
           <div className="title">
