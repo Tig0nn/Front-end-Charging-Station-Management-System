@@ -1,12 +1,82 @@
-# React + Vite
+# Charging Station Management System - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React application for managing electric vehicle charging stations, built with Vite and Bootstrap.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🏪 **Station Management**: Add, edit, and monitor charging stations
+- 👥 **User Management**: Manage registered users and their activities
+- 📊 **Reports & Analytics**: View system performance and revenue reports
+- 💻 **Responsive Design**: Works seamlessly on desktop and mobile devices
+- ⚡ **Fast Development**: Powered by Vite for lightning-fast builds
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend Framework**: React 19 with modern hooks
+- **Build Tool**: Vite 7 for fast development and building
+- **Routing**: React Router 7 for client-side navigation
+- **UI Framework**: Bootstrap 5 + React Bootstrap for responsive components
+- **Styling**: Tailwind CSS for utility-first styling
+- **Code Quality**: ESLint with React plugins for consistent code
+
+## Project Structure
+
+```
+src/
+├── components/           # Reusable React components
+│   └── layoutAdmin/     # Admin dashboard layout components
+├── pages/               # Page components organized by feature
+│   ├── admin/          # Admin dashboard pages
+│   └── shared/         # Shared pages (404, etc.)
+├── assets/             # Static assets
+└── App.jsx             # Main application component
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd Front-end-Charging-Station-Management-System
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Start the development server
+
+```bash
+npm run dev
+```
+
+4. Open [http://localhost:5173](http://localhost:5173) in your browser
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint to check code quality
+
+## Development Guidelines
+
+- Use functional components with React hooks
+- Follow the established folder structure
+- Maintain consistent code style with ESLint
+- Use semantic HTML and accessible components
+- Keep components focused and reusable
+
+## License
+
+This project is part of the SWP391 course requirements.

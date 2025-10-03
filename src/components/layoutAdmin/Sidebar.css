@@ -1,0 +1,99 @@
+/* Sidebar Custom Styles */
+.sidebar-container {
+  background: white;
+  padding: 0;
+  border-right: 1px solid #e5eef4;
+  border-top: 1px solid #e5eef4;
+  z-index: 999;
+}
+
+.sidebar-item {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  align-items: center;
+  border-radius: 0;
+  margin: 0;
+  position: relative;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(37, 99, 235, 0.03);
+}
+
+.sidebar-active-indicator {
+  transition: all 0.3s ease-in-out;
+  flex-shrink: 0;
+  margin-right: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.sidebar-text {
+  transition: color 0.2s ease-in-out;
+  font-family: "Inter-Medium", Helvetica, sans-serif;
+  display: inline-block;
+  text-align: left;
+  line-height: 1.2;
+  white-space: nowrap;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.sidebar-text:hover {
+  color: #2563eb !important;
+  text-decoration: none;
+}
+
+/* Text alignment for all menu items */
+.sidebar-text-container {
+  margin-left: 44px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex: 1;
+  padding-left: 0;
+}
+
+/* Active state styles */
+.sidebar-item.active {
+  background-color: transparent;
+}
+
+.sidebar-item.active .sidebar-text {
+  color: #2563eb !important;
+  font-weight: 600;
+}
+
+/* Ensure consistent spacing and alignment */
+.sidebar-item .flex {
+  align-items: center;
+}
+
+/* Clean layout adjustments */
+.sidebar-item {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar-container {
+    width: 100% !important;
+    position: relative !important;
+    top: 0 !important;
+    height: auto !important;
+    padding: 10px 0;
+  }
+
+  .sidebar-item {
+    margin: 0;
+    height: 50px;
+  }
+
+  .sidebar-text-container {
+    margin-left: 30px;
+  }
+}
