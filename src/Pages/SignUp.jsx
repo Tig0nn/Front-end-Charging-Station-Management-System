@@ -3,7 +3,7 @@ import "../css/SignUpForm.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Link } from "react-router-dom";
-import { registerUser } from "../FetchApi/CheckRegister";
+import { authAPI } from "../lib/apiServices";
 
 export default function SignupForm() {
   // Khai báo state 'form' để lưu trữ dữ liệu người dùng nhập vào các ô input.
@@ -81,23 +81,31 @@ export default function SignupForm() {
     if (Object.keys(newErrors).length === 0) {
       setIsSubmitting(true);
       try {
-        // Gọi hàm đăng ký từ file CheckRegister.jsx
-        // Hàm này sẽ ném lỗi nếu thất bại, nên ta không cần kiểm tra giá trị trả về
-        await registerUser(email, password);
+        // Gọi API đăng ký bằng axios
+        const response = await authAPI.register({
+          email: email.trim(),
+          password: password,
+        });
 
+        console.log("Registration successful:", response.data);
         alert("Đăng ký thành công!");
-        // Tùy chọn: Chuyển người dùng đến trang đăng nhập hoặc trang chủ
+        // Tùy chọn: Chuyển người dùng đến trang đăng nhập
         // navigate("/login");
       } catch (err) {
-        console.error("Lỗi khi đăng ký:", err.message);
-        alert(err.message);
-        // Hàm registerUser đã chuẩn hóa thông báo lỗi cho bạn
-        // Nếu là lỗi mạng, hiển thị lỗi chung
-        if (err.message.includes("Lỗi mạng")) {
-          setErrors({ form: err.message });
+        console.error("Lỗi khi đăng ký:", err);
+
+        const errorMessage =
+          err.response?.data?.message ||
+          err.message ||
+          "Đã có lỗi không xác định";
+
+        // Hiển thị lỗi dựa trên response
+        if (err.response?.status === 400) {
+          setErrors({ email: "Email đã được sử dụng" });
+        } else if (err.message.includes("Network Error")) {
+          setErrors({ form: "Lỗi mạng: Không thể kết nối đến máy chủ" });
         } else {
-          // Nếu là lỗi từ server (vd: email tồn tại), hiển thị ở ô email
-          setErrors({ email: err.message });
+          alert(errorMessage);
         }
       } finally {
         setIsSubmitting(false);
@@ -108,114 +116,116 @@ export default function SignupForm() {
   };
   return (
     <div className="signup-page">
-    <div className="Background">
-      <img className="logo" src="src/image/logo.png" />
-      <div className="container">
-        <Form className="form-container" onSubmit={handleSubmit}>
-          <div className="title">
-            <h1>Đăng ký</h1>
-          </div>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              style={{
-                borderColor: errors.email ? "red" : "",
-                outline: errors.email ? "none" : "",
-                boxShadow: errors.email ? "0 0 6px rgba(255, 0, 0, 1)" : "",
-              }}
-              name="email"
-              onFocus={handleFocus}
-              onChange={handleChangeValue}
-              className="placeholdertxt"
-              type="text"
-              placeholder="example123@gmail.com"
-            />
-            {/* Hiển thị lỗi */}
-            {errors.email && (
-              <div style={{ color: "red", marginTop: "2px" }}>
-                {errors.email}
-              </div>
-            )}
-          </Form.Group>
+      <div className="Background">
+        <img className="logo" src="src/image/logo.png" />
+        <div className="container">
+          <Form className="form-container" onSubmit={handleSubmit}>
+            <div className="title">
+              <h1>Đăng ký</h1>
+            </div>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                style={{
+                  borderColor: errors.email ? "red" : "",
+                  outline: errors.email ? "none" : "",
+                  boxShadow: errors.email ? "0 0 6px rgba(255, 0, 0, 1)" : "",
+                }}
+                name="email"
+                onFocus={handleFocus}
+                onChange={handleChangeValue}
+                className="placeholdertxt"
+                type="text"
+                placeholder="example123@gmail.com"
+              />
+              {/* Hiển thị lỗi */}
+              {errors.email && (
+                <div style={{ color: "red", marginTop: "2px" }}>
+                  {errors.email}
+                </div>
+              )}
+            </Form.Group>
 
-          <Form.Group className="mb-3" controlId="formBasicPassword">
-            <Form.Label>Mật khẩu</Form.Label>
-            <Form.Control
-              style={{
-                borderColor: errors.password ? "red" : "",
-                outline: errors.password ? "none" : "",
-                boxShadow: errors.password ? "0 0 6px rgba(255, 0, 0, 1)" : "",
-              }}
-              onFocus={handleFocus}
-              onChange={handleChangeValue}
-              name="password"
-              className="placeholdertxt"
-              type="password"
-              placeholder="Mật khẩu từ 5 - 20 kí tự."
-            />
-            {/* Hiển thị lỗi */}
-            {errors.password && (
-              <div style={{ color: "red", marginTop: "2px" }}>
-                {errors.password}
-              </div>
-            )}
-          </Form.Group>
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Label>Mật khẩu</Form.Label>
+              <Form.Control
+                style={{
+                  borderColor: errors.password ? "red" : "",
+                  outline: errors.password ? "none" : "",
+                  boxShadow: errors.password
+                    ? "0 0 6px rgba(255, 0, 0, 1)"
+                    : "",
+                }}
+                onFocus={handleFocus}
+                onChange={handleChangeValue}
+                name="password"
+                className="placeholdertxt"
+                type="password"
+                placeholder="Mật khẩu từ 5 - 20 kí tự."
+              />
+              {/* Hiển thị lỗi */}
+              {errors.password && (
+                <div style={{ color: "red", marginTop: "2px" }}>
+                  {errors.password}
+                </div>
+              )}
+            </Form.Group>
 
-          <Form.Group className="mb-3" controlId="formBasicConfirmedPassword">
-            <Form.Label>Xác nhận mật khẩu</Form.Label>
-            <Form.Control
-              style={{
-                borderColor: errors.confirmed_password ? "red" : "",
-                outline: errors.confirmed_password ? "none" : "",
-                boxShadow: errors.confirmed_password
-                  ? "0 0 6px rgba(255, 0, 0, 1)"
-                  : "",
-              }}
-              onFocus={handleFocus}
-              onChange={handleChangeValue}
-              name="confirmed_password"
-              className="placeholdertxt"
-              type="password"
-            />
-            {/* Hiển thị lỗi */}
-            {errors.confirmed_password && (
-              <div style={{ color: "red", marginTop: "2px" }}>
-                {errors.confirmed_password}
-              </div>
-            )}
-          </Form.Group>
+            <Form.Group className="mb-3" controlId="formBasicConfirmedPassword">
+              <Form.Label>Xác nhận mật khẩu</Form.Label>
+              <Form.Control
+                style={{
+                  borderColor: errors.confirmed_password ? "red" : "",
+                  outline: errors.confirmed_password ? "none" : "",
+                  boxShadow: errors.confirmed_password
+                    ? "0 0 6px rgba(255, 0, 0, 1)"
+                    : "",
+                }}
+                onFocus={handleFocus}
+                onChange={handleChangeValue}
+                name="confirmed_password"
+                className="placeholdertxt"
+                type="password"
+              />
+              {/* Hiển thị lỗi */}
+              {errors.confirmed_password && (
+                <div style={{ color: "red", marginTop: "2px" }}>
+                  {errors.confirmed_password}
+                </div>
+              )}
+            </Form.Group>
 
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={!agree || isSubmitting}
-          >
-            {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
-          </Button>
-
-          <div className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              onChange={handleAgree}
-            />
-            <label className="form-check-label">
-              Tôi đồng ý với các điều khoản và dịch vụ.
-            </label>
-          </div>
-
-          <div className="login">
-            <label>Đã có tài khoản? </label>{" "}
-            <Link
-              to="/"
-              className="text-[#68ffc2] ml-1 font-semibold hover:underline"
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={!agree || isSubmitting}
             >
-              Đăng nhập
-            </Link>
-          </div>
-        </Form>
+              {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
+            </Button>
+
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                onChange={handleAgree}
+              />
+              <label className="form-check-label">
+                Tôi đồng ý với các điều khoản và dịch vụ.
+              </label>
+            </div>
+
+            <div className="login">
+              <label>Đã có tài khoản? </label>{" "}
+              <Link
+                to="/"
+                className="text-[#68ffc2] ml-1 font-semibold hover:underline"
+              >
+                Đăng nhập
+              </Link>
+            </div>
+          </Form>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
