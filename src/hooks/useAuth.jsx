@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, createContext } from "react";
-import { authAPI } from "../lib/apiServices";
+import { authAPI } from "../lib/apiServices.js";
 import { setAuthToken, getAuthToken } from "../lib/api";
+// import { setCurrentUser, getCurrentUser, clearAuth } from "../lib/auth.js";
 
 const AuthContext = createContext();
 
@@ -12,18 +13,35 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
-      // Verify token with backend
+      // Try to get user from localStorage first
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (storedUser && storedUser.email) {
+          setUser(storedUser);
+          setIsAuthenticated(true);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.log("Error reading stored user:", error);
+      }
+
+      // If no stored user, verify token with backend
       authAPI
         .getProfile()
         .then((response) => {
-          setUser(response.data);
+          const userData = response.data;
+          setUser(userData);
           setIsAuthenticated(true);
+          // Store user data
+          localStorage.setItem("user", JSON.stringify(userData));
         })
         .catch(() => {
           // Token invalid, clear it
           setAuthToken(null);
           setUser(null);
           setIsAuthenticated(false);
+          localStorage.removeItem("user");
         })
         .finally(() => {
           setLoading(false);
@@ -37,6 +55,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await authAPI.login(credentials);
+
+      // Handle both mock API and real API response formats
       const token = response.data?.token || response.data?.Token;
       const userData =
         response.data?.user || response.data?.User || response.data;
@@ -49,12 +69,15 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
+      // Store user data in localStorage for persistence
+      localStorage.setItem("user", JSON.stringify(userData));
+
       return { success: true, user: userData };
     } catch (error) {
       console.error("Login error:", error);
       return {
         success: false,
-        error: error.response?.data?.message || error.message || "Login failed",
+        error: error.message || "Login failed",
       };
     } finally {
       setLoading(false);
@@ -91,6 +114,7 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -100,6 +124,7 @@ export const useAuth = () => {
 };
 
 // Higher-order component for protected routes
+// eslint-disable-next-line no-unused-vars, react-refresh/only-export-components
 export const withAuth = (Component) => {
   return (props) => {
     const { isAuthenticated, loading } = useAuth();
@@ -125,6 +150,7 @@ export const withAuth = (Component) => {
 };
 
 // Hook for role-based access control
+// eslint-disable-next-line react-refresh/only-export-components
 export const useRole = () => {
   const { user } = useAuth();
 

@@ -1,36 +1,50 @@
 import React from "react";
-import {
-  Navbar,
-  Nav,
-  Container,
-  NavDropdown,
-  Form,
-  FormControl,
-} from "react-bootstrap";
-import { Link, useLocation } from "react-router";
+import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
+import { Link, useNavigate } from "react-router";
+import { useAuth } from "../../hooks/useAuth.jsx";
 import "./Header.css";
+import { getCurrentRole } from "../../lib/auth.js";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Header = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  // Function to get page title based on current route
-  const getPageTitle = () => {
-    const path = location.pathname;
-    switch (path) {
-      case "/admin":
-      case "/admin/":
-      case "/admin/dashboard":
-        return "Dashboard";
-      case "/admin/stations":
-        return "Charging Stations";
-      case "/admin/stations/add":
-        return "Add Station";
-      case "/admin/users":
-        return "Users Management";
-      case "/admin/reports":
-        return "Reports & Analytics";
-      default:
-        return "Dashboard";
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  // Get user name from useAuth context first, then fallback to localStorage
+  const getUserName = () => {
+    // First try to get from useAuth context
+    if (user?.name) return user.name;
+    if (user?.email) return user.email.split("@")[0]; // Get username part of email
+
+    // Fallback to localStorage
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (storedUser.name) return storedUser.name;
+      if (storedUser.email) return storedUser.email.split("@")[0];
+
+      // Default fallback
+      return "User";
+    } catch {
+      return "User";
+    }
+  };
+
+  // Get user role from useAuth context first, then fallback to localStorage
+  const getUserRole = () => {
+    // First try to get from useAuth context
+    if (user?.role) return user.role;
+
+    // Fallback to localStorage
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      return storedUser.role || getCurrentRole() || "User";
+    } catch {
+      return getCurrentRole() || "User";
     }
   };
   return (
@@ -83,119 +97,79 @@ const Header = () => {
           </Navbar.Brand>
 
           {/* Page Title */}
-          <div
-            className="page-title text-primary fw-semibold me-auto d-none d-lg-block"
-            style={{
-              fontSize: "28px",
-              marginTop: "13px",
-              marginLeft: "67px",
-              color: "var(--primary-2)",
-            }}
-          >
-            {getPageTitle()}
-          </div>
 
           <Navbar.Toggle aria-controls="navbar-nav" className="d-lg-none" />
 
           <Navbar.Collapse className="justify-content-end" id="navbar-nav">
             <Nav className="d-flex align-items-center gap-3">
-              {/* Search Bar */}
-              <Form
-                className="d-flex position-relative search-container"
-                style={{ marginTop: "5px" }}
-              >
+              {/* User Info and Logout */}
+              <div className="d-flex align-items-center gap-3">
+                {/* User Profile Card */}
                 <div
-                  className="position-relative"
-                  style={{ width: "257px", height: "50px" }}
+                  className="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-2 d-none d-md-flex"
+                  style={{ marginTop: "5px" }}
                 >
-                  <FormControl
-                    type="search"
-                    placeholder="Search for something"
-                    className="border-0 ps-5"
-                    style={{
-                      backgroundColor: "var(--background-light)",
-                      borderRadius: "40px",
-                      height: "50px",
-                      fontSize: "15px",
-                      color: "var(--text-muted)",
-                    }}
-                  />
+                  {/* User Info */}
                   <div
-                    className="position-absolute"
-                    style={{
-                      top: "15px",
-                      left: "25px",
-                      width: "20px",
-                      height: "20px",
-                      backgroundImage: "url(/vector-2.svg)",
-                      backgroundSize: "95.7% 95.7%",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                    }}
-                  />
+                    className="d-flex flex-column"
+                    style={{ lineHeight: "1.2" }}
+                  >
+                    <span
+                      className="text-dark fw-medium"
+                      style={{ fontSize: "14px" }}
+                    >
+                      {getUserName()}
+                    </span>
+                    <span className="text-muted" style={{ fontSize: "12px" }}>
+                      {getUserRole()}
+                    </span>
+                  </div>
                 </div>
-              </Form>
-              {/* Settings Icon */}
-              <div
-                className="d-flex align-items-center justify-content-center rounded-circle d-none d-md-flex"
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  backgroundColor: "var(--background-light)",
-                  marginTop: "5px",
-                  cursor: "pointer",
-                }}
-              >
-                <div
+
+                {/* Mobile User Info */}
+                <div className="d-flex d-md-none align-items-center gap-2">
+                  <div
+                    className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      fontSize: "12px",
+                      marginTop: "5px",
+                    }}
+                  >
+                    {getUserName().charAt(0).toUpperCase()}
+                  </div>
+                </div>
+
+                {/* Logout Button */}
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="d-flex align-items-center gap-2"
                   style={{
-                    width: "25px",
-                    height: "25px",
-                    backgroundImage: "url(/vector.svg)",
-                    backgroundSize: "100% 100%",
-                    backgroundRepeat: "no-repeat",
+                    marginTop: "5px",
+                    borderRadius: "25px",
+                    padding: "8px 16px",
+                    fontWeight: "500",
+                    border: "2px solid #dc3545",
+                    transition: "all 0.3s ease",
                   }}
-                />
-              </div>
-              {/* Notification Icon */}
-              {/* <img
-                className="rounded d-none d-md-block"
-                alt="Notifications"
-                src="/group3.png"
-                style={{
-                  width: "50px",
-                  height: "50px",
-                  marginTop: "5px",
-                  cursor: "pointer",
-                }}
-              /> */}
-              {/* User Profile Dropdown */}
-              {/* <NavDropdown
-                title={
-                  <img
-                    className="rounded-circle"
-                    alt="Profile"
-                    src="/maskGroup.png"
-                    style={{ width: '60px', height: '60px' }}
-                  />
-                }
-                id="user-dropdown"
-                className="border-0"
-                drop="down"
-              >
-                <NavDropdown.Item as={Link} to="/profile">
-                  👤 Profile
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/settings">
-                  ⚙️ Settings
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item
-                  href="#action/logout"
-                  className="text-danger"
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#dc3545";
+                    e.target.style.color = "white";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "transparent";
+                    e.target.style.color = "#dc3545";
+                  }}
                 >
-                  🚪 Logout
-                </NavDropdown.Item>
-              </NavDropdown> */}
+                  <span style={{ fontSize: "14px" }}>
+                    <i class="bi bi-box-arrow-right"></i>
+                  </span>
+                  <span className="d-none d-sm-inline">Đăng xuất</span>
+                </Button>
+              </div>
             </Nav>
           </Navbar.Collapse>
         </Container>

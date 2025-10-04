@@ -1,11 +1,11 @@
 import "tailwindcss";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../lib/api";
-import { setAuthToken } from "../lib/api";
+import { useAuth } from "../hooks/useAuth.jsx";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [loginErr, setLoginErr] = useState("");
 
   async function HandleClick(e) {
@@ -21,37 +21,20 @@ function LoginForm() {
     try {
       setLoginErr(""); // Clear previous errors
 
-      const response = await api.post("/api/auth/login", {
+      const result = await login({
         email: username.trim(),
         password: password,
       });
 
-      // Extract token and user data
-      const token = response.data?.token || response.data?.result?.token;
-      const user = response.data?.user || response.data?.result?.user;
-
-      if (token) {
-        setAuthToken(token);
-        localStorage.setItem("user", JSON.stringify(user || {}));
+      if (result.success) {
         alert("Đăng nhập thành công!");
-        navigate("/Admin");
+        navigate("/admin/dashboard");
       } else {
-        setLoginErr("Không nhận được token từ server");
+        setLoginErr(result.error || "Đăng nhập thất bại");
       }
     } catch (err) {
       console.error("Login error:", err);
-
-      if (err.response?.status === 401) {
-        setLoginErr("Sai tài khoản hoặc mật khẩu!");
-      } else if (err.message.includes("Network Error")) {
-        setLoginErr(
-          "Không thể kết nối tới server (lỗi mạng hoặc server không phản hồi)!"
-        );
-      } else {
-        setLoginErr(
-          "Lỗi không xác định: " + (err.response?.data?.message || err.message)
-        );
-      }
+      setLoginErr("Lỗi không xác định: " + err.message);
     }
   }
   return (

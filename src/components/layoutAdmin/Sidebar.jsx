@@ -1,17 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Sidebar.css";
 
 const NAVIGATION_ITEMS = [
-  { path: "/dashboard", label: "Dashboard" },
-  { path: "/stations", label: "Stations" },
-  { path: "/users", label: "Users" },
-  { path: "/reports", label: "Reports" },
+  {
+    path: "/dashboard",
+    label: "Dashboard",
+    icon: "bi-clipboard-data",
+  },
+  {
+    path: "/stations",
+    label: "Stations",
+    icon: "bi-geo-alt",
+  },
+  {
+    path: "/users",
+    label: "Users",
+    icon: "bi-person",
+  },
+  {
+    path: "/reports",
+    label: "Reports",
+    icon: "bi-bar-chart",
+  },
 ];
 
 const Sidebar = () => {
+  const isCollapsed = true; // Luôn collapsed, chỉ mở khi hover
+  const [isHovered, setIsHovered] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const showExpanded = !isCollapsed || isHovered;
 
   const isActive = (path) => {
     return (
@@ -25,34 +46,87 @@ const Sidebar = () => {
     navigate(`/admin${path}`);
   };
 
-  const getItemClass = (path) => {
-    const baseClass = "sidebar-text text-decoration-none font-medium text-lg";
-    return isActive(path)
-      ? `${baseClass} text-blue-600 font-semibold`
-      : `${baseClass} text-[#b1b1b1]`;
-  };
-
-  const getContainerClass = (path) => {
-    return isActive(path) ? "sidebar-item active" : "sidebar-item";
-  };
-
   return (
-    <div className="relative w-[227px] h-screen">
-      <div className="sidebar-container fixed top-[100px] left-0 w-[227px] h-[calc(100vh-100px)] bg-white flex flex-col justify-start items-start pl-4 pt-4">
+    <div
+      className={`sidebar-wrapper ${isCollapsed ? "collapsed" : ""}`}
+      style={{
+        position: "fixed",
+        top: "100px",
+        left: "0",
+        width: showExpanded ? "260px" : "80px",
+        height: "calc(100vh - 100px)",
+        backgroundColor: "white",
+        transition: "width 0.3s ease",
+        zIndex: 1000,
+        boxShadow: "2px 0 10px rgba(0,0,0,0.1)",
+        borderRight: "1px solid #e5eef4",
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Bỏ Toggle Button */}
+
+      <div style={{ padding: "20px 16px 16px 16px" }}>
         {NAVIGATION_ITEMS.map((item) => (
           <div
             key={item.path}
-            className={`w-[191px] h-[60px] flex mb-4 cursor-pointer ${getContainerClass(
-              item.path
-            )}`}
+            className={`sidebar-item ${isActive(item.path) ? "active" : ""}`}
+            style={{
+              width: "100%",
+              height: "60px",
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "12px",
+              cursor: "pointer",
+              padding: showExpanded ? "0 16px" : "0",
+              borderRadius: "8px",
+              backgroundColor: isActive(item.path) ? "#e3f2fd" : "transparent",
+              transition: "all 0.2s ease",
+              justifyContent: showExpanded ? "flex-start" : "center",
+            }}
             onClick={() => handleNavigation(item.path)}
           >
-            {isActive(item.path) && (
-              <div className="sidebar-active-indicator w-1.5 h-[60px] bg-blue-600 rounded-[0px_10px_10px_0px]" />
-            )}
-            <div className="sidebar-text-container flex items-center tracking-[0] leading-[normal]">
-              <span className={getItemClass(item.path)}>{item.label}</span>
+            {/* Icon */}
+            <div
+              style={{
+                fontSize: "20px",
+                minWidth: "24px",
+                textAlign: "center",
+                color: isActive(item.path) ? "#1976d2" : "#666",
+              }}
+            >
+              <i className={`bi ${item.icon}`}></i>
             </div>
+
+            {/* Label - chỉ hiển thị khi expanded */}
+            {showExpanded && (
+              <span
+                style={{
+                  marginLeft: "12px",
+                  color: isActive(item.path) ? "#1976d2" : "#666",
+                  fontWeight: isActive(item.path) ? "600" : "500",
+                  fontSize: "16px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                }}
+              >
+                {item.label}
+              </span>
+            )}
+
+            {/* Active Indicator */}
+            {isActive(item.path) && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "0",
+                  width: "4px",
+                  height: "40px",
+                  backgroundColor: "#1976d2",
+                  borderRadius: "0 4px 4px 0",
+                }}
+              />
+            )}
           </div>
         ))}
       </div>

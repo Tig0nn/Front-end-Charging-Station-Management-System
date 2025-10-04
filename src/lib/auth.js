@@ -7,7 +7,9 @@ export function setCurrentUser(user) {
     } else {
       localStorage.removeItem(USER_KEY);
     }
-  } catch {}
+  } catch {
+    /* empty */
+  }
 }
 
 export function getCurrentUser() {
@@ -27,4 +29,4 @@ export function getCurrentRole() {
 export function clearAuth() {
   localStorage.removeItem("authToken");
   localStorage.removeItem(USER_KEY);
-} 
+}

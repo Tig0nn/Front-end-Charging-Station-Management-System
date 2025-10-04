@@ -12,6 +12,7 @@ import {
   StationsList,
   UsersList,
 } from "./pages";
+import MockApiTest from "./pages/MockApiTest";
 
 function App() {
   return (
@@ -42,6 +43,9 @@ function App() {
               {/* Reports Routes */}
               <Route path="/reports" element={<Reports />} />
               <Route path="/reports/*" element={<Reports />} />
+
+              {/* Mock API Test Page */}
+              <Route path="/mock-test" element={<MockApiTest />} />
 
               {/* 404 Page */}
               <Route path="*" element={<NotFound />} />
