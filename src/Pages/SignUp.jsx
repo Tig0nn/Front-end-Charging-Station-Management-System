@@ -81,31 +81,61 @@ export default function Signup() {
     if (Object.keys(newErrors).length === 0) {
       setIsSubmitting(true);
       try {
+        console.log("Sending register request with data:", {
+          email: email.trim(),
+          password: password,
+          confirmPassword: confirmed_password,
+        });
+
         // Gọi API đăng ký bằng axios
         const response = await authAPI.register({
           email: email.trim(),
           password: password,
+          confirmPassword: confirmed_password,
         });
 
         console.log("Registration successful:", response.data);
-        alert("Đăng ký thành công!");
-        // Tùy chọn: Chuyển người dùng đến trang đăng nhập
-        // navigate("/login");
+
+        // Check response format
+        if (response.data?.code === 1000) {
+          alert("Đăng ký thành công!");
+          console.log("User created:", response.data.result);
+          // Tùy chọn: Chuyển người dùng đến trang đăng nhập
+          // navigate("/login");
+        } else {
+          throw new Error(response.data?.message || "Đăng ký thất bại");
+        }
       } catch (err) {
         console.error("Lỗi khi đăng ký:", err);
+        console.error("Error response:", err.response);
+        console.error("Error status:", err.response?.status);
+        console.error("Error data:", err.response?.data);
 
         const errorMessage =
           err.response?.data?.message ||
+          err.response?.data?.result?.message ||
           err.message ||
           "Đã có lỗi không xác định";
 
         // Hiển thị lỗi dựa trên response
         if (err.response?.status === 400) {
-          setErrors({ email: "Email đã được sử dụng" });
+          // Check if it's email already exists error
+          if (
+            errorMessage.toLowerCase().includes("email") ||
+            errorMessage.toLowerCase().includes("đã tồn tại")
+          ) {
+            setErrors({ email: "Email đã được sử dụng" });
+          } else {
+            setErrors({ form: errorMessage });
+          }
+        } else if (err.response?.status === 401) {
+          setErrors({
+            form: "Không có quyền truy cập - có thể API yêu cầu authentication",
+          });
         } else if (err.message.includes("Network Error")) {
           setErrors({ form: "Lỗi mạng: Không thể kết nối đến máy chủ" });
         } else {
-          alert(errorMessage);
+          setErrors({ form: errorMessage });
         }
       } finally {
         setIsSubmitting(false);
@@ -117,11 +147,8 @@ export default function Signup() {
   return (
     <div className="signup-page">
       <div className="Background">
-        <Link
-          to="/"
-        >
-           <img className="logo" src="src/icon/logo.png" />      
-
+        <Link to="/">
+          <img className="logo" src="src/assets/image/logo.png" />
         </Link>
         <div className="container">
           <Form className="form-container" onSubmit={handleSubmit}>
@@ -208,6 +235,15 @@ export default function Signup() {
               {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
             </Button>
 
+            {/* Hiển thị lỗi form general */}
+            {errors.form && (
+              <div
+                style={{ color: "red", marginTop: "10px", textAlign: "center" }}
+              >
+                {errors.form}
+              </div>
+            )}
+
             <div className="form-check">
               <input
                 className="form-check-input"
@@ -222,7 +258,7 @@ export default function Signup() {
             <div className="login">
               <label>Đã có tài khoản? </label>{" "}
               <Link
-                to="/"
+                to="/login"
                 className="text-[#68ffc2] ml-1 font-semibold hover:underline"
               >
                 Đăng nhập

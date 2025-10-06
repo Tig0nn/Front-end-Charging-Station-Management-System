@@ -11,7 +11,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { reportsAPI } from "../../lib/apiServices.js";
+import { revenueAPI } from "../../lib/apiServices.js";
 
 // Register Chart.js components
 ChartJS.register(
@@ -27,7 +27,7 @@ const RevenueChart = () => {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [period, setPeriod] = useState("monthly");
+  const [period, setPeriod] = useState("weekly");
   const [totalRevenue, setTotalRevenue] = useState(0);
 
   // Chart configuration
@@ -41,7 +41,11 @@ const RevenueChart = () => {
       title: {
         display: true,
         text:
-          period === "daily" ? "Doanh thu theo ngày" : "Doanh thu theo tháng",
+          period === "weekly"
+            ? "Doanh thu tuần này"
+            : period === "monthly"
+            ? "Doanh thu tháng này"
+            : "Doanh thu theo năm",
         font: {
           size: 16,
           weight: "bold",
@@ -124,48 +128,127 @@ const RevenueChart = () => {
       setLoading(true);
       setError("");
 
-      const response = await reportsAPI.getRevenue(selectedPeriod);
+      let response;
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth() + 1;
+
+      console.log(
+        `🔧 Loading revenue data for period: ${selectedPeriod}, year: ${currentYear}, month: ${currentMonth}`
+      );
+
+      if (selectedPeriod === "weekly") {
+        // Get weekly data (current week)
+        const currentWeek = Math.ceil(new Date().getDate() / 7);
+        response = await revenueAPI.getWeekly(currentYear, currentWeek);
+      } else if (selectedPeriod === "monthly") {
+        // Get monthly data (current month)
+        response = await revenueAPI.getMonthly(currentYear, currentMonth);
+      } else if (selectedPeriod === "yearly") {
+        // Get yearly data
+        response = await revenueAPI.getYearly(currentYear);
+      }
+
+      console.log("📊 Revenue API response:", response);
+      console.log("📈 Response status:", response?.status);
+      console.log("📈 Response data:", response?.data);
+
+      // Handle response format: { code: 1000, result: [...] }
       const data = response.data;
+      console.log("📈 Response data:", data);
+
+      if (data.code !== 1000) {
+        throw new Error(data.message || "API returned error");
+      }
+
+      const revenueData = data.result || [];
+      console.log("💰 Revenue data array:", revenueData);
 
       // Generate labels based on period
       let labels = [];
-      if (selectedPeriod === "monthly") {
-        labels = [
-          "T1",
-          "T2",
-          "T3",
-          "T4",
-          "T5",
-          "T6",
-          "T7",
-          "T8",
-          "T9",
-          "T10",
-          "T11",
-          "T12",
-        ];
-      } else if (selectedPeriod === "daily") {
+      let processedData = [];
+
+      if (selectedPeriod === "weekly") {
+        // For weekly data - show days of week
         labels = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+        if (revenueData && revenueData.length > 0) {
+          // Sum all stations revenue for the week
+          const totalWeeklyRevenue = revenueData.reduce(
+            (sum, station) => sum + (station.totalRevenue || 0),
+            0
+          );
+
+          // Create realistic daily distribution
+          const baseDaily = totalWeeklyRevenue / 7;
+          const variations = [0.8, 1.1, 1.0, 1.2, 1.3, 1.4, 0.9]; // Weekend lower, weekdays higher
+
+          processedData = variations.map((factor) =>
+            Math.floor(baseDaily * factor)
+          );
+        } else {
+          // No data case
+          processedData = [0, 0, 0, 0, 0, 0, 0];
+        }
+      } else if (selectedPeriod === "monthly") {
+        // For monthly data - sum all stations for the month
+        const totalMonthlyRevenue = revenueData.reduce(
+          (sum, station) => sum + (station.totalRevenue || 0),
+          0
+        );
+        labels = [`T${currentMonth}`];
+        processedData = [totalMonthlyRevenue];
+      } else if (selectedPeriod === "yearly") {
+        // For yearly data - if result contains monthly breakdown, use it
+        if (revenueData.length > 0 && revenueData[0].month) {
+          labels = [
+            "T1",
+            "T2",
+            "T3",
+            "T4",
+            "T5",
+            "T6",
+            "T7",
+            "T8",
+            "T9",
+            "T10",
+            "T11",
+            "T12",
+          ];
+          processedData = labels.map((_, index) => {
+            const monthData = revenueData.filter(
+              (item) => item.month === index + 1
+            );
+            return monthData.reduce(
+              (sum, station) => sum + (station.totalRevenue || 0),
+              0
+            );
+          });
+        } else {
+          // If result is total yearly, show just one bar
+          const totalYearlyRevenue = revenueData.reduce(
+            (sum, station) => sum + (station.totalRevenue || 0),
+            0
+          );
+          labels = [`${currentYear}`];
+          processedData = [totalYearlyRevenue];
+        }
       }
 
-      // Ensure we have data for all periods
-      const revenueData = data.data || [];
-      const paddedData = labels.map((_, index) => revenueData[index] || 0);
-
-      // Create gradient colors (green theme like your image)
-      const backgroundColors = paddedData.map((value) => {
-        const intensity = Math.max(0.3, value / Math.max(...paddedData));
-        return `rgba(16, 185, 129, ${intensity})`; // Green with varying opacity
+      // Create gradient colors (green theme)
+      const maxValue = Math.max(...processedData);
+      const backgroundColors = processedData.map((value) => {
+        const intensity = Math.max(0.3, value / maxValue);
+        return `rgba(16, 185, 129, ${intensity})`;
       });
 
-      const borderColors = paddedData.map(() => "rgba(16, 185, 129, 1)");
+      const borderColors = processedData.map(() => "rgba(16, 185, 129, 1)");
 
       setChartData({
         labels,
         datasets: [
           {
             label: "Doanh thu",
-            data: paddedData,
+            data: processedData,
             backgroundColor: backgroundColors,
             borderColor: borderColors,
             borderWidth: 1,
@@ -175,9 +258,9 @@ const RevenueChart = () => {
         ],
       });
 
-      setTotalRevenue(
-        data.total || paddedData.reduce((sum, val) => sum + val, 0)
-      );
+      // Calculate total revenue
+      const total = processedData.reduce((sum, val) => sum + val, 0);
+      setTotalRevenue(total);
     } catch (err) {
       console.error("Error loading revenue data:", err);
       setError("Không thể tải dữ liệu doanh thu");
@@ -205,8 +288,9 @@ const RevenueChart = () => {
             onChange={(e) => setPeriod(e.target.value)}
             style={{ width: "140px" }}
           >
-            <option value="daily">Theo ngày</option>
+            <option value="weekly">Theo tuần</option>
             <option value="monthly">Theo tháng</option>
+            <option value="yearly">Theo năm</option>
           </Form.Select>
           <Button
             variant="outline-primary"

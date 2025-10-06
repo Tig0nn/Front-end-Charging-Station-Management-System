@@ -37,8 +37,6 @@ const UsersList = () => {
     fetchUsers();
   }, []);
 
-  
-
   // Badge gói dịch vụ
   const getPlanBadge = (plan) => {
     const style = { minWidth: "90px", textAlign: "center", fontWeight: 500 };
@@ -145,61 +143,63 @@ const UsersList = () => {
                 <th>Thao tác</th>
               </tr>
             </thead>
-           <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan="8" className="text-center py-4">
-                <Spinner animation="border" variant="primary" />
-                <p className="mt-2 text-muted">Đang tải danh sách người dùng...</p>
-              </td>
-            </tr>
-          ) : error ? (
-            <tr>
-              <td colSpan="8" className="text-center text-danger py-4">
-                {error}
-              </td>
-            </tr>
-          ) : !Array.isArray(users) || users.length === 0 ? (
-            <tr>
-              <td colSpan="8" className="text-center text-muted py-4">
-                Không có người dùng nào.
-              </td>
-            </tr>
-          ) : (
-            users.map((user, idx) => (
-              <tr key={user.email || idx}>
-                <td className="fw-semibold">{user.fullName || "—"}</td>
-                <td>
-                  {user.email || "—"} <br />
-                  <span className="text-muted small">
-                    {user.phone || "—"}
-                  </span>
-                </td>
-                <td>{user.joinDate || "—"}</td>
-                <td>{getPlanBadge(user.planName)}</td>
-                <td>{user.sessionCount ?? 0}</td>
-                <td>{(user.totalSpent ?? 0).toLocaleString("vi-VN")}₫</td>
-                <td>{getStatusBadge(user.status)}</td>
-                <td>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    className="me-2 border text-dark"
-                  >
-                    Chi tiết
-                  </Button>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    className="border text-danger"
-                  >
-                    Khóa
-                  </Button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="8" className="text-center py-4">
+                    <Spinner animation="border" variant="primary" />
+                    <p className="mt-2 text-muted">
+                      Đang tải danh sách người dùng...
+                    </p>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="8" className="text-center text-danger py-4">
+                    {error}
+                  </td>
+                </tr>
+              ) : !Array.isArray(users) || users.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="text-center text-muted py-4">
+                    Không có người dùng nào.
+                  </td>
+                </tr>
+              ) : (
+                users.map((user, idx) => (
+                  <tr key={user.email || idx}>
+                    <td className="fw-semibold">{user.fullName || "—"}</td>
+                    <td>
+                      {user.email || "—"} <br />
+                      <span className="text-muted small">
+                        {user.phone || "—"}
+                      </span>
+                    </td>
+                    <td>{user.joinDate || "—"}</td>
+                    <td>{getPlanBadge(user.planName)}</td>
+                    <td>{user.sessionCount ?? 0}</td>
+                    <td>{(user.totalSpent ?? 0).toLocaleString("vi-VN")}₫</td>
+                    <td>{getStatusBadge(user.status)}</td>
+                    <td>
+                      <Button
+                        variant="light"
+                        size="sm"
+                        className="me-2 border text-dark"
+                      >
+                        Chi tiết
+                      </Button>
+                      <Button
+                        variant="light"
+                        size="sm"
+                        className="border text-danger"
+                      >
+                        Khóa
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
           </Table>
         </Card.Body>
       </Card>

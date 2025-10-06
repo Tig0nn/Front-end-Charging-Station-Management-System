@@ -5,11 +5,10 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 export const api = axios.create({
   baseURL,
-   headers: {
-   'ngrok-skip-browser-warning': '69420',
-    'Content-Type': 'application/json'
+  headers: {
+    "ngrok-skip-browser-warning": "69420",
+    "Content-Type": "application/json",
   },
-  withCredentials: false,
 });
 
 api.interceptors.request.use((config) => {
@@ -28,7 +27,9 @@ api.interceptors.response.use(
       console.warn("API 401 Unauthorized:", err?.config?.url);
       try {
         clearAuth();
-      } catch {}
+      } catch (error) {
+        console.error("Error clearing auth:", error);
+      }
       try {
         window.dispatchEvent(
           new CustomEvent("app:unauthorized", {
@@ -37,12 +38,16 @@ api.interceptors.response.use(
             },
           })
         );
-      } catch {}
+      } catch (error) {
+        console.error("Error dispatching unauthorized event:", error);
+      }
       try {
         if (window.location.pathname !== "/login") {
           window.location.assign("/login");
         }
-      } catch {}
+      } catch (error) {
+        console.error("Error redirecting to login:", error);
+      }
     }
     return Promise.reject(err);
   }

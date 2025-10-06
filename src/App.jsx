@@ -4,14 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Pages/Login";
 import Signup from "./Pages/SignUp";
 import { MainLayout } from "./components/layoutAdmin";
-import {
-  AddStation,
-  Dashboard,
-  NotFound,
-  Reports,
-  StationsList,
-  UsersList,
-} from "./Pages";
+import { Dashboard, NotFound, Reports, StationsList, UsersList } from "./Pages";
 import MockApiTest from "./Pages/MockApiTest";
 import EVChargingLanding from "./pages/EVChargingLanding";
 
@@ -36,7 +29,6 @@ function App() {
 
               {/* Stations Routes */}
               <Route path="/stations" element={<StationsList />} />
-              <Route path="/stations/add" element={<AddStation />} />
 
               {/* Users Routes */}
               <Route path="/users" element={<UsersList />} />

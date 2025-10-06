@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
       authAPI
         .getProfile()
         .then((response) => {
-          const userData = response.data;
+          const userData = response.data.result || response.data;
           setUser(userData);
           setIsAuthenticated(true);
           // Store user data
@@ -57,9 +57,8 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.login(credentials);
 
       // Handle both mock API and real API response formats
-      const token = response.data.result.token ;
-      const userData =
-        response.data?.user || response.data?.User || response.data;
+      const token = response.data.result.token;
+      const userData = response.data.result.userInfo;
 
       if (!token) {
         throw new Error("No token received from server");
@@ -84,18 +83,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setAuthToken(null);
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      // Clear local state first (guaranteed to happen)
+      setAuthToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem("user");
 
-    // Optionally call logout API
-    authAPI.logout().catch(() => {
-      // Ignore logout API errors
-    });
-
-    // Redirect to login page
-    window.location.href = "/login";
+      // Try to call logout API (optional, don't fail if it errors)
+      await authAPI.logout();
+    } catch (error) {
+      console.warn("Logout API call failed (ignoring):", error);
+      // Continue with logout process even if API call fails
+    } finally {
+      // Always redirect to login page
+      window.location.href = "/login";
+    }
   };
 
   const updateUser = (userData) => {

@@ -13,7 +13,8 @@ import {
   authAPI,
   usersAPI,
   stationsAPI,
-  reportsAPI,
+  revenueAPI,
+  systemOverviewAPI,
   isMockMode,
 } from "../lib/apiServices.js";
 
@@ -56,9 +57,11 @@ const MockApiTest = () => {
 
     "Get Station by ID": () => stationsAPI.getById(1),
 
-    "Get Dashboard Reports": () => reportsAPI.getDashboard(),
+    "Get System Overview": () => systemOverviewAPI.getOverview(),
 
-    "Get Revenue Data": () => reportsAPI.getRevenue("monthly"),
+    "Get Monthly Revenue": () => revenueAPI.getMonthly(2025, 1),
+
+    "Get Yearly Revenue": () => revenueAPI.getYearly(2025),
 
     "Create New User": () =>
       usersAPI.create({

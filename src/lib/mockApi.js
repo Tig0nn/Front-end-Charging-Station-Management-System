@@ -122,6 +122,9 @@ const mockReports = {
 // Simulate network delay
 const delay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Store current logged-in user for getProfile
+let currentLoggedInUser = null;
+
 // Mock API responses
 export const mockApi = {
   // Authentication APIs
@@ -134,12 +137,27 @@ export const mockApi = {
       // Mock login validation
       if (email === "admin@chargingstation.com" && password === "123456") {
         const user = mockUsers.find((u) => u.email === email);
+        currentLoggedInUser = user; // Store current user for getProfile
         return {
           success: true,
           data: {
-            token: "mock-jwt-token-" + Date.now(),
-            user: user,
-            expiresIn: "24h",
+            code: 1000,
+            message: null,
+            result: {
+              token: "eyJhbGciOiJIUzUxMiJ9.mock-jwt-token-" + Date.now(),
+              authenticated: true,
+              userInfo: {
+                userId: user.id,
+                email: user.email,
+                phone: user.phone || null,
+                dateOfBirth: user.dateOfBirth || null,
+                gender: user.gender || false,
+                firstName: user.firstName || null,
+                lastName: user.lastName || null,
+                fullName: user.name || user.fullName || null,
+                role: user.role,
+              },
+            },
           },
         };
       }
@@ -147,12 +165,27 @@ export const mockApi = {
       // Allow any user from mockUsers with password "123456"
       const user = mockUsers.find((u) => u.email === email);
       if (user && password === "123456") {
+        currentLoggedInUser = user; // Store current user for getProfile
         return {
           success: true,
           data: {
-            token: "mock-jwt-token-" + Date.now(),
-            user: user,
-            expiresIn: "24h",
+            code: 1000,
+            message: null,
+            result: {
+              token: "eyJhbGciOiJIUzUxMiJ9.mock-jwt-token-" + Date.now(),
+              authenticated: true,
+              userInfo: {
+                userId: user.id,
+                email: user.email,
+                phone: user.phone || null,
+                dateOfBirth: user.dateOfBirth || null,
+                gender: user.gender || false,
+                firstName: user.firstName || null,
+                lastName: user.lastName || null,
+                fullName: user.name || user.fullName || null,
+                role: user.role,
+              },
+            },
           },
         };
       }
@@ -172,13 +205,18 @@ export const mockApi = {
       };
 
       mockUsers.push(newUser);
+      currentLoggedInUser = newUser; // Store current user for getProfile
 
       return {
         success: true,
         data: {
-          token: "mock-jwt-token-" + Date.now(),
-          user: newUser,
-          expiresIn: "24h",
+          code: 1000,
+          message: null,
+          result: {
+            userId: newUser.id,
+            email: newUser.email,
+            role: "DRIVER",
+          },
         },
       };
     },
@@ -186,16 +224,31 @@ export const mockApi = {
     getProfile: async () => {
       await delay();
 
-      // Return the first admin user as default profile
-      const user = mockUsers[0];
+      // Return the currently logged in user or fallback to admin
+      const user = currentLoggedInUser || mockUsers[0];
       return {
         success: true,
-        data: user,
+        data: {
+          code: 1000,
+          message: null,
+          result: {
+            userId: user.id,
+            email: user.email,
+            phone: user.phone || null,
+            dateOfBirth: user.dateOfBirth || null,
+            gender: user.gender || false,
+            firstName: user.firstName || null,
+            lastName: user.lastName || null,
+            fullName: user.name || user.fullName || null,
+            role: user.role,
+          },
+        },
       };
     },
 
     logout: async () => {
       await delay(200);
+      currentLoggedInUser = null; // Clear current user on logout
       return { success: true };
     },
   },
@@ -426,6 +479,139 @@ export const mockApi = {
       };
     },
   },
+
+  // Revenue APIs
+  revenue: {
+    getWeekly: async (year, week) => {
+      await delay();
+
+      // Mock weekly revenue data (7 days)
+      const weeklyData = [
+        {
+          stationId: "uuid-1111",
+          stationName: "Station A",
+          address: "123 Main St",
+          week: week,
+          year: year,
+          totalRevenue: 350000, // per day average
+          totalSessions: 8,
+        },
+        {
+          stationId: "uuid-2222",
+          stationName: "Station B",
+          address: "456 Oak Ave",
+          week: week,
+          year: year,
+          totalRevenue: 280000,
+          totalSessions: 6,
+        },
+      ];
+
+      return {
+        success: true,
+        data: {
+          code: 1000,
+          message: null,
+          result: weeklyData,
+        },
+      };
+    },
+
+    getMonthly: async (year, month) => {
+      await delay();
+
+      // Mock monthly revenue data for different stations
+      const monthlyData = [
+        {
+          stationId: "uuid-1111",
+          stationName: "Station A",
+          address: "123 Main St",
+          month: month,
+          year: year,
+          totalRevenue: 1200000,
+          totalSessions: 30,
+        },
+        {
+          stationId: "uuid-2222",
+          stationName: "Station B",
+          address: "456 Oak Ave",
+          month: month,
+          year: year,
+          totalRevenue: 980000,
+          totalSessions: 25,
+        },
+      ];
+
+      return {
+        success: true,
+        data: {
+          code: 1000,
+          message: null,
+          result: monthlyData,
+        },
+      };
+    },
+
+    getYearly: async (year) => {
+      await delay();
+
+      // Mock yearly revenue data (12 months)
+      const yearlyData = [];
+      for (let month = 1; month <= 12; month++) {
+        // Station A
+        yearlyData.push({
+          stationId: "uuid-1111",
+          stationName: "Station A",
+          address: "123 Main St",
+          month: month,
+          year: year,
+          totalRevenue: Math.floor(Math.random() * 1000000) + 800000, // 0.8M-1.8M VND
+          totalSessions: Math.floor(Math.random() * 30) + 20, // 20-50 sessions
+        });
+
+        // Station B
+        yearlyData.push({
+          stationId: "uuid-2222",
+          stationName: "Station B",
+          address: "456 Oak Ave",
+          month: month,
+          year: year,
+          totalRevenue: Math.floor(Math.random() * 800000) + 600000, // 0.6M-1.4M VND
+          totalSessions: Math.floor(Math.random() * 25) + 15, // 15-40 sessions
+        });
+      }
+
+      return {
+        success: true,
+        data: {
+          code: 1000,
+          message: null,
+          result: yearlyData,
+        },
+      };
+    },
+  },
+
+  // System Overview API
+  systemOverview: {
+    getOverview: async () => {
+      await delay();
+
+      return {
+        success: true,
+        data: {
+          code: 1000,
+          message: null,
+          result: {
+            totalStations: 12,
+            activeChargingPoints: 8,
+            totalDrivers: 42,
+            currentMonthRevenue: 3210.5,
+          },
+        },
+      };
+    },
+  },
 };
 
 // Export individual APIs for easier import
@@ -434,4 +620,6 @@ export const {
   users: mockUsersApi,
   stations: mockStationsApi,
   reports: mockReportsApi,
+  revenue: mockRevenueApi,
+  systemOverview: mockSystemOverviewApi,
 } = mockApi;
