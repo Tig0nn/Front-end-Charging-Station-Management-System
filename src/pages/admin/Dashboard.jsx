@@ -45,7 +45,7 @@ const Dashboard = () => {
           <h1>Tổng quan hệ thống</h1>
           <p className="lead">
             Quản trị trung tâm EV Charging — Xin chào
-            {username ? `, ${username}` : ""}
+            {/* {username ? `, ${username}` : ""} */}
           </p>
         </Col>
       </Row>

@@ -66,8 +66,7 @@ const Header = () => {
         >
           {/* Logo and Brand */}
           <Navbar.Brand
-            as={Link}
-            to="/"
+            
             className="d-flex align-items-center gap-2 me-4"
             style={{ marginTop: "11px" }}
           >

@@ -17,7 +17,6 @@ function LoginForm() {
       setLoginErr("Vui lòng nhập đủ username và password");
       return;
     }
-
     try {
       setLoginErr(""); // Clear previous errors
 
@@ -27,7 +26,6 @@ function LoginForm() {
       });
 
       if (result.success) {
-        alert("Đăng nhập thành công!");
         navigate("/admin/dashboard");
       } else {
         setLoginErr(result.error || "Đăng nhập thất bại");

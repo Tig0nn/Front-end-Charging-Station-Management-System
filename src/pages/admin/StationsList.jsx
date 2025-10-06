@@ -1,65 +1,43 @@
-import React from "react";
-import { Table, Card, Button, Badge, ProgressBar } from "react-bootstrap";
-import { Link } from "react-router";
+import React, { useEffect, useState } from "react";
+import { Table, Card, Button, Badge, ProgressBar, Spinner } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { stationsAPI } from "../../lib/apiServices"; 
 
 const StationsList = () => {
-  // Fallback data for immediate display
-  const fallbackStations = [
-    {
-      id: 1,
-      name: "Vincom Đồng Khởi",
-      location: "72 Lê Thánh Tôn, Q.1, TP.HCM",
-      totalChargers: 6,
-      availableChargers: 4,
-      offlineChargers: 1,
-      maintenanceChargers: 1,
-      status: "active",
-      revenue: 2450000,
-      utilization: 78,
-      manager: "Trần Thị Bình",
-    },
-    {
-      id: 2,
-      name: "Landmark 81",
-      location: "720A Điện Biên Phủ, Q.Bình Thạnh",
-      totalChargers: 8,
-      availableChargers: 7,
-      offlineChargers: 0,
-      maintenanceChargers: 1,
-      status: "active",
-      revenue: 3820000,
-      utilization: 85,
-      manager: "Nguyễn Văn Cường",
-    },
-    {
-      id: 3,
-      name: "AEON Mall Tân Phú",
-      location: "30 Bờ Bao Tân Thắng, Q.Tân Phú",
-      totalChargers: 4,
-      availableChargers: 2,
-      offlineChargers: 2,
-      maintenanceChargers: 0,
-      status: "maintenance",
-      revenue: 1680000,
-      utilization: 45,
-      manager: "Phạm Thị Dung",
-    },
-  ];
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const stations = fallbackStations;
-  const loading = false;
-  const error = "";
+  
+  //  Gọi API lấy danh sách trạm sạc
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        setLoading(true);
+        const res = await stationsAPI.getAll(1, 100);
+        // Nếu backend trả về dạng {data: [...]}
+        const data = res.data.result;
+        setStations(data);
+      } catch (err) {
+        console.error(" Lỗi tải trạm sạc:", err);
+        setError("Không thể tải danh sách trạm sạc.");
+        setStations(fallbackStations);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStations();
+  }, []);
 
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
+  //  Format tiền tệ
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
-    }).format(amount);
-  };
+    }).format(amount || 0);
 
-  // Get status badge
+  //  Badge trạng thái
   const getStatusBadge = (status) => {
     switch (status) {
       case "active":
@@ -73,7 +51,7 @@ const StationsList = () => {
     }
   };
 
-  // Get utilization color
+  // 🔹 Màu thanh tiến trình
   const getUtilizationColor = (utilization) => {
     if (utilization >= 80) return "success";
     if (utilization >= 60) return "info";
@@ -81,14 +59,12 @@ const StationsList = () => {
     return "danger";
   };
 
+  // 🔹 Đang tải
   if (loading) {
     return (
-      <div style={{ padding: "20px" }}>
-        <div className="text-center py-5">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Đang tải...</span>
-          </div>
-        </div>
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="primary" />
+        <div className="mt-2 text-muted">Đang tải danh sách trạm...</div>
       </div>
     );
   }
@@ -96,246 +72,105 @@ const StationsList = () => {
   return (
     <div>
       {/* Header */}
-      <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center">
-          <div>
-            <h2 className="mb-1">Quản lý trạm sạc</h2>
-            <p className="text-muted mb-0">
-              Theo dõi và quản lý tất cả trạm sạc trong hệ thống
-            </p>
-          </div>
-          <Button
-            as={Link}
-            to="/admin/stations/add"
-            variant="primary"
-            className="d-flex align-items-center gap-2"
-          >
-            <i className="bi bi-plus-lg"></i>
-            Thêm trạm sạc
-          </Button>
+      <div className="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h2 className="mb-1">Quản lý trạm sạc</h2>
+          <p className="text-muted mb-0">
+            Theo dõi và quản lý tất cả trạm sạc trong hệ thống
+          </p>
         </div>
+        <Button
+          as={Link}
+          to="/admin/stations/add"
+          variant="primary"
+          className="d-flex align-items-center gap-2"
+        >
+          <i className="bi bi-plus-lg"></i>
+          Thêm trạm sạc
+        </Button>
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="mb-4">
-          <div className="alert alert-danger">{error}</div>
-        </div>
-      )}
+      {/* Error */}
+      {error && <div className="alert alert-danger">{error}</div>}
 
-      {/* Stations Table */}
-      <div className="mb-4">
-        <Card className="border-0 shadow-sm">
-          <Card.Body className="p-0">
-            <div className="table-responsive">
-              <Table className="mb-0" hover>
-                <thead className="table-light">
-                  <tr>
-                    <th
-                      className="px-4 py-3 fw-semibold"
-                      style={{ width: "25%" }}
-                    >
-                      Tên trạm
-                    </th>
-                    <th
-                      className="px-2 py-3 fw-semibold text-center"
-                      style={{ width: "8%" }}
-                    >
-                      Trạng thái
-                    </th>
-                    <th
-                      className="px-2 py-3 fw-semibold text-center"
-                      style={{ width: "27%" }}
-                    >
-                      Điểm sạc
-                    </th>
-                    <th
-                      className="px-2 py-3 fw-semibold text-end"
-                      style={{ width: "12%" }}
-                    >
-                      Doanh thu
-                    </th>
-                    <th
-                      className="px-1 py-3 fw-semibold text-center"
-                      style={{ width: "15%" }}
-                    >
-                      Sử dụng
-                    </th>
-                    <th
-                      className="px-2 py-3 fw-semibold"
-                      style={{ width: "22%" }}
-                    >
-                      Nhân viên
-                    </th>
-                    <th
-                      className="px-4 py-3 fw-semibold text-center"
-                      style={{ width: "10%" }}
-                    >
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stations.map((station) => (
-                    <tr key={station.id} className="align-middle">
-                      <td className="px-3 py-4">
-                        <div className="fw-semibold text-dark">
-                          {station.name}
-                        </div>
-                        <div className="text-muted small">
-                          {station.location}
-                        </div>
+      {/* Bảng trạm sạc */}
+      <Card className="border-0 shadow-sm">
+        <Card.Body className="p-0">
+          <div className="table-responsive">
+            <Table hover className="mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th className="px-4 py-3">Tên trạm</th>
+                  <th className="px-2 py-3 text-center">Trạng thái</th>
+                  <th className="px-2 py-3 text-center">Điểm sạc</th>
+                  <th className="px-2 py-3 text-end">Doanh thu</th>
+                  <th className="px-2 py-3 text-center">Sử dụng</th>
+                  <th className="px-2 py-3">Nhân viên</th>
+                  <th className="px-4 py-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stations.length > 0 ? (
+                  stations.map((station) => (
+                    <tr key={station.stationId} className="align-middle">
+                      <td>
+                        <div className="fw-semibold text-dark">{station.name}</div>
+                        <div className="text-muted small">{"backend chưa có"}</div>
                       </td>
 
-                      <td className="px-2 py-4 text-center">
-                        {getStatusBadge(station.status)}
-                      </td>
+                      <td className="text-center">{getStatusBadge(station.status)}</td>
 
-                      <td className="px-2 py-4 text-center">
-                        <div className="small">
-                          <div className="text-success fw-semibold">
-                            Tổng: {station.totalChargers}
-                          </div>
-                          <div className="d-flex gap-1 justify-content-center mt-1">
-                            <span className="text-success">
-                              Hoạt động <br />
-                              {station.availableChargers}
-                            </span>
-                            {station.offlineChargers > 0 && (
-                              <>
-                                <span className="text-muted">|</span>
-                                <span className="text-danger">
-                                  Offline <br />
-                                  {station.offlineChargers}
-                                </span>
-                              </>
-                            )}
-                            {station.maintenanceChargers > 0 && (
-                              <>
-                                <span className="text-muted">|</span>
-                                <span className="text-warning">
-                                  Bảo trì <br />
-                                  {station.maintenanceChargers}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-2 py-4 text-end">
+                      <td className="text-center small">
                         <div className="fw-semibold text-success">
-                          {formatCurrency(station.revenue)}
+                          Tổng: {"chưa làm" || 0}
+                        </div>
+                        <div className="mt-1">
+                          Hoạt động: {"chưa làm" || 0}
+                          {" / "}
+                          Bảo trì: {"chưa làm" || 0}
                         </div>
                       </td>
 
-                      <td className="px-3 py-4">
-                        <div className="text-center">
-                          <div className="mb-1">
-                            <ProgressBar
-                              now={station.utilization}
-                              variant={getUtilizationColor(station.utilization)}
-                              style={{ width: "80px", height: "6px" }}
-                              className="mx-auto"
-                            />
-                          </div>
-                          <small className="fw-semibold text-dark">
-                            {station.utilization}%
-                          </small>
-                        </div>
+                      <td className="text-end text-success">
+                        {/*formatCurrency(station.revenue)*/}
                       </td>
 
-                      <td className="px-2 py-4">
-                        <div className="text-dark">{station.manager}</div>
+                      <td className="text-center">
+                        <ProgressBar
+                          now={station.utilization || 0}
+                          variant={getUtilizationColor("chưa làm" || 0)}
+                          style={{ width: "80px", height: "6px" }}
+                          className="mx-auto"
+                        />
+                        <small>{station.utilization || 0}%</small>
                       </td>
 
-                      <td className="px-4 py-4 text-center">
+                      <td>{station.manager || "Chưa có"}</td>
+
+                      <td className="text-center">
                         <div className="d-flex gap-1 justify-content-center">
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            className="d-flex align-items-center justify-content-center"
-                            style={{ width: "32px", height: "32px" }}
-                            title="Chỉnh sửa"
-                          >
+                          <Button variant="outline-primary" size="sm" title="Chỉnh sửa">
                             <i className="bi bi-pencil"></i>
                           </Button>
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            className="d-flex align-items-center justify-content-center"
-                            style={{ width: "32px", height: "32px" }}
-                            title="Cài đặt"
-                          >
+                          <Button variant="outline-secondary" size="sm" title="Cài đặt">
                             <i className="bi bi-gear"></i>
                           </Button>
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          </Card.Body>
-        </Card>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="row">
-        <div className="col-lg-3 col-md-6 mb-3">
-          <Card className="text-center border-0 shadow-sm h-100">
-            <Card.Body>
-              <div className="text-primary fs-2 mb-2">🏪</div>
-              <h6 className="text-muted mb-1">Tổng trạm sạc</h6>
-              <h3 className="text-primary mb-0">{stations.length}</h3>
-            </Card.Body>
-          </Card>
-        </div>
-        <div className="col-lg-3 col-md-6 mb-3">
-          <Card className="text-center border-0 shadow-sm h-100">
-            <Card.Body>
-              <div className="text-success fs-2 mb-2">⚡</div>
-              <h6 className="text-muted mb-1">Điểm sạc hoạt động</h6>
-              <h3 className="text-success mb-0">
-                {stations.reduce(
-                  (sum, station) => sum + station.availableChargers,
-                  0
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center text-muted py-4">
+                      Không có trạm sạc nào.
+                    </td>
+                  </tr>
                 )}
-              </h3>
-            </Card.Body>
-          </Card>
-        </div>
-        <div className="col-lg-3 col-md-6 mb-3">
-          <Card className="text-center border-0 shadow-sm h-100">
-            <Card.Body>
-              <div className="text-info fs-2 mb-2">💰</div>
-              <h6 className="text-muted mb-1">Tổng doanh thu</h6>
-              <h3 className="text-info mb-0">
-                {formatCurrency(
-                  stations.reduce((sum, station) => sum + station.revenue, 0)
-                )}
-              </h3>
-            </Card.Body>
-          </Card>
-        </div>
-        <div className="col-lg-3 col-md-6 mb-3">
-          <Card className="text-center border-0 shadow-sm h-100">
-            <Card.Body>
-              <div className="text-warning fs-2 mb-2">📊</div>
-              <h6 className="text-muted mb-1">Sử dụng trung bình</h6>
-              <h3 className="text-warning mb-0">
-                {Math.round(
-                  stations.reduce(
-                    (sum, station) => sum + station.utilization,
-                    0
-                  ) / stations.length
-                )}
-                %
-              </h3>
-            </Card.Body>
-          </Card>
-        </div>
-      </div>
+              </tbody>
+            </Table>
+          </div>
+        </Card.Body>
+      </Card>
     </div>
   );
 };

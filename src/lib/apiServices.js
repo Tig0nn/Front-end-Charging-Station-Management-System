@@ -10,7 +10,7 @@ const realApiServices = {
   auth: {
     login: (credentials) => api.post("/api/auth/login", credentials),
     register: (userData) => api.post("/api/auth/register", userData),
-    getProfile: () => api.get("/api/auth/profile"),
+    getProfile: () => api.get("api/users/myInfo"),
     logout: () => api.post("/api/auth/logout"),
     refreshToken: (refreshToken) =>
       api.post("/api/auth/refresh", { refreshToken }),
@@ -27,7 +27,7 @@ const realApiServices = {
 
   stations: {
     getAll: (page = 1, limit = 10) =>
-      api.get(`/api/stations?page=${page}&limit=${limit}`),
+      api.get(`/api/stations/overview?page=${page}&limit=${limit}`),
     getById: (id) => api.get(`/api/stations/${id}`),
     create: (stationData) => api.post("/api/stations", stationData),
     update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),

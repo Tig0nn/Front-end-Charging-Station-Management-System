@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.login(credentials);
 
       // Handle both mock API and real API response formats
-      const token = response.data?.token || response.data?.Token;
+      const token = response.data.result.token ;
       const userData =
         response.data?.user || response.data?.User || response.data;
 
