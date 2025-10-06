@@ -194,7 +194,7 @@ export default function EVChargingLanding() {
                 icon: CreditCard,
                 title: "Thanh toán Đa dạng",
                 description:
-                  "Hỗ trợ nhiều hình thức thanh toán: e-wallet, banking, thẻ",
+                  "Hỗ trợ nhiều hình thức thanh toán.",
               },
               {
                 icon: BarChart3,
@@ -324,7 +324,7 @@ export default function EVChargingLanding() {
       {/* Footer */}
       <footer className="bg-black/30 backdrop-blur-md border-t border-white/10 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="">
@@ -335,54 +335,37 @@ export default function EVChargingLanding() {
                 </span>
               </div>
               <p className="text-white/70">
-                Giải pháp quản lý trạm sạc xe điện thông minh và toàn diện.
+                Hệ thống trạm sạc xe điện thông minh, tiện lợi và đáng tin cậy.
               </p>
             </div>
 
+            
             <div>
-              <h4 className="text-white font-semibold mb-4">Sản phẩm</h4>
+              <h4 className="text-white font-semibold mb-4">Thành viên</h4>
               <div className="space-y-2">
                 <a
                   href="#"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
-                  Ứng dụng tài xế
+                  Trường Huy
                 </a>
                 <a
                   href="#"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
-                  Hệ thống nhân viên
+                  Thục Nhân
                 </a>
                 <a
                   href="#"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
-                  Dashboard quản trị
+                  Đăng Khoa
                 </a>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-white font-semibold mb-4">Hỗ trợ</h4>
-              <div className="space-y-2">
-                <a
+                                <a
                   href="#"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
-                  Tài liệu
-                </a>
-                <a
-                  href="#"
-                  className="block text-white/70 hover:text-white transition-colors"
-                >
-                  API
-                </a>
-                <a
-                  href="#"
-                  className="block text-white/70 hover:text-white transition-colors"
-                >
-                  Trợ giúp
+                  Phi Trường
                 </a>
               </div>
             </div>
