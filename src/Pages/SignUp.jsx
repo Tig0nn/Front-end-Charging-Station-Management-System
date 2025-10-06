@@ -117,7 +117,12 @@ export default function Signup() {
   return (
     <div className="signup-page">
       <div className="Background">
-        <img className="logo" src="src/image/logo.png" />
+        <Link
+          to="/"
+        >
+           <img className="logo" src="src/icon/logo.png" />      
+
+        </Link>
         <div className="container">
           <Form className="form-container" onSubmit={handleSubmit}>
             <div className="title">

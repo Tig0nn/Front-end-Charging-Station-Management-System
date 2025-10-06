@@ -18,7 +18,7 @@ function Login() {
       </Link>
     </p>
   );
-  const logo = <img src="src/image/logo.png" alt="Logo" />;
+  const logo = <img src="src/icon/logo.png" alt="Logo" />;
 
   const helper = (
     <div className="mt-3 space-y-4 ">
@@ -52,7 +52,12 @@ function Login() {
 
   return (
     <div className="flex items-center    justify-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]  ">
-      <div className="absolute top-4 left-4 w-24">{logo}</div>
+      <div className="absolute top-4 left-4 w-24">
+              <Link
+        to="/"
+      >
+        {logo}
+      </Link></div>
       <div className=" p-6 space-y-6 sm:p-8 rounded-xl shadow-lg w-full max-w-sm bg-[#2C3E50]">
         {suggestion}
         {directToSignUp}

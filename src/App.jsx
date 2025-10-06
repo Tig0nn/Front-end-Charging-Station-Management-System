@@ -13,14 +13,16 @@ import {
   UsersList,
 } from "./pages";
 import MockApiTest from "./pages/MockApiTest";
+import EVChargingLanding from "./pages/EVChargingLanding";
 
 function App() {
   return (
     <Routes>
       {/* Authentication Routes */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<EVChargingLanding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      
 
       {/* Legacy Admin Route */}
 

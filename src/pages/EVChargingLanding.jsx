@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router";
 import {
   BadgeDollarSign,
   MapPin,
@@ -27,13 +28,13 @@ export default function EVChargingLanding() {
         "thông tin",
       ],
     },
-        {
+    {
       title: "Gói thuê bao 2",
       items: [
         "thông tin",
       ],
     },
-        {
+    {
       title: "Gói thuê bao 3",
       items: [
         "thông tin",
@@ -82,15 +83,24 @@ export default function EVChargingLanding() {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              <button className="hover:scale-105 font-bold px-4 py-2 text-white/80 hover:text-white transition-colors">
-                Đăng nhập
-              </button>
-              <button className="font-bold !rounded-2xl px-6 py-2 bg-gradient-to-r from-[#2bf0b5] to-[#00ffc6] 
+              <Link
+                to="/login"
+              >
+                <button className="hover:scale-105 font-bold px-4 py-2 text-white/80 hover:text-white transition-colors">
+
+                  Đăng nhập
+                </button>
+              </Link>
+              <Link
+                to="/signup"
+              >
+                <button className="font-bold !rounded-2xl px-6 py-2 bg-gradient-to-r from-[#2bf0b5] to-[#00ffc6] 
               text-white hover: bg-gradient-to-r from-[#5fffd4] to-[#2bf0b5]
               hover:scale-105
               transition-[background_0.4s_ease,box-shadow_0.4s_ease,transform_0.1s_ease]">
-                Đăng ký
-              </button>
+                  Đăng ký
+                </button>
+              </Link>
             </div>
 
             <button
@@ -339,7 +349,7 @@ export default function EVChargingLanding() {
               </p>
             </div>
 
-            
+
             <div>
               <h4 className="text-white font-semibold mb-4">Thành viên</h4>
               <div className="space-y-2">
@@ -361,7 +371,7 @@ export default function EVChargingLanding() {
                 >
                   Đăng Khoa
                 </a>
-                                <a
+                <a
                   href="#"
                   className="block text-white/70 hover:text-white transition-colors"
                 >
