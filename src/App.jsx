@@ -11,8 +11,8 @@ import {
   Reports,
   StationsList,
   UsersList,
-} from "./pages";
-import MockApiTest from "./pages/MockApiTest";
+} from "./Pages";
+import MockApiTest from "./Pages/MockApiTest";
 import EVChargingLanding from "./pages/EVChargingLanding";
 
 function App() {
@@ -22,7 +22,6 @@ function App() {
       <Route path="/" element={<EVChargingLanding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      
 
       {/* Legacy Admin Route */}
 

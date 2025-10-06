@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Table, Card, Button, Badge, ProgressBar, Spinner } from "react-bootstrap";
+import {
+  Table,
+  Card,
+  Button,
+  Badge,
+  ProgressBar,
+  Spinner,
+} from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { stationsAPI } from "../../lib/apiServices"; 
+import { stationsAPI } from "../../lib/apiServices";
 
 const StationsList = () => {
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  
   //  Gọi API lấy danh sách trạm sạc
   useEffect(() => {
     const fetchStations = async () => {
@@ -114,11 +120,17 @@ const StationsList = () => {
                   stations.map((station) => (
                     <tr key={station.stationId} className="align-middle">
                       <td>
-                        <div className="fw-semibold text-dark">{station.name}</div>
-                        <div className="text-muted small">{"backend chưa có"}</div>
+                        <div className="fw-semibold text-dark">
+                          {station.name}
+                        </div>
+                        <div className="text-muted small">
+                          {"backend chưa có"}
+                        </div>
                       </td>
 
-                      <td className="text-center">{getStatusBadge(station.status)}</td>
+                      <td className="text-center">
+                        {getStatusBadge(station.status)}
+                      </td>
 
                       <td className="text-center small">
                         <div className="fw-semibold text-success">
@@ -149,10 +161,18 @@ const StationsList = () => {
 
                       <td className="text-center">
                         <div className="d-flex gap-1 justify-content-center">
-                          <Button variant="outline-primary" size="sm" title="Chỉnh sửa">
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            title="Chỉnh sửa"
+                          >
                             <i className="bi bi-pencil"></i>
                           </Button>
-                          <Button variant="outline-secondary" size="sm" title="Cài đặt">
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            title="Cài đặt"
+                          >
                             <i className="bi bi-gear"></i>
                           </Button>
                         </div>
