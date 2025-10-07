@@ -1,0 +1,131 @@
+/* Sidebar Collapsible Styles */
+.sidebar-wrapper {
+  position: fixed;
+  top: 100px;
+  left: 0;
+  width: 260px;
+  height: calc(100vh - 100px);
+  background-color: white;
+  transition: width 0.3s ease;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid #e5eef4;
+}
+
+.sidebar-wrapper.collapsed {
+  width: 80px !important;
+}
+
+.sidebar-wrapper.collapsed .sidebar-item span {
+  display: none;
+}
+
+.sidebar-wrapper.collapsed:hover {
+  width: 260px !important;
+}
+
+.sidebar-wrapper.collapsed:hover .sidebar-item span {
+  display: inline;
+}
+
+/* Toggle Button */
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background-color: #e9ecef;
+  color: #212529;
+}
+
+/* Sidebar Items */
+.sidebar-item {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+  padding: 0 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.sidebar-item:hover {
+  background-color: #f8f9fa;
+}
+
+.sidebar-item.active {
+  background-color: #e3f2fd;
+}
+
+.sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 40px;
+  background-color: #1976d2;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Icon and Label */
+.sidebar-item .icon {
+  font-size: 20px;
+  min-width: 24px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item span {
+  margin-left: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item.active span {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+/* Collapsed state */
+.sidebar-wrapper.collapsed .sidebar-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar-wrapper.collapsed .sidebar-item .icon {
+  margin: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .sidebar-wrapper {
+    transform: translateX(-100%);
+    z-index: 1050;
+  }
+
+  .sidebar-wrapper.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-wrapper.collapsed {
+    transform: translateX(-100%);
+  }
+}

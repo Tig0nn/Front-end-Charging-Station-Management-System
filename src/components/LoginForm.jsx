@@ -1,10 +1,11 @@
 import "tailwindcss";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import CheckCredentials from "../FetchApi/CheckLogin";
+import { useAuth } from "../hooks/useAuth.jsx";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [loginErr, setLoginErr] = useState("");
 
   async function HandleClick(e) {
@@ -16,23 +17,16 @@ function LoginForm() {
       setLoginErr("Vui lòng nhập đủ username và password");
       return;
     }
-
     try {
       const ok = await CheckCredentials(username, password);
       if (ok) {
         navigate("/Admin");
       } else {
-        setLoginErr("Sai tài khoản hoặc mật khẩu!");
+        setLoginErr(result.error || "Đăng nhập thất bại");
       }
     } catch (err) {
-      if (err.message === "NETWORK_ERROR") {
-        alert(
-          "Không thể kết nối tới server (lỗi mạng hoặc server không phản hồi)!"
-        );
-      } else {
-        alert("Lỗi không xác định!");
-      }
-      console.error("Lỗi khi đăng nhập:", err);
+      console.error("Login error:", err);
+      setLoginErr("Lỗi không xác định: " + err.message);
     }
   }
   return (

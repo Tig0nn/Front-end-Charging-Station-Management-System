@@ -6,7 +6,7 @@ import { registerUser } from "../FetchApi/CheckRegister";
 import  "./SignUp.css";
 import "./BackGround.css";
 
-export default function SignupForm() {
+export default function Signup() {
   // Khai báo state 'form' để lưu trữ dữ liệu người dùng nhập vào các ô input.
   // Bao gồm email, password, và confirmed_password.
   const [form, setForm] = useState({
@@ -82,23 +82,61 @@ export default function SignupForm() {
     if (Object.keys(newErrors).length === 0) {
       setIsSubmitting(true);
       try {
-        // Gọi hàm đăng ký từ file CheckRegister.jsx
-        // Hàm này sẽ ném lỗi nếu thất bại, nên ta không cần kiểm tra giá trị trả về
-        await registerUser(email, password);
+        console.log("Sending register request with data:", {
+          email: email.trim(),
+          password: password,
+          confirmPassword: confirmed_password,
+        });
 
-        alert("Đăng ký thành công!");
-        // Tùy chọn: Chuyển người dùng đến trang đăng nhập hoặc trang chủ
-        // navigate("/login");
-      } catch (err) {
-        console.error("Lỗi khi đăng ký:", err.message);
-        alert(err.message);
-        // Hàm registerUser đã chuẩn hóa thông báo lỗi cho bạn
-        // Nếu là lỗi mạng, hiển thị lỗi chung
-        if (err.message.includes("Lỗi mạng")) {
-          setErrors({ form: err.message });
+        // Gọi API đăng ký bằng axios
+        const response = await authAPI.register({
+          email: email.trim(),
+          password: password,
+          confirmPassword: confirmed_password,
+        });
+
+        console.log("Registration successful:", response.data);
+
+        // Check response format
+        if (response.data?.code === 1000) {
+          alert("Đăng ký thành công!");
+          console.log("User created:", response.data.result);
+          // Tùy chọn: Chuyển người dùng đến trang đăng nhập
+          // navigate("/login");
         } else {
-          // Nếu là lỗi từ server (vd: email tồn tại), hiển thị ở ô email
-          setErrors({ email: err.message });
+          throw new Error(response.data?.message || "Đăng ký thất bại");
+        }
+      } catch (err) {
+        console.error("Lỗi khi đăng ký:", err);
+        console.error("Error response:", err.response);
+        console.error("Error status:", err.response?.status);
+        console.error("Error data:", err.response?.data);
+
+        const errorMessage =
+          err.response?.data?.message ||
+          err.response?.data?.result?.message ||
+          err.message ||
+          "Đã có lỗi không xác định";
+
+        // Hiển thị lỗi dựa trên response
+        if (err.response?.status === 400) {
+          // Check if it's email already exists error
+          if (
+            errorMessage.toLowerCase().includes("email") ||
+            errorMessage.toLowerCase().includes("đã tồn tại")
+          ) {
+            setErrors({ email: "Email đã được sử dụng" });
+          } else {
+            setErrors({ form: errorMessage });
+          }
+        } else if (err.response?.status === 401) {
+          setErrors({
+            form: "Không có quyền truy cập - có thể API yêu cầu authentication",
+          });
+        } else if (err.message.includes("Network Error")) {
+          setErrors({ form: "Lỗi mạng: Không thể kết nối đến máy chủ" });
+        } else {
+          setErrors({ form: errorMessage });
         }
       } finally {
         setIsSubmitting(false);
@@ -184,39 +222,30 @@ export default function SignupForm() {
                 {errors.confirmed_password}
               </div>
             )}
-          </Form.Group>
 
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={!agree || isSubmitting}
-          >
-            {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
-          </Button>
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                onChange={handleAgree}
+              />
+              <label className="form-check-label">
+                Tôi đồng ý với các điều khoản và dịch vụ.
+              </label>
+            </div>
 
-          <div className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              onChange={handleAgree}
-            />
-            <label className="form-check-label">
-              Tôi đồng ý với các điều khoản và dịch vụ.
-            </label>
-          </div>
-
-          <div className="login">
-            <label>Đã có tài khoản? </label>{" "}
-            <Link
-              to="/"
-              className="text-[#68ffc2] ml-1 font-semibold hover:underline"
-            >
-              Đăng nhập
-            </Link>
-          </div>
-        </Form>
+            <div className="login">
+              <label>Đã có tài khoản? </label>{" "}
+              <Link
+                to="/login"
+                className="text-[#68ffc2] ml-1 font-semibold hover:underline"
+              >
+                Đăng nhập
+              </Link>
+            </div>
+          </Form>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
