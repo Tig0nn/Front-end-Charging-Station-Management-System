@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./SignUp.css";
 import Button from "react-bootstrap/Button";
+import "bootstrap/dist/css/bootstrap.min.css";
 import Form from "react-bootstrap/Form";
 import { Link } from "react-router-dom";
 import { authAPI } from "../lib/apiServices";
@@ -146,7 +147,7 @@ export default function Signup() {
   };
   return (
     <div className="signup-page">
-      <div className="Background">
+      <div className="background">
         <Link to="/">
           <img className="logo" src="src/assets/image/logo.png" />
         </Link>
