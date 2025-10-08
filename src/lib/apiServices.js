@@ -38,6 +38,11 @@ const realApiServices = {
     getDashboard: () => api.get("/api/reports/dashboard"),
     getRevenue: (period) => api.get(`/api/reports/revenue?period=${period}`),
   },
+
+  // THÊM NHÓM API MỚI CHO GÓI CƯỚC (PLANS)
+  plans: {
+    getAll: () => api.get("/api/plans"),
+  },
 };
 
 // Export the appropriate API based on configuration
@@ -48,6 +53,8 @@ export const authAPI = apiServices.auth;
 export const usersAPI = apiServices.users;
 export const stationsAPI = apiServices.stations;
 export const reportsAPI = apiServices.reports;
+// EXPORT API MỚI
+export const plansAPI = apiServices.plans;
 
 // Helper function to check if using mock API
 export const isMockMode = () => USE_MOCK_API;
