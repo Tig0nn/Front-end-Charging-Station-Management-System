@@ -24,21 +24,15 @@ export default function EVChargingLanding() {
   const features = [
     {
       title: "Gói thuê bao 1",
-      items: [
-        "thông tin",
-      ],
+      items: ["thông tin"],
     },
     {
       title: "Gói thuê bao 2",
-      items: [
-        "thông tin",
-      ],
+      items: ["thông tin"],
     },
     {
       title: "Gói thuê bao 3",
-      items: [
-        "thông tin",
-      ],
+      items: ["thông tin"],
     },
   ];
 
@@ -57,7 +51,7 @@ export default function EVChargingLanding() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
               <div className="w-15 h-15 flex items-center justify-center">
-                <img src="src/icon/logo.png" className="w-15 h-15" />
+                <img src="src/assets/image/logo.png" className="w-15 h-15" />
               </div>
               <span className="text-xl font-bold text-white">Juudensha</span>
             </div>
@@ -83,21 +77,18 @@ export default function EVChargingLanding() {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Link
-                to="/login"
-              >
+              <Link to="/login">
                 <button className="hover:scale-105 font-bold px-4 py-2 text-white/80 hover:text-white transition-colors">
-
                   Đăng nhập
                 </button>
               </Link>
-              <Link
-                to="/signup"
-              >
-                <button className="font-bold !rounded-2xl px-6 py-2 bg-gradient-to-r from-[#2bf0b5] to-[#00ffc6] 
+              <Link to="/signup">
+                <button
+                  className="font-bold !rounded-2xl px-6 py-2 bg-gradient-to-r from-[#2bf0b5] to-[#00ffc6] 
               text-white hover: bg-gradient-to-r from-[#5fffd4] to-[#2bf0b5]
               hover:scale-105
-              transition-[background_0.4s_ease,box-shadow_0.4s_ease,transform_0.1s_ease]">
+              transition-[background_0.4s_ease,box-shadow_0.4s_ease,transform_0.1s_ease]"
+                >
                   Đăng ký
                 </button>
               </Link>
@@ -140,13 +131,16 @@ export default function EVChargingLanding() {
             </h1>
 
             <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Bạn có xe điện? Chúng tôi có trạm sạc! Hãy tin tưởng vào Juudensha.
+              Bạn có xe điện? Chúng tôi có trạm sạc! Hãy tin tưởng vào
+              Juudensha.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <button className="font-bold !rounded-2xl transition-[background_0.4s_ease,box-shadow_0.4s_ease,transform_0.1s_ease] group px-8 py-4 
+              <button
+                className="font-bold !rounded-2xl transition-[background_0.4s_ease,box-shadow_0.4s_ease,transform_0.1s_ease] group px-8 py-4 
               bg-gradient-to-r from-[#2bf0b5] to-[#00ffc6] text-white hover:scale-105 hover: bg-gradient-to-r from-[#5fffd4] to-[#2bf0b5]
-              hover:shadow-[0_0_8px_#00ffc6,0_0_16px_#00ffc6,0_0_24px_#00ffc6] flex items-center">
+              hover:shadow-[0_0_8px_#00ffc6,0_0_16px_#00ffc6,0_0_24px_#00ffc6] flex items-center"
+              >
                 Bắt đầu ngay
               </button>
             </div>
@@ -191,8 +185,7 @@ export default function EVChargingLanding() {
               {
                 icon: BadgeDollarSign,
                 title: "Gói thuê bao linh hoạt",
-                description:
-                  "Nhiều lựa chọn phù hợp với nhu cầu của bạn.",
+                description: "Nhiều lựa chọn phù hợp với nhu cầu của bạn.",
               },
               {
                 icon: MapPin,
@@ -203,8 +196,7 @@ export default function EVChargingLanding() {
               {
                 icon: CreditCard,
                 title: "Thanh toán Đa dạng",
-                description:
-                  "Hỗ trợ nhiều hình thức thanh toán.",
+                description: "Hỗ trợ nhiều hình thức thanh toán.",
               },
               {
                 icon: BarChart3,
@@ -241,7 +233,10 @@ export default function EVChargingLanding() {
       </section>
 
       {/* CTA Section */}
-      <section id="subscription" className=" py-20 bg-gradient-to-r from-blue-600/20 to-green-600/20 backdrop-blur-sm">
+      <section
+        id="subscription"
+        className=" py-20 bg-gradient-to-r from-blue-600/20 to-green-600/20 backdrop-blur-sm"
+      >
         {/* Feature Tabs */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
@@ -260,10 +255,11 @@ export default function EVChargingLanding() {
               <button
                 key={index}
                 onClick={() => setActiveFeature(index)}
-                className={`flex items-center px-6 py-4 rounded-xl transition-all text-left ${activeFeature === index
-                  ? "bg-white/20 text-white shadow-xl"
-                  : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-                  }`}
+                className={`flex items-center px-6 py-4 rounded-xl transition-all text-left ${
+                  activeFeature === index
+                    ? "bg-white/20 text-white shadow-xl"
+                    : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
               >
                 <span className="font-medium">{feature.title}</span>
               </button>
@@ -308,7 +304,11 @@ export default function EVChargingLanding() {
           <div className="flex flex-col md:flex-row items-center gap-12">
             {/* Cột bên trái cho hình ảnh */}
             <div className="md:w-1/2 w-full">
-              <img src="src/icon/img.png" alt="Về chúng tôi" className="rounded-xl shadow-lg w-full" />
+              <img
+                src="src/assets/image/img.png"
+                alt="Về chúng tôi"
+                className="rounded-xl shadow-lg w-full"
+              />
             </div>
 
             {/* Cột bên phải cho văn bản */}
@@ -338,17 +338,14 @@ export default function EVChargingLanding() {
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="">
-                  <img src="src/icon/logo.png" className="w-6 h-6" />
+                  <img src="src/assets/image/logo.png" className="w-6 h-6" />
                 </div>
-                <span className="text-xl font-bold text-white">
-                  Juudensha
-                </span>
+                <span className="text-xl font-bold text-white">Juudensha</span>
               </div>
               <p className="text-white/70">
                 Hệ thống trạm sạc xe điện thông minh, tiện lợi và đáng tin cậy.
               </p>
             </div>
-
 
             <div>
               <h4 className="text-white font-semibold mb-4">Thành viên</h4>

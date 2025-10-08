@@ -1,9 +1,9 @@
 import React from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import "./MainLayout.css"; // Import CSS cho layout
+import "./MainLayoutAdmin.css"; // Import CSS cho layout
 
-const MainLayout = ({ children, showSidebar = true }) => {
+const MainLayoutAdmin = ({ children, showSidebar = true }) => {
   return (
     <div className="admin-layout">
       {/* Header */}
@@ -21,4 +21,4 @@ const MainLayout = ({ children, showSidebar = true }) => {
   );
 };
 
-export default MainLayout;
+export default MainLayoutAdmin;
