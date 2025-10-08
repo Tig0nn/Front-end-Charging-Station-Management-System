@@ -78,7 +78,8 @@ function Login() {
       <label>Chưa có tài khoản? </label>{" "}
       <Link
         to="/signup"
-        className="text-[#68ffc2] ml-1 font-semibold hover:underline"
+        className="ml-1 font-semibold text-[#2bf0b5]! hover:text-[#00ffc6]! no-underline!
+        hover:[text-shadow:0_0_5px_#00ffc6,0_0_10px_#00ffc6,0_0_15px_#00ffc6]!"
       >
         Đăng ký
       </Link>
@@ -132,7 +133,7 @@ function Login() {
 
   // Form đăng nhập
   const loginForm = (
-    <Form onSubmit={HandleClick}>
+    <div className="form-fields">
       <Form.Group className="mb-3" controlId="formBasicEmail">
         <Form.Label style={{ color: "#eaeaea", fontWeight: 600 }}>
           Email
@@ -217,7 +218,7 @@ function Login() {
       >
         {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
       </Button>
-    </Form>
+    </div>
   );
 
   return (

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import "./SignUp.css";
+import "./BackGround.css";
 import Button from "react-bootstrap/Button";
-import "bootstrap/dist/css/bootstrap.min.css";
 import Form from "react-bootstrap/Form";
 import { Link } from "react-router-dom";
 import { authAPI } from "../lib/apiServices";
+import logo from "../assets/image/logo.png";
 
 export default function Signup() {
   // Khai báo state 'form' để lưu trữ dữ liệu người dùng nhập vào các ô input.
@@ -149,7 +150,7 @@ export default function Signup() {
     <div className="signup-page">
       <div className="background">
         <Link to="/">
-          <img className="logo" src="src/assets/image/logo.png" />
+          <img className="logo" src={logo} alt="Logo" />
         </Link>
         <div className="container">
           <Form className="form-container" onSubmit={handleSubmit}>
@@ -228,10 +229,21 @@ export default function Signup() {
               )}
             </Form.Group>
 
+            <Form.Group className="mb-3" controlId="formBasicCheckbox">
+              <Form.Check
+                type="checkbox"
+                id="agree-checkbox"
+                label="Tôi đồng ý với các điều khoản và dịch vụ."
+                checked={agree}
+                onChange={handleAgree}
+              />
+            </Form.Group>
+
             <Button
               variant="primary"
               type="submit"
               disabled={!agree || isSubmitting}
+              className="w-100"
             >
               {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
             </Button>
@@ -244,17 +256,6 @@ export default function Signup() {
                 {errors.form}
               </div>
             )}
-
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                onChange={handleAgree}
-              />
-              <label className="form-check-label">
-                Tôi đồng ý với các điều khoản và dịch vụ.
-              </label>
-            </div>
 
             <div className="login">
               <label>Đã có tài khoản? </label>{" "}
