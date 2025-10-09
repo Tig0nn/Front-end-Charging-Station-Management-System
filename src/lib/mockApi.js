@@ -119,6 +119,25 @@ const mockReports = {
   },
 };
 
+// Dữ liệu mới cho thông tin xe của Driver
+let mockVehicle = {
+  brand: "Tesla",
+  model: "Model 3",
+  year: "2023",
+  licensePlate: "30A-12345",
+  batteryCapacity: "75 kWh",
+  connectorType: "CCS Combo 2",
+};
+
+// Dữ liệu mới cho thông tin cá nhân của Driver
+let mockDriverProfile = {
+  fullName: "Lê Văn Driver",
+  phone: "+84 901 234 569",
+  email: "driver@chargingstation.com",
+  address: "456 Đường ABC, Quận 3, TP.HCM",
+  emergencyContact: "+84 909 888 777",
+};
+
 // Simulate network delay
 const delay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -612,6 +631,28 @@ export const mockApi = {
       };
     },
   },
+  driver: {
+    getProfile: async () => {
+      await delay();
+      return { success: true, data: mockDriverProfile };
+    },
+    updateProfile: async (data) => {
+      await delay();
+      mockDriverProfile = { ...mockDriverProfile, ...data };
+      console.log("Updated Driver Profile:", mockDriverProfile);
+      return { success: true, message: "Cập nhật thành công!" };
+    },
+    getVehicleInfo: async () => {
+      await delay();
+      return { success: true, data: mockVehicle };
+    },
+    updateVehicleInfo: async (data) => {
+      await delay();
+      mockVehicle = { ...mockVehicle, ...data };
+      console.log("Updated Vehicle Info:", mockVehicle);
+      return { success: true, message: "Cập nhật thành công!" };
+    },
+  },
 };
 
 // Export individual APIs for easier import
@@ -622,4 +663,5 @@ export const {
   reports: mockReportsApi,
   revenue: mockRevenueApi,
   systemOverview: mockSystemOverviewApi,
+  driver: mockDriverApi,
 } = mockApi;

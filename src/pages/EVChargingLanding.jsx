@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router";
+// SỬA LẠI IMPORT CHO ĐÚNG
+import { Link } from "react-router-dom";
 import {
   BadgeDollarSign,
   MapPin,
@@ -16,32 +17,60 @@ import {
   X,
   Wifi,
 } from "lucide-react";
+// IMPORT API SERVICE MỚI
+import { plansAPI } from "../lib/apiServices";
 
 export default function EVChargingLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  // STATE ĐỂ LƯU CÁC GÓI THUÊ BAO TỪ API
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const features = [
-    {
-      title: "Gói thuê bao 1",
-      items: ["thông tin"],
-    },
-    {
-      title: "Gói thuê bao 2",
-      items: ["thông tin"],
-    },
-    {
-      title: "Gói thuê bao 3",
-      items: ["thông tin"],
-    },
-  ];
+  // BỎ DỮ LIỆU CỨNG
+  // const features = [ ... ];
 
   useEffect(() => {
+    // HÀM GỌI API ĐỂ LẤY CÁC GÓI THUÊ BAO
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        // Giả sử API này là public và không cần token
+        const response = await plansAPI.getAll();
+        // API có thể trả về mảng trong response.data.result hoặc response.data
+        setPlans(response.data?.result || response.data || []);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch subscription plans:", err);
+        // Nếu API yêu cầu quyền admin, nó sẽ gây lỗi ở đây
+        // và chúng ta sẽ hiển thị thông báo lỗi thay vì bị redirect
+        setError("Không thể tải được các gói thuê bao. Vui lòng thử lại sau.");
+        setPlans([]); // Đảm bảo plans là mảng rỗng khi có lỗi
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+  useEffect(() => {
+    if (plans.length === 0) return;
     const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % features.length);
+      setActiveFeature((prev) => (prev + 1) % plans.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [features.length]);
+  }, [plans.length]);
+
+  // Hàm helper để định dạng tiền tệ
+  const formatCurrency = (amount) => {
+    if (typeof amount !== "number") return "N/A";
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
@@ -249,43 +278,68 @@ export default function EVChargingLanding() {
             Các gói thuê bao mang đến nhiều ưu đãi cho bạn.
           </p>
         </div>
-        <div className="flex flex-col lg:flex-row justify-center mb-8">
-          <div className="flex flex-col sm:flex-row lg:flex-col space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-0 lg:space-y-4 lg:mr-8 mb-8 lg:mb-0">
-            {features.map((feature, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveFeature(index)}
-                className={`flex items-center px-6 py-4 rounded-xl transition-all text-left ${
-                  activeFeature === index
-                    ? "bg-white/20 text-white shadow-xl"
-                    : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                <span className="font-medium">{feature.title}</span>
-              </button>
-            ))}
-          </div>
+        {loading && (
+          <div className="text-center text-white">Đang tải các gói...</div>
+        )}
+        {error && <div className="text-center text-red-400 px-4">{error}</div>}
+        {!loading && !error && plans.length > 0 && (
+          <div className="flex flex-col lg:flex-row justify-center mb-8">
+            <div className="flex flex-col sm:flex-row lg:flex-col space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-0 lg:space-y-4 lg:mr-8 mb-8 lg:mb-0">
+              {/* HIỂN THỊ TÊN CÁC GÓI */}
+              {plans.map((plan, index) => (
+                <button
+                  key={plan.planId || index}
+                  onClick={() => setActiveFeature(index)}
+                  className={`flex items-center px-6 py-4 rounded-xl transition-all text-left ${
+                    activeFeature === index
+                      ? "bg-white/20 text-white shadow-xl"
+                      : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <span className="font-medium">{plan.name}</span>
+                </button>
+              ))}
+            </div>
 
-          {/* Feature Content */}
-          <div className="flex-1 max-w-2xl">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="flex items-center mb-6">
-                <h3 className="text-2xl font-bold text-white">
-                  {features[activeFeature].title}
-                </h3>
-              </div>
+            {/* Feature Content */}
+            <div className="flex-1 max-w-2xl">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+                <div className="flex items-center mb-6">
+                  <h3 className="text-2xl font-bold text-white">
+                    {plans[activeFeature]?.name}
+                  </h3>
+                </div>
 
-              <div className="space-y-4">
-                {features[activeFeature].items.map((item, itemIndex) => (
-                  <div key={itemIndex} className="flex items-center">
-                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-green-400 rounded-full mr-4 flex-shrink-0"></div>
-                    <span className="text-white/90">{item}</span>
-                  </div>
-                ))}
+                {/* HIỂN THỊ CHI TIẾT GÓI */}
+                <div className="space-y-4 text-white/90">
+                  <p>
+                    <strong>Loại thanh toán:</strong>{" "}
+                    {plans[activeFeature]?.billingType ===
+                    "MONTHLY_SUBSCRIPTION"
+                      ? "Theo tháng"
+                      : plans[activeFeature]?.billingType}
+                  </p>
+                  <p>
+                    <strong>Phí hàng tháng:</strong>{" "}
+                    {formatCurrency(plans[activeFeature]?.monthlyFee)}
+                  </p>
+                  <p>
+                    <strong>Giá mỗi kWh:</strong>{" "}
+                    {formatCurrency(plans[activeFeature]?.pricePerKwh)}
+                  </p>
+                  <p>
+                    <strong>Giá mỗi phút:</strong>{" "}
+                    {formatCurrency(plans[activeFeature]?.pricePerMinute)}
+                  </p>
+                  <p>
+                    <strong>Quyền lợi khác:</strong>{" "}
+                    {plans[activeFeature]?.benefits}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </section>
       <section id="about" className="py-12 bg-black/20 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
