@@ -28,6 +28,7 @@ const realApiServices = {
   },
 
   plans: {
+    getAll: () => api.get("/api/plans"),
     // Create general plan
     create: (planData) => api.post("/api/plans", planData),
     // Create prepaid plan
@@ -36,6 +37,29 @@ const realApiServices = {
     createPostpaid: (planData) => api.post("/api/plans/postpaid", planData),
     // Create VIP plan
     createVip: (planData) => api.post("/api/plans/vip", planData),
+    // Get user's current subscription
+    getCurrentSubscription: () => api.get("/api/plans/current"),
+    // Get all available plans
+    getAvailable: () => api.get("/api/plans/available"),
+  },
+
+  payments: {
+    // Get user's payment methods
+    getPaymentMethods: () => api.get("/api/payments/methods"),
+    // Add new payment method
+    addPaymentMethod: (methodData) =>
+      api.post("/api/payments/methods", methodData),
+    // Remove payment method
+    removePaymentMethod: (methodId) =>
+      api.delete(`/api/payments/methods/${methodId}`),
+    // Set default payment method
+    setDefaultPaymentMethod: (methodId) =>
+      api.patch(`/api/payments/methods/${methodId}/default`),
+    // Process payment
+    processPayment: (paymentData) =>
+      api.post("/api/payments/process", paymentData),
+    // Get payment history
+    getHistory: () => api.get("/api/payments/history"),
   },
 
   revenue: {
@@ -105,6 +129,7 @@ export const authAPI = apiServices.auth;
 export const usersAPI = apiServices.users;
 export const systemOverviewAPI = apiServices.systemOverview;
 export const plansAPI = apiServices.plans;
+export const paymentsAPI = apiServices.payments;
 export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;
 

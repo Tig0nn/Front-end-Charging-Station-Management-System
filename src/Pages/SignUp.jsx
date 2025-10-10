@@ -4,7 +4,7 @@ import "./BackGround.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Link } from "react-router-dom";
-import { authAPI } from "../lib/apiServices";
+import { usersAPI } from "../lib/apiServices";
 import logo from "../assets/image/logo.png";
 
 export default function Signup() {
@@ -90,7 +90,7 @@ export default function Signup() {
         });
 
         // Gọi API đăng ký bằng axios
-        const response = await authAPI.register({
+        const response = await usersAPI.register({
           email: email.trim(),
           password: password,
           confirmPassword: confirmed_password,
