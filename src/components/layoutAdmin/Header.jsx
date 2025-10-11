@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth.jsx";
 import "./Header.css";
 import { getCurrentRole } from "../../lib/auth.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import logo from "../../assets/image/logo.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ const Header = () => {
       >
         {/* White background bar */}
         <div
-          className="position-absolute top-0 start-0 bg-white"
+          className="position-absolute top-0 start-0 bg-[#112240]"
           style={{ width: "100%", height: "100px", zIndex: 1 }}
         />
 
@@ -66,19 +67,17 @@ const Header = () => {
         >
           {/* Logo and Brand */}
           <Navbar.Brand
-            
+
             className="d-flex align-items-center gap-2 me-4"
             style={{ marginTop: "11px" }}
           >
-            <div
-              className="bg-primary rounded"
+            <img src={logo} alt="Logo"
+              className="rounded"
               style={{
-                width: "36px",
-                height: "36px",
-                backgroundImage: "url(/iconfinder-vector-65-09-473792-1.png)",
-                backgroundSize: "cover",
-                backgroundPosition: "50% 50%",
-                backgroundColor: "var(--primary-color)",
+                width: "80px",
+                height: "80px",
+                backgroundColor: "transparent",
+                pading: "10px",
               }}
             />
             <span
@@ -87,11 +86,11 @@ const Header = () => {
                 fontSize: "25px",
                 lineHeight: "normal",
                 marginTop: "4px",
-                color: "var(--primary-2)",
-                fontWeight: "normal",
+                color: "#2bf0b5",
+                fontWeight: "bold",
               }}
             >
-              BankDash.
+              Juudensha
             </span>
           </Navbar.Brand>
 
@@ -105,8 +104,8 @@ const Header = () => {
               <div className="d-flex align-items-center gap-3">
                 {/* User Profile Card */}
                 <div
-                  className="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-2 d-none d-md-flex"
-                  style={{ marginTop: "5px" }}
+                  className="d-flex align-items-center gap-2 bg-[#1e293b] rounded-pill px-3 py-2 d-none d-md-flex"
+                  style={{ marginTop: "5px" }}  // hoặc dùng text-[#2bf0b5] cho Tailwind
                 >
                   {/* User Info */}
                   <div
@@ -114,12 +113,12 @@ const Header = () => {
                     style={{ lineHeight: "1.2" }}
                   >
                     <span
-                      className="text-dark fw-medium"
-                      style={{ fontSize: "14px" }}
+                      className="fw-medium"
+                      style={{ fontSize: "14px" , color: "#2bf0b5"}}
                     >
                       {getUserName()}
                     </span>
-                    <span className="text-muted" style={{ fontSize: "12px" }}>
+                    <span className="" style={{ fontSize: "12px", color: "#64cfafff" }}>
                       {getUserRole()}
                     </span>
                   </div>
@@ -141,33 +140,10 @@ const Header = () => {
                 </div>
 
                 {/* Logout Button */}
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="d-flex align-items-center gap-2"
-                  style={{
-                    marginTop: "5px",
-                    borderRadius: "25px",
-                    padding: "8px 16px",
-                    fontWeight: "500",
-                    border: "2px solid #dc3545",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#dc3545";
-                    e.target.style.color = "white";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                    e.target.style.color = "#dc3545";
-                  }}
-                >
-                  <span style={{ fontSize: "14px" }}>
-                    <i class="bi bi-box-arrow-right"></i>
-                  </span>
-                  <span className="d-none d-sm-inline">Đăng xuất</span>
-                </Button>
+                <button className="logout-button" onClick={handleLogout}>
+                  <i className="bi bi-box-arrow-right"></i>
+                  <span>Đăng xuất</span>
+                </button>
               </div>
             </Nav>
           </Navbar.Collapse>

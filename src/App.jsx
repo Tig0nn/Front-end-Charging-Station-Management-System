@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./Pages/Login";
 import Signup from "./Pages/SignUp";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
@@ -14,6 +14,26 @@ import HistoryPage from "./Pages/driver/HistoryPage";
 import ProfileInfoPage from "./Pages/driver/ProfileInfoPage";
 import VehicleInfoPage from "./Pages/driver/VehicleInfoPage";
 import PaymentPage from "./Pages/driver/PaymentPage";
+import AddUserInfoPage from "./Pages/AddUserInfoPage";
+import { useAuth } from "./hooks/useAuth";
+
+// Guard nội tuyến: chỉ cho Driver vào khi đã có phone
+function RequireDriverInfo({ children }) {
+  const { user, isAuthenticated } = useAuth();
+  const loc = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: loc }} replace />;
+  }
+
+  const role = String(user?.role || "").toUpperCase();
+  const hasPhone = !!(user?.phone && String(user.phone).trim());
+
+  if (role === "DRIVER" && !hasPhone && loc.pathname !== "/driver/add-info") {
+    return <Navigate to="/driver/add-info" replace />;
+  }
+  return children;
+}
 
 function App() {
   return (
@@ -23,9 +43,10 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      {/* Legacy Admin Route */}
+      {/* Trang bổ sung thông tin: để ngoài guard */}
+      <Route path="/driver/add-info" element={<AddUserInfoPage />} />
 
-      {/* New Admin Routes with Layout */}
+      {/* Admin */}
       <Route
         path="/admin/*"
         element={
@@ -53,29 +74,28 @@ function App() {
           </MainLayoutAdmin>
         }
       />
+
+      {/* Driver: bọc bằng guard */}
       <Route
         path="/driver/*"
         element={
-          <MainLayoutDriver>
-            <Routes>
-              {/* Route mặc định sẽ là trang bản đồ */}
-              <Route path="/" element={<MapPage />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/session" element={<ChargingSessionPage />} />
-              <Route path="/history" element={<HistoryPage />} />
-
-              {/* Các route con của trang hồ sơ */}
-              <Route path="/profile/info" element={<ProfileInfoPage />} />
-              <Route path="/profile/vehicle" element={<VehicleInfoPage />} />
-              <Route path="/profile/payment" element={<PaymentPage />} />
-
-              {/* 404 Page for Driver section */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </MainLayoutDriver>
+          <RequireDriverInfo>
+            <MainLayoutDriver>
+              <Routes>
+                <Route path="/" element={<MapPage />} />
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/session" element={<ChargingSessionPage />} />
+                <Route path="/history" element={<HistoryPage />} />
+                <Route path="/profile/info" element={<ProfileInfoPage />} />
+                <Route path="/profile/vehicle" element={<VehicleInfoPage />} />
+                <Route path="/profile/payment" element={<PaymentPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayoutDriver>
+          </RequireDriverInfo>
         }
       />
-      {/* Catch all other routes */}
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

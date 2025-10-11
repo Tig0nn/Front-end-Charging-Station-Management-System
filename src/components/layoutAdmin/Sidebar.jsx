@@ -55,7 +55,7 @@ const Sidebar = () => {
         left: "0",
         width: showExpanded ? "260px" : "80px",
         height: "calc(100vh - 100px)",
-        backgroundColor: "white",
+        backgroundColor: "#112240",
         transition: "width 0.3s ease",
         zIndex: 1000,
         boxShadow: "2px 0 10px rgba(0,0,0,0.1)",
@@ -80,7 +80,7 @@ const Sidebar = () => {
               cursor: "pointer",
               padding: showExpanded ? "0 16px" : "0",
               borderRadius: "8px",
-              backgroundColor: isActive(item.path) ? "#e3f2fd" : "transparent",
+              backgroundColor: isActive(item.path) ? "#303d56ff" : "transparent",
               transition: "all 0.2s ease",
               justifyContent: showExpanded ? "flex-start" : "center",
             }}
@@ -92,7 +92,8 @@ const Sidebar = () => {
                 fontSize: "20px",
                 minWidth: "24px",
                 textAlign: "center",
-                color: isActive(item.path) ? "#1976d2" : "#666",
+                textShadow: isActive(item.path) ? "0 0 5px #00ffc6, 0 0 10px #00ffc6, 0 0 15px #00ffc6" : "none",
+                color: isActive(item.path) ? "#04e088ff" : "#2bf0b5",
               }}
             >
               <i className={`bi ${item.icon}`}></i>
@@ -103,7 +104,7 @@ const Sidebar = () => {
               <span
                 style={{
                   marginLeft: "12px",
-                  color: isActive(item.path) ? "#1976d2" : "#666",
+                  color: isActive(item.path) ? "#04e088ff" : "#2bf0b5",
                   fontWeight: isActive(item.path) ? "600" : "500",
                   fontSize: "16px",
                   whiteSpace: "nowrap",
@@ -122,7 +123,7 @@ const Sidebar = () => {
                   left: "0",
                   width: "4px",
                   height: "40px",
-                  backgroundColor: "#1976d2",
+                  backgroundColor: "#04e088ff",
                   borderRadius: "0 4px 4px 0",
                 }}
               />

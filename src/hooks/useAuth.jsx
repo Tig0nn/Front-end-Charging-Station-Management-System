@@ -56,28 +56,21 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const response = await authAPI.login(credentials);
 
-      // Handle both mock API and real API response formats
       const token = response.data.result.token;
       const userData = response.data.result.userInfo;
 
-      if (!token) {
-        throw new Error("No token received from server");
-      }
+      if (!token) throw new Error("No token received from server");
 
       setAuthToken(token);
       setUser(userData);
       setIsAuthenticated(true);
-
-      // Store user data in localStorage for persistence
       localStorage.setItem("user", JSON.stringify(userData));
 
-      return { success: true, user: userData };
+      // trả về cờ needsProfile nếu thiếu phone
+      return { success: true, user: userData, needsProfile: !userData?.phone };
     } catch (error) {
       console.error("Login error:", error);
-      return {
-        success: false,
-        error: error.message || "Login failed",
-      };
+      return { success: false, error: error.message || "Login failed" };
     } finally {
       setLoading(false);
     }

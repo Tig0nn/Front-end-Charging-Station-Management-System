@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import "./AddUserInfoPage.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { updateUserInfo } from "../checkUserData";
+import { useNavigate } from "react-router-dom";
+import { authAPI } from "../lib/apiServices"; // để refetch profile
+import { useAuth } from "../hooks/useAuth"; // để cập nhật context user
 
 export default function AddUserInfoPage() {
   const [form, setForm] = useState({
@@ -16,6 +18,8 @@ export default function AddUserInfoPage() {
   const [agree, setAgree] = useState(false); //trạng thái checkbox
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { user, setUser } = useAuth?.() || {};
 
   const handleAgree = (e) => {
     setAgree(e.target.checked); //giá trị true/false của checkbox
@@ -75,28 +79,34 @@ export default function AddUserInfoPage() {
     if (Object.keys(newErrors).length === 0) {
       setIsSubmitting(true);
       try {
-        // Giả sử bạn lưu token trong localStorage sau khi đăng nhập
 
-        // Gọi hàm từ file dịch vụ. Nếu thành công, code sẽ chạy tiếp.
-        // Nếu thất bại, nó sẽ nhảy vào khối catch.
-        await updateUserInfo(last_name, first_name, gender, dob, phoneNum);
+        // Refetch profile để lấy user mới nhất
+        const prof = await authAPI.getProfile().catch(() => null);
+        const updatedUser =
+          prof?.data?.result || {
+            ...(user || {}),
+            lastName: last_name.trim(),
+            firstName: first_name.trim(),
+            gender: Number(gender),
+            dateOfBirth: dob,
+            phone: phoneNum.trim(),
+          };
 
-        alert("Cập nhật thông tin thành công!");
-        // Tùy chọn: Chuyển người dùng đến trang chủ hoặc trang cá nhân
-        // navigate("/");
+        // Cập nhật context + localStorage (quan trọng để guard không redirect lại)
+        if (typeof setUser === "function") setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        // Điều hướng về trang driver
+        navigate("/driver"); // hoặc "/driver/dashboard" tùy router của bạn
       } catch (err) {
         console.error("Lỗi khi cập nhật thông tin:", err);
-        // Kiểm tra xem có phải lỗi mạng không
         if (
-          err.message.includes("Failed to fetch") ||
-          err.message.includes("NetworkError")
+          err.message?.includes("Failed to fetch") ||
+          err.message?.includes("NetworkError")
         ) {
-          alert(
-            "Không thể kết nối tới server (lỗi mạng hoặc server không phản hồi)!"
-          );
+          alert("Không thể kết nối tới server (lỗi mạng hoặc server không phản hồi)!");
         } else {
-          // Hiển thị lỗi cụ thể từ server (vd: token hết hạn, dữ liệu sai...)
-          alert(err.message);
+          alert(err.response?.data?.message || err.message || "Cập nhật thất bại");
         }
       } finally {
         setIsSubmitting(false);
