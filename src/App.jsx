@@ -19,17 +19,29 @@ import { useAuth } from "./hooks/useAuth";
 
 // Guard nội tuyến: chỉ cho Driver vào khi đã có phone
 function RequireDriverInfo({ children }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user: ctxUser, isAuthenticated } = useAuth();
   const loc = useLocation();
+  const storedUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; } })();
+  const user = ctxUser ?? storedUser;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: loc }} replace />;
+  if (!isAuthenticated) return <Navigate to="/login" state={{ from: loc }} replace />;
+
+  // Cho phép trang add-info
+  if (loc.pathname.startsWith("/driver/add-info")) return children;
+
+  // BYPASS 1 lần sau khi lưu thành công
+  const bypass = sessionStorage.getItem("bypassDriverInfoOnce") === "1" || loc.state?.from === "add-info-success";
+  if (bypass) {
+    sessionStorage.removeItem("bypassDriverInfoOnce");
+    return children;
   }
 
   const role = String(user?.role || "").toUpperCase();
-  const hasPhone = !!(user?.phone && String(user.phone).trim());
+  const phone =
+    user?.phone ?? user?.phoneNum ?? user?.phone_number ?? user?.phoneNumber ?? "";
+  const hasPhone = !!String(phone).trim();
 
-  if (role === "DRIVER" && !hasPhone && loc.pathname !== "/driver/add-info") {
+  if (role === "DRIVER" && !hasPhone) {
     return <Navigate to="/driver/add-info" replace />;
   }
   return children;

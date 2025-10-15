@@ -71,9 +71,21 @@
 }
 
 .login-page .form-control::placeholder {
+  color: #6bfbdc;       /* màu khi hiện */
+  opacity: 0;           /* ẩn mặc định */
+  transition: opacity 0.2s ease;
+}
+
+.login-page .form-control:focus::placeholder {
+  opacity: 0.75;        /* hiện khi focus */
+}
+
+.login-page .form-control::placeholder:focus {
   color: #6bfbdc !important;
   opacity: 0.7;
 }
+
+
 
 .login-page .form-label {
   color: #ecf0f1 !important;

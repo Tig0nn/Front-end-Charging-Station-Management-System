@@ -28,3 +28,14 @@
   position: relative;
   z-index: 1;
 }
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Ensure this overrides any conflicting background styles */
+.background .fade-in-up {
+  position: relative;
+  z-index: 1;
+}

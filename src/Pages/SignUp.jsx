@@ -3,7 +3,7 @@ import "./SignUp.css";
 import "./BackGround.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // <— thêm useNavigate
 import { usersAPI } from "../lib/apiServices";
 import logo from "../assets/image/logo.png";
 
@@ -23,6 +23,7 @@ export default function Signup() {
   // Nó cập nhật state 'form' với giá trị mới.
   // [e.target.name] giúp cập nhật đúng trường (email, password,...) dựa vào thuộc tính 'name' của input.
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate(); // <— khởi tạo navigate
   const handleChangeValue = (e) => {
     setForm({
       ...form,
@@ -98,12 +99,10 @@ export default function Signup() {
 
         console.log("Registration successful:", response.data);
 
-        // Check response format
         if (response.data?.code === 1000) {
-          alert("Đăng ký thành công!");
-          console.log("User created:", response.data.result);
-          // Tùy chọn: Chuyển người dùng đến trang đăng nhập
-          // navigate("/login");
+          alert("Đăng ký thành công! Vui lòng đăng nhập."); 
+          navigate("/login", { replace: true }); // <— điều hướng sang login
+          return;
         } else {
           throw new Error(response.data?.message || "Đăng ký thất bại");
         }
