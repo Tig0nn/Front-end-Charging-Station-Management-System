@@ -51,7 +51,7 @@ function Login() {
   );
 
   return (
-    <div className="flex items-center    justify-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]  ">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]  ">
       <div className="absolute top-4 left-4 w-24">
               <Link
         to="/"

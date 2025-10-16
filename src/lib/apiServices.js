@@ -27,9 +27,9 @@ const realApiServices = {
 
   stations: {
     getAll: (page = 1, limit = 10) =>
-      api.get(`/api/stations/overview?page=${page}&limit=${limit}`),
+      api.get(`/api/stations?page=${page}&limit=${limit}`),
     getById: (id) => api.get(`/api/stations/${id}`),
-    create: (stationData) => api.post("/api/stations", stationData),
+    create: (stationData) => api.post("/api/stations/create", stationData),
     update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),
     delete: (id) => api.delete(`/api/stations/${id}`),
   },
@@ -38,6 +38,25 @@ const realApiServices = {
     getDashboard: () => api.get("/api/reports/dashboard"),
     getRevenue: (period) => api.get(`/api/reports/revenue?period=${period}`),
   },
+
+  plans: {
+    getAll: () => api.get("/api/plans"),
+    // Create general plan
+    create: (planData) => api.post("/api/plans", planData),
+    // Create prepaid plan
+    createPrepaid: (planData) => api.post("/api/plans/prepaid", planData),
+    // Create postpaid plan
+    createPostpaid: (planData) => api.post("/api/plans/postpaid", planData),
+    // Create VIP plan
+    createVip: (planData) => api.post("/api/plans/vip", planData),
+    // Get user's current subscription
+    getCurrentSubscription: () => api.get("/api/plans/current"),
+    // Get all available plans
+    getAvailable: () => api.get("/api/plans/available"),
+  },
+  staff:{
+    getAllStaffs: () => api.get("/api/stations/staff/all"),
+  }
 };
 
 // Export the appropriate API based on configuration
@@ -48,6 +67,8 @@ export const authAPI = apiServices.auth;
 export const usersAPI = apiServices.users;
 export const stationsAPI = apiServices.stations;
 export const reportsAPI = apiServices.reports;
+export const plansAPI = apiServices.plans;
+export const staffAPI = apiServices.staff;
 
 // Helper function to check if using mock API
 export const isMockMode = () => USE_MOCK_API;
