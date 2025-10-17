@@ -27,13 +27,33 @@ const Header = () => {
 
     // Fallback to localStorage
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (storedUser.fullName) return storedUser.fullName;
-      if (storedUser.firstName && storedUser.lastName)
-        return `${storedUser.firstName} ${storedUser.lastName}`;
-      if (storedUser.firstName) return storedUser.firstName;
-      if (storedUser.name) return storedUser.name;
-      if (storedUser.email) return storedUser.email.split("@")[0];
+      // Try to get from 'user' key first (single object)
+      let storedUser = localStorage.getItem("user");
+      if (storedUser && storedUser !== "null") {
+        storedUser = JSON.parse(storedUser);
+        if (storedUser.fullName) return storedUser.fullName;
+        if (storedUser.firstName && storedUser.lastName)
+          return `${storedUser.firstName} ${storedUser.lastName}`;
+        if (storedUser.firstName) return storedUser.firstName;
+        if (storedUser.name) return storedUser.name;
+        if (storedUser.email) return storedUser.email.split("@")[0];
+      }
+
+      // Try to get from 'users' key (might be array)
+      let storedUsers = localStorage.getItem("users");
+      if (storedUsers && storedUsers !== "null") {
+        storedUsers = JSON.parse(storedUsers);
+        // If it's an array, get the first user
+        const currentUser = Array.isArray(storedUsers)
+          ? storedUsers[0]
+          : storedUsers;
+        if (currentUser?.fullName) return currentUser.fullName;
+        if (currentUser?.firstName && currentUser?.lastName)
+          return `${currentUser.firstName} ${currentUser.lastName}`;
+        if (currentUser?.firstName) return currentUser.firstName;
+        if (currentUser?.name) return currentUser.name;
+        if (currentUser?.email) return currentUser.email.split("@")[0];
+      }
 
       // Default fallback
       return "User";
@@ -45,14 +65,42 @@ const Header = () => {
   // Get user role from useAuth context first, then fallback to localStorage
   const getUserRole = () => {
     // First try to get from useAuth context
-    if (user?.role) return user.role;
+    const cleanRole = (role) => {
+      if (!role) return "User";
+      // Remove quotes if present
+      return role.replace(/^"(.*)"$/, "$1");
+    };
+    if (user?.role) return cleanRole(user.role);
 
     // Fallback to localStorage
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      return storedUser.role || getCurrentRole() || "User";
+      // Try to get from 'role' key directly
+      const storedRole = localStorage.getItem("role");
+      if (storedRole && storedRole !== "null") {
+        return cleanRole(storedRole);
+      }
+
+      // Try to get from 'user' key first (single object)
+      let storedUser = localStorage.getItem("user");
+      if (storedUser && storedUser !== "null") {
+        storedUser = JSON.parse(storedUser);
+        if (storedUser.role) return cleanRole(storedUser.role);
+      }
+
+      // Try to get from 'users' key (might be array)
+      let storedUsers = localStorage.getItem("users");
+      if (storedUsers && storedUsers !== "null") {
+        storedUsers = JSON.parse(storedUsers);
+        // If it's an array, get the first user
+        const currentUser = Array.isArray(storedUsers)
+          ? storedUsers[0]
+          : storedUsers;
+        if (currentUser?.role) return cleanRole(currentUser.role);
+      }
+
+      return cleanRole(getCurrentRole()) || "User";
     } catch {
-      return getCurrentRole() || "User";
+      return cleanRole(getCurrentRole()) || "User";
     }
   };
   return (
@@ -126,7 +174,10 @@ const Header = () => {
                     >
                       {getUserName()}
                     </span>
-                    <span className="text-muted" style={{ fontSize: "12px" }}>
+                    <span
+                      className="text-muted text-capitalize"
+                      style={{ fontSize: "12px" }}
+                    >
                       {getUserRole()}
                     </span>
                   </div>

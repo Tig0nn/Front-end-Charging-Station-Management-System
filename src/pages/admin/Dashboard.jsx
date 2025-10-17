@@ -15,16 +15,44 @@ const Dashboard = () => {
     if (user?.fullName) return user.fullName;
     if (user?.firstName && user?.lastName)
       return `${user.firstName} ${user.lastName}`;
+    if (user?.firstName) return user.firstName;
+    if (user?.name) return user.name;
     if (user?.email) return user.email.split("@")[0];
 
+    // Fallback to localStorage
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (storedUser.fullName) return storedUser.fullName;
-      if (storedUser.email) return storedUser.email.split("@")[0];
+      // Try to get from 'user' key first (single object)
+      let storedUser = localStorage.getItem("user");
+      if (storedUser && storedUser !== "null") {
+        storedUser = JSON.parse(storedUser);
+        if (storedUser.fullName) return storedUser.fullName;
+        if (storedUser.firstName && storedUser.lastName)
+          return `${storedUser.firstName} ${storedUser.lastName}`;
+        if (storedUser.firstName) return storedUser.firstName;
+        if (storedUser.name) return storedUser.name;
+        if (storedUser.email) return storedUser.email.split("@")[0];
+      }
+
+      // Try to get from 'users' key (might be array)
+      let storedUsers = localStorage.getItem("users");
+      if (storedUsers && storedUsers !== "null") {
+        storedUsers = JSON.parse(storedUsers);
+        // If it's an array, get the first user
+        const currentUser = Array.isArray(storedUsers) ? storedUsers[0] : storedUsers;
+        if (currentUser?.fullName) return currentUser.fullName;
+        if (currentUser?.firstName && currentUser?.lastName)
+          return `${currentUser.firstName} ${currentUser.lastName}`;
+        if (currentUser?.firstName) return currentUser.firstName;
+        if (currentUser?.name) return currentUser.name;
+        if (currentUser?.email) return currentUser.email.split("@")[0];
+      }
+
+      // Default fallback
+      return "User";
     } catch (error) {
       console.log("Error reading stored user:", error);
+      return "User";
     }
-    return "User";
   };
 
   // 🚀 Lấy dữ liệu tổng quan từ API /api/overview

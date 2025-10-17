@@ -36,17 +36,19 @@ export default function EVChargingLanding() {
     const fetchPlans = async () => {
       try {
         setLoading(true);
-        // Giả sử API này là public và không cần token
         const response = await plansAPI.getAll();
-        // API có thể trả về mảng trong response.data.result hoặc response.data
         setPlans(response.data?.result || response.data || []);
         setError(null);
       } catch (err) {
         console.error("Failed to fetch subscription plans:", err);
-        // Nếu API yêu cầu quyền admin, nó sẽ gây lỗi ở đây
-        // và chúng ta sẽ hiển thị thông báo lỗi thay vì bị redirect
-        setError("Không thể tải được các gói thuê bao. Vui lòng thử lại sau.");
-        setPlans([]); // Đảm bảo plans là mảng rỗng khi có lỗi
+        
+        // Hiển thị lỗi rõ ràng
+        if (err?.response?.status === 401) {
+          setError("⚠️ API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access.");
+        } else {
+          setError("Không thể tải được các gói thuê bao. Vui lòng thử lại sau.");
+        }
+        setPlans([]);
       } finally {
         setLoading(false);
       }

@@ -14,6 +14,7 @@ import HistoryPage from "./Pages/driver/HistoryPage";
 import ProfileInfoPage from "./Pages/driver/ProfileInfoPage";
 import VehicleInfoPage from "./Pages/driver/VehicleInfoPage";
 import PaymentPage from "./Pages/driver/PaymentPage";
+import AddStation from "./Pages/admin/AddStation";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
 
               {/* Stations Routes */}
               <Route path="/stations" element={<StationsList />} />
+              <Route path="/stations/add" element={<AddStation />} />
 
               {/* Users Routes */}
               <Route path="/users" element={<UsersList />} />

@@ -136,6 +136,7 @@ const realApiServices = {
 
     // Lấy danh sách nhân viên chưa gán trạm
     getUnassignedStaff: () => api.get("/api/stations/staff/unassigned"),
+    update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),
   },
 
   // =========================
@@ -190,12 +191,17 @@ const realApiServices = {
       return api.get(`/api/vehicles/driver/${driverId}`);
     },
   },
+
+  staff: {
+    getAllStaffs: () => api.get("/api/stations/staff/all"),
+  },
 };
 
 // Export the appropriate API based on configuration
 export const apiServices = USE_MOCK_API ? mockApi : realApiServices;
 
 // Individual exports for easier imports
+export const staffAPI = apiServices.staff;
 export const authAPI = apiServices.auth;
 export const usersAPI = apiServices.users;
 export const systemOverviewAPI = apiServices.systemOverview;

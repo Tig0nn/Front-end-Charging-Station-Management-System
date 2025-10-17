@@ -177,7 +177,7 @@ export default function MapPage() {
       <div className="map-sidebar">
         {/* Station count */}
         <div className="station-count-header">
-          <h3 className="station-count-title">Trạm sạc gần đây</h3>
+          <h3 className="station-count-title">Trạm sạc</h3>
           <span className="station-count-badge">
             {filteredStations.length} trạm
           </span>
