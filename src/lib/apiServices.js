@@ -15,12 +15,30 @@ const realApiServices = {
 
   users: {
     register: (userData) => api.post("/api/users/register", userData),
-    getDriverInfo: () => api.get("/api/users/driver/myInfo"),
-    updateDriverInfo: (driverData) =>
-      api.patch("/api/users/driver/myInfo", driverData),
+    getDriverInfo: () => {
+      console.log(
+        "🔍 Calling getDriverInfo endpoint: /api/users/driver/myInfo"
+      );
+      return api.get("/api/users/driver/myInfo");
+    },
+    updateDriverInfo: (driverData) => {
+      console.log(
+        "🔄 Calling updateDriverInfo endpoint: /api/users/driver/myInfo"
+      );
+      console.log("📝 Data to update:", driverData);
+      return api.patch("/api/users/driver/myInfo", driverData);
+    },
+
+    // Get user profile by ID (requires Bearer token)
     getUserById: (userId) => api.get(`/api/users/${userId}`),
+
+    // Admin endpoints
     getAll: () => api.get("/api/users"), // Get all drivers (Admin only)
-    delete: (id) => api.delete(`/api/users/${id}`),
+    deleteUser: (id) => api.delete(`/api/users/${id}`),
+
+    // Update specific user by ID (Admin only)
+    updateUserById: (userId, userData) =>
+      api.patch(`/api/users/${userId}`, userData),
   },
 
   systemOverview: {
@@ -119,6 +137,59 @@ const realApiServices = {
     // Lấy danh sách nhân viên chưa gán trạm
     getUnassignedStaff: () => api.get("/api/stations/staff/unassigned"),
   },
+
+  // =========================
+  // 🚗 Vehicles API Services
+  // =========================
+  vehicles: {
+    // Lấy danh sách tất cả xe của driver hiện tại
+    getMyVehicles: () => {
+      console.log(
+        "🔍 Calling getMyVehicles endpoint: /api/vehicles/my-vehicles"
+      );
+      return api.get("/api/vehicles/my-vehicles");
+    },
+
+    // Tạo xe mới cho driver hiện tại
+    createVehicle: (vehicleData) => {
+      console.log("➕ Calling createVehicle endpoint: /api/vehicles");
+      console.log("📝 Vehicle data to create:", vehicleData);
+      return api.post("/api/vehicles", vehicleData);
+    },
+
+    // Lấy chi tiết một xe của driver hiện tại
+    getVehicleById: (vehicleId) => {
+      console.log(
+        `🔍 Calling getVehicleById endpoint: /api/vehicles/my-vehicles/${vehicleId}`
+      );
+      return api.get(`/api/vehicles/my-vehicles/${vehicleId}`);
+    },
+
+    // Cập nhật thông tin xe (partial update)
+    updateVehicle: (vehicleId, vehicleData) => {
+      console.log(
+        `🔄 Calling updateVehicle endpoint: /api/vehicles/${vehicleId}`
+      );
+      console.log("📝 Vehicle data to update:", vehicleData);
+      return api.put(`/api/vehicles/${vehicleId}`, vehicleData);
+    },
+
+    // Xóa xe
+    deleteVehicle: (vehicleId) => {
+      console.log(
+        `🗑️ Calling deleteVehicle endpoint: /api/vehicles/${vehicleId}`
+      );
+      return api.delete(`/api/vehicles/${vehicleId}`);
+    },
+
+    // Admin endpoint: Lấy xe của một driver cụ thể
+    getVehiclesByDriverId: (driverId) => {
+      console.log(
+        `🔍 Admin calling getVehiclesByDriverId endpoint: /api/vehicles/driver/${driverId}`
+      );
+      return api.get(`/api/vehicles/driver/${driverId}`);
+    },
+  },
 };
 
 // Export the appropriate API based on configuration
@@ -132,6 +203,7 @@ export const plansAPI = apiServices.plans;
 export const paymentsAPI = apiServices.payments;
 export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;
+export const vehiclesAPI = apiServices.vehicles;
 
 // Helper function to check if using mock API
 export const isMockMode = () => USE_MOCK_API;

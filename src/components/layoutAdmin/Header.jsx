@@ -18,12 +18,20 @@ const Header = () => {
   // Get user name from useAuth context first, then fallback to localStorage
   const getUserName = () => {
     // First try to get from useAuth context
+    if (user?.fullName) return user.fullName;
+    if (user?.firstName && user?.lastName)
+      return `${user.firstName} ${user.lastName}`;
+    if (user?.firstName) return user.firstName;
     if (user?.name) return user.name;
     if (user?.email) return user.email.split("@")[0]; // Get username part of email
 
     // Fallback to localStorage
     try {
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (storedUser.fullName) return storedUser.fullName;
+      if (storedUser.firstName && storedUser.lastName)
+        return `${storedUser.firstName} ${storedUser.lastName}`;
+      if (storedUser.firstName) return storedUser.firstName;
       if (storedUser.name) return storedUser.name;
       if (storedUser.email) return storedUser.email.split("@")[0];
 
@@ -66,7 +74,6 @@ const Header = () => {
         >
           {/* Logo and Brand */}
           <Navbar.Brand
-            
             className="d-flex align-items-center gap-2 me-4"
             style={{ marginTop: "11px" }}
           >
