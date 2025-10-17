@@ -41,13 +41,13 @@ api.interceptors.response.use(
       } catch (error) {
         console.error("Error dispatching unauthorized event:", error);
       }
-      try {
-        if (window.location.pathname !== "/login") {
-          window.location.assign("/login");
-        }
-      } catch (error) {
-        console.error("Error redirecting to login:", error);
-      }
+      // try {
+      //   if (window.location.pathname !== "/login") {
+      //     window.location.assign("/login");
+      //   }
+      // } catch (error) {
+      //   console.error("Error redirecting to login:", error);
+      // }
     }
     return Promise.reject(err);
   }

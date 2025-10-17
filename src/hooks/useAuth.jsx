@@ -54,23 +54,80 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
+
+      // Clear old data before login
+      localStorage.removeItem("users");
+      localStorage.removeItem("currentUserId");
+
       const response = await authAPI.login(credentials);
+      console.log("Login response:", response);
 
-      const token = response.data.result.token;
-      const userData = response.data.result.userInfo;
+      // Get token from response
+      let token = response.data?.result?.token || response.data?.token;
 
-      if (!token) throw new Error("No token received from server");
+      if (!token) {
+        throw new Error("No token received from server");
+      }
+
+      // Decode JWT token to get user info
+      const decodeToken = (token) => {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          );
+          return JSON.parse(jsonPayload);
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          return null;
+        }
+      };
+
+      const decodedToken = decodeToken(token);
+      console.log("Decoded token:", decodedToken);
+
+      if (!decodedToken) {
+        throw new Error("Failed to decode token");
+      }
+
+      // Extract user data from decoded token
+      const userData = {
+        userId: decodedToken.sub || decodedToken.userId || decodedToken.id,
+        email: decodedToken.email || decodedToken.sub,
+        role: decodedToken.role || decodedToken.scope,
+        fullName: decodedToken.fullName || decodedToken.name,
+        firstName: decodedToken.firstName,
+        lastName: decodedToken.lastName,
+      };
+
+      console.log("User data extracted:", userData);
 
       setAuthToken(token);
       setUser(userData);
       setIsAuthenticated(true);
-      localStorage.setItem("user", JSON.stringify(userData));
 
-      // trả về cờ needsProfile nếu thiếu phone
-      return { success: true, user: userData, needsProfile: !userData?.phone };
+      // Store user data in localStorage for persistence
+      localStorage.setItem("user", JSON.stringify(userData));
+      // Also store role separately for easy access
+      if (userData.role) {
+        localStorage.setItem("role", userData.role);
+      }
+      if (userData.userId) {
+        localStorage.setItem("currentUserId", userData.userId);
+      }
+
+      return { success: true, user: userData };
     } catch (error) {
       console.error("Login error:", error);
-      return { success: false, error: error.message || "Login failed" };
+      console.error("Error details:", error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || "Login failed",
+      };
     } finally {
       setLoading(false);
     }
