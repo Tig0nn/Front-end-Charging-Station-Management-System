@@ -86,7 +86,7 @@ const StationsList = () => {
     }
   };
 
-  // State quản lý danh sách nhân viên
+  // Fetch danh sách nhân viên
   useEffect(() => {
     const fetchStaff = async () => {
       try {
@@ -336,7 +336,7 @@ const StationsList = () => {
                               </option>
                               {searchStaff.map((s) => (
                                 <option key={s.id} value={s.id}>
-                                  {s.fullName || s.name}
+                                  {s.fullName}
                                 </option>
                               ))}
                             </Form.Select>

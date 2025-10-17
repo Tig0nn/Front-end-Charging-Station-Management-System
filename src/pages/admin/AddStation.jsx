@@ -16,7 +16,7 @@ const AddStation = () => {
     operatorName: "",
     powerOutputKw: "22",
     numberOfChargingPoints: "",
-    staffId: "",
+    staff: "",
   });
 
 
@@ -66,7 +66,7 @@ const AddStation = () => {
       alert("Không thể tạo trạm sạc. Vui lòng thử lại.");
     }
   };
-
+  //  Xử lý thay đổi input
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -92,42 +92,44 @@ const AddStation = () => {
             <Card.Body>
               <Form onSubmit={handleSubmit}>
                 <Row>
+                  {/**   Tên trạm và địa chỉ */}
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Station Name</Form.Label>
+                      <Form.Label>Tên trạm</Form.Label>
                       <Form.Control
                         type="text"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Enter station name"
+                        placeholder="Nhập tên trạm"
                         required
                       />
                     </Form.Group>
                   </Col>
                   <Col md={6}>
+                    {/**   Địa chỉ */}
                     <Form.Group className="mb-3">
-                      <Form.Label>Address</Form.Label>
+                      <Form.Label>Địa chỉ</Form.Label>
                       <Form.Control
                         type="text"
                         name="address"
                         value={formData.address}
                         onChange={handleChange}
-                        placeholder="Enter address"
+                        placeholder="Nhập địa chỉ"
                         required
                       />
                     </Form.Group>
                   </Col>
                 </Row>
-
+                {/*   Chủ sở hữu */}
                 <Form.Group className="mb-3">
-                  <Form.Label>Operator Name</Form.Label>
+                  <Form.Label>Chủ sở hữu</Form.Label>
                   <Form.Control
                     type="text"
                     name="operatorName"
                     value={formData.operatorName}
                     onChange={handleChange}
-                    placeholder="Enter operator name"
+                    placeholder="Nhập tên chủ sở hữu"
                     required
                   />
                 </Form.Group>
@@ -135,7 +137,7 @@ const AddStation = () => {
                 <Row>
                   <Col md={4}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Power Output</Form.Label>
+                      <Form.Label>Công suất</Form.Label>
                       <Form.Select
                         name="powerOutputKw"
                         value={formData.powerOutputKw}
@@ -151,7 +153,7 @@ const AddStation = () => {
 
                   <Col md={4}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Number of Charging Points</Form.Label>
+                      <Form.Label>Số điểm sạc</Form.Label>
                       <Form.Control
                         type="number"
                         name="numberOfChargingPoints"
@@ -161,13 +163,14 @@ const AddStation = () => {
                       />
                     </Form.Group>
                   </Col>
-
+                  {/**   Dropdown để chọn nhân viên */}
                   <Form.Group className="mb-3">
-                    <Form.Label>Assign Staff</Form.Label>
+                    <Form.Label>Gán nhân viên</Form.Label>
                     {loadingStaff ? (
                       <div>Đang tải danh sách nhân viên...</div>
                     ) : (
                       <>
+                      { /* Search input để lọc nhân viên */ }
                         <Form.Control
                           type="text"
                           placeholder="Tìm kiếm nhân viên..."
@@ -175,9 +178,10 @@ const AddStation = () => {
                           onChange={(e) => setSearchText(e.target.value)}
                           className="mb-2"
                         />
+                         { /*   Dropdown để chọn nhân viên */ }
                         <Form.Select
-                          name="staffId"
-                          value={formData.staffId}
+                          name="staff"
+                          value={formData.staff}
                           onChange={handleChange}
                           required
                         >
@@ -186,7 +190,7 @@ const AddStation = () => {
                           </option>
                           {searchStaff.map((s) => (
                             <option key={s.id} value={s.id}>
-                              {s.fullName || s.name}
+                              {s.fullName}
                             </option>
                           ))}
                         </Form.Select>
@@ -217,4 +221,4 @@ const AddStation = () => {
 };
 
 export default AddStation;
-export {}
+
