@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "./Sidebar.css";
 
 const NAVIGATION_ITEMS = [
   {

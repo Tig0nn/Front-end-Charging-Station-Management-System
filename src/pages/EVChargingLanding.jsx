@@ -41,12 +41,16 @@ export default function EVChargingLanding() {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch subscription plans:", err);
-        
+
         // Hiển thị lỗi rõ ràng
         if (err?.response?.status === 401) {
-          setError("⚠️ API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access.");
+          setError(
+            "⚠️ API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access."
+          );
         } else {
-          setError("Không thể tải được các gói thuê bao. Vui lòng thử lại sau.");
+          setError(
+            "Không thể tải được các gói thuê bao. Vui lòng thử lại sau."
+          );
         }
         setPlans([]);
       } finally {

@@ -30,7 +30,7 @@ function App() {
       <Route
         path="/admin/*"
         element={
-          <MainLayoutAdmin>
+          <MainLayoutAdmin key={window.location.pathname}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -58,12 +58,15 @@ function App() {
       <Route
         path="/driver/*"
         element={
-          <MainLayoutDriver>
+          <MainLayoutDriver key={window.location.pathname}>
             <Routes>
               {/* Route mặc định sẽ là trang bản đồ */}
               <Route path="/" element={<MapPage />} />
               <Route path="/map" element={<MapPage />} />
-              <Route path="/session" element={<ChargingSessionPage />} />
+              <Route
+                path="/charging-session"
+                element={<ChargingSessionPage />}
+              />
               <Route path="/history" element={<HistoryPage />} />
 
               {/* Các route con của trang hồ sơ */}

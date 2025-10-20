@@ -1,10 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./MapPage.css";
+import "./MapPage.css"; // Chúng ta sẽ cập nhật file này
 import { stationsAPI } from "../../lib/apiServices";
 import ChargerSelectionModal from "../../components/ChargerSelectionModal";
+import RoutingControl from "../../components/RoutingControl";
+import ChargingPanel from "../../components/ChargingPanel";
+
+// Thêm Heroicons
+import {
+  MapPinIcon,
+  BoltIcon,
+  MapIcon,
+  CheckBadgeIcon,
+  XCircleIcon,
+  ArrowPathIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/solid";
+import { CircleStackIcon } from "@heroicons/react/24/outline"; // Icon "trống"
 
 // Fix Leaflet default icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -17,7 +32,7 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// Custom icons for stations
+// Custom icons
 const stationIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
@@ -62,6 +77,15 @@ export default function MapPage() {
   const [selectedStation, setSelectedStation] = useState(null);
   const [showChargerModal, setShowChargerModal] = useState(false);
   const [stationForCharging, setStationForCharging] = useState(null);
+  const [routeInfo, setRouteInfo] = useState(null);
+  const [showRoute, setShowRoute] = useState(false);
+  const [routeDestination, setRouteDestination] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Charging session states
+  const [showChargingPanel, setShowChargingPanel] = useState(false);
+  const [activeCharger, setActiveCharger] = useState(null);
+  const [activeStation, setActiveStation] = useState(null);
 
   // Fetch stations from API
   useEffect(() => {
@@ -72,30 +96,58 @@ export default function MapPage() {
   const fetchStations = async () => {
     try {
       setLoading(true);
-      const response = await stationsAPI.getAll();
-      console.log("📍 Stations response:", response);
+      // Call API to get all stations (backend returns OPERATIONAL by default)
+      const response = await stationsAPI.getOverview();
+      console.log("📍 Stations API response:", response);
 
       let stationsData = [];
-      if (response.data?.result) {
+
+      // Backend returns structure: { code, message, result: [...] }
+      if (response.data?.result && Array.isArray(response.data.result)) {
         stationsData = response.data.result;
+      } else if (response.result && Array.isArray(response.result)) {
+        stationsData = response.result;
       } else if (Array.isArray(response.data)) {
         stationsData = response.data;
       }
 
-      setStations(stationsData);
+      console.log("📍 Parsed stations data:", stationsData);
+
+      // Map backend fields to frontend fields
+      const mappedStations = stationsData.map((station) => ({
+        stationId: station.stationId,
+        stationName: station.name, // Backend uses 'name'
+        address: station.address,
+        operatorName: station.operatorName,
+        contactPhone: station.contactPhone,
+        latitude: station.latitude,
+        longitude: station.longitude,
+        status: station.status, // OPERATIONAL, MAINTENANCE, OUT_OF_SERVICE, CLOSED
+        active: station.active,
+        staffId: station.staffId,
+        staffName: station.staffName,
+        // Add default values for fields not in backend
+        totalChargers: 0, // Will be updated from chargers API if needed
+        availableChargers: 0,
+        pricePerKwh: "3,500đ/kWh",
+        hotline: station.contactPhone || "N/A",
+        email: station.operatorName
+          ? `${station.operatorName}@email.com`
+          : "N/A",
+      }));
+
+      setStations(mappedStations);
       setError(null);
+
+      console.log(`✅ Loaded ${mappedStations.length} stations`);
     } catch (err) {
       console.error("❌ Error fetching stations:", err);
-
-      // If it's a 401 error, the interceptor will handle redirect
-      // So we don't need to do anything here
       if (err?.response?.status === 401) {
         console.log("🔒 Authentication required - redirecting to login");
-        return; // Let the interceptor handle the redirect
+        return;
       }
-
       setError("Không thể tải danh sách trạm sạc");
-      setStations([]); // Set empty array to prevent crashes
+      setStations([]);
     } finally {
       setLoading(false);
     }
@@ -138,9 +190,47 @@ export default function MapPage() {
 
   const handleStartCharging = (charger) => {
     console.log("Starting charging with charger:", charger);
-    // You can add navigation to charging session page here
-    // navigate('/driver/charging-session');
+    setActiveCharger(charger);
+    setActiveStation(stationForCharging);
+    setShowChargingPanel(true);
   };
+
+  const handleCloseChargingPanel = () => {
+    setShowChargingPanel(false);
+    setActiveCharger(null);
+    setActiveStation(null);
+  };
+
+  const handleCompleteCharging = () => {
+    // TODO: Add to history, update user data
+    console.log("Charging completed!");
+  };
+
+  const handleShowDirections = (station) => {
+    if (!userLocation) {
+      alert("Không thể xác định vị trí của bạn. Vui lòng bật GPS.");
+      return;
+    }
+
+    if (!station.latitude || !station.longitude) {
+      alert("Trạm sạc không có thông tin vị trí.");
+      return;
+    }
+
+    setRouteDestination([station.latitude, station.longitude]);
+    setShowRoute(true);
+    setSelectedStation(station);
+  };
+
+  const handleClearRoute = () => {
+    setShowRoute(false);
+    setRouteDestination(null);
+    setRouteInfo(null);
+  };
+
+  const handleRouteFound = useCallback((info) => {
+    setRouteInfo(info);
+  }, []);
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Radius of Earth in km
@@ -157,15 +247,18 @@ export default function MapPage() {
     return distance.toFixed(1);
   };
 
-  // Show only first 2 stations
-  const filteredStations = stations.slice(0, 2);
+  // *** THAY ĐỔI QUAN TRỌNG ***
+  // Lọc trạm dựa trên tìm kiếm VÀ hiển thị tất cả
+  const filteredStations = stations.filter((station) =>
+    station.stationName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p className="text-gray-700">⚡ Đang tải bản đồ trạm sạc...</p>
+          <p className="loading-text">⚡ Đang tải bản đồ trạm sạc...</p>
         </div>
       </div>
     );
@@ -173,7 +266,7 @@ export default function MapPage() {
 
   return (
     <div className="map-page-container">
-      {/* Sidebar */}
+      {/* Sidebar - Sẽ nổi bên trên Map Container */}
       <div className="map-sidebar">
         {/* Station count */}
         <div className="station-count-header">
@@ -183,10 +276,23 @@ export default function MapPage() {
           </span>
         </div>
 
+        {/* Search Bar Mới */}
+        <div className="sidebar-search-container">
+          <MagnifyingGlassIcon className="search-icon" />
+          <input
+            type="text"
+            placeholder="Tìm trạm sạc (ví dụ: Vincom...)"
+            className="sidebar-search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
         {/* Station List */}
         <div className="station-list">
           {error && (
             <div className="error-message">
+              <XCircleIcon className="error-icon" />
               <p>{error}</p>
               <button onClick={fetchStations} className="retry-button">
                 Thử lại
@@ -214,20 +320,36 @@ export default function MapPage() {
                 <h3 className="station-name">{station.stationName}</h3>
                 <span
                   className={`status-badge ${
-                    station.status === "Active"
+                    station.status === "OPERATIONAL"
                       ? "status-active"
+                      : station.status === "MAINTENANCE"
+                      ? "status-maintenance"
                       : "status-inactive"
                   }`}
                 >
-                  {station.status === "Active" ? "Hoạt động" : "Đóng cửa"}
+                  {station.status === "OPERATIONAL" ? (
+                    <CheckBadgeIcon className="icon-xs" />
+                  ) : (
+                    <XCircleIcon className="icon-xs" />
+                  )}
+                  {station.status === "OPERATIONAL"
+                    ? "Hoạt động"
+                    : station.status === "MAINTENANCE"
+                    ? "Bảo trì"
+                    : station.status === "OUT_OF_SERVICE"
+                    ? "Tạm ngưng"
+                    : "Đóng cửa"}
                 </span>
               </div>
 
-              <p className="station-address">📍 {station.address}</p>
+              <p className="station-address">
+                <MapPinIcon className="icon-sm" />
+                <span>{station.address}</span>
+              </p>
 
               {userLocation && station.latitude && station.longitude && (
                 <p className="station-distance">
-                  � Cách bạn{" "}
+                  🗺️ Cách bạn{" "}
                   {calculateDistance(
                     userLocation[0],
                     userLocation[1],
@@ -240,35 +362,50 @@ export default function MapPage() {
 
               <div className="station-info">
                 <span className="info-item">
-                  🔌 {station.totalChargers || 0} sạc
+                  <BoltIcon className="icon-sm" />
+                  {station.totalChargers || 0} sạc
                 </span>
                 <span className="info-item">
-                  ⚡ {station.availableChargers || 0} trống
+                  <CircleStackIcon className="icon-sm" />
+                  {station.availableChargers || 0} trống
                 </span>
               </div>
 
-              {/* Charging Button */}
-              <button
-                className="charging-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenChargerModal(station);
-                }}
-              >
-                ⚡ Sạc
-              </button>
+              {/* Khu vực nút bấm mới */}
+              <div className="station-card-actions">
+                <button
+                  className="action-button-secondary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShowDirections(station);
+                  }}
+                >
+                  <MapIcon className="icon-btn" />
+                  Chỉ đường
+                </button>
+                <button
+                  className="action-button-primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenChargerModal(station);
+                  }}
+                >
+                  <BoltIcon className="icon-btn" />
+                  Sạc ngay
+                </button>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Map Container */}
+      {/* Map Container - Nằm bên dưới Sidebar */}
       <div className="map-container">
         <MapContainer
           center={mapCenter}
           zoom={13}
           style={{ height: "100%", width: "100%" }}
-          zoomControl={false}
+          zoomControl={false} // Tắt zoom control mặc định
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -280,9 +417,9 @@ export default function MapPage() {
           {/* User Location Marker */}
           {userLocation && (
             <Marker position={userLocation} icon={userIcon}>
-              <Popup>
-                <div className="custom-popup">
-                  <h3>📍 Vị trí của bạn</h3>
+              <Popup className="custom-popup">
+                <div className="popup-content-inner">
+                  <h3 className="popup-title">📍 Vị trí của bạn</h3>
                 </div>
               </Popup>
             </Marker>
@@ -301,48 +438,67 @@ export default function MapPage() {
                   click: () => handleStationClick(station),
                 }}
               >
-                <Popup>
-                  <div className="custom-popup">
+                {/* Thêm className="custom-popup" */}
+                <Popup className="custom-popup">
+                  <div className="popup-content-inner">
                     <h3 className="popup-title">{station.stationName}</h3>
                     <div className="popup-content">
                       <p>
-                        <strong>📍 Địa chỉ:</strong> {station.address}
+                        <strong>Địa chỉ:</strong> {station.address}
                       </p>
                       <p>
-                        <strong>🔌 Tổng số sạc:</strong>{" "}
+                        <strong>Tổng số sạc:</strong>{" "}
                         {station.totalChargers || 0}
                       </p>
                       <p>
-                        <strong>⚡ Còn trống:</strong>{" "}
+                        <strong>Còn trống:</strong>{" "}
                         {station.availableChargers || 0}
                       </p>
                       <p>
-                        <strong>📞 Hotline:</strong> {station.hotline || "N/A"}
+                        <strong>Hotline:</strong> {station.hotline || "N/A"}
                       </p>
                       <p>
-                        <strong>📧 Email:</strong> {station.email || "N/A"}
-                      </p>
-                      <p>
-                        <strong>⏰ Trạng thái:</strong>{" "}
+                        <strong>Trạng thái:</strong>{" "}
                         <span
                           className={
-                            station.status === "Active"
-                              ? "text-green-600 font-semibold"
-                              : "text-red-600 font-semibold"
+                            station.status === "OPERATIONAL"
+                              ? "text-green-600"
+                              : station.status === "MAINTENANCE"
+                              ? "text-yellow-600"
+                              : "text-red-600"
                           }
                         >
-                          {station.status === "Active"
+                          {station.status === "OPERATIONAL"
                             ? "Hoạt động"
+                            : station.status === "MAINTENANCE"
+                            ? "Bảo trì"
+                            : station.status === "OUT_OF_SERVICE"
+                            ? "Tạm ngưng"
                             : "Đóng cửa"}
                         </span>
                       </p>
                     </div>
-                    <button className="popup-button">Chỉ đường</button>
+                    <button
+                      className="popup-button"
+                      onClick={() => handleShowDirections(station)}
+                    >
+                      <MapIcon className="icon-btn" />
+                      Chỉ đường
+                    </button>
                   </div>
                 </Popup>
               </Marker>
             );
           })}
+
+          {/* Routing Control */}
+          {showRoute && userLocation && routeDestination && (
+            <RoutingControl
+              start={userLocation}
+              end={routeDestination}
+              onRouteFound={handleRouteFound}
+            />
+          )}
         </MapContainer>
 
         {/* Map Controls */}
@@ -352,16 +508,48 @@ export default function MapPage() {
             className="control-button"
             title="Vị trí của tôi"
           >
-            🎯
+            <MapPinIcon className="icon-control" />
           </button>
           <button
             onClick={fetchStations}
             className="control-button"
             title="Làm mới"
           >
-            🔄
+            <ArrowPathIcon className="icon-control" />
           </button>
+          {showRoute && (
+            <button
+              onClick={handleClearRoute}
+              className="control-button clear-route-button"
+              title="Xóa đường đi"
+            >
+              <XMarkIcon className="icon-control" />
+            </button>
+          )}
         </div>
+
+        {/* Route Info Panel - Thay thế inline style bằng class */}
+        {routeInfo && showRoute && (
+          <div className="route-info-panel">
+            <div className="route-info-item">
+              <MapIcon className="icon-route" />
+              <div>
+                <div className="route-info-label">Khoảng cách</div>
+                <div className="route-info-value">{routeInfo.distance} km</div>
+              </div>
+            </div>
+            <div className="route-info-divider"></div>
+            <div className="route-info-item">
+              <span className="icon-route-emoji">⏱️</span>
+              <div>
+                <div className="route-info-label">Thời gian</div>
+                <div className="route-info-value">
+                  {routeInfo.duration} phút
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Charger Selection Modal */}
@@ -370,6 +558,16 @@ export default function MapPage() {
           station={stationForCharging}
           onClose={handleCloseChargerModal}
           onStartCharging={handleStartCharging}
+        />
+      )}
+
+      {/* Charging Panel Overlay */}
+      {showChargingPanel && activeStation && activeCharger && (
+        <ChargingPanel
+          station={activeStation}
+          charger={activeCharger}
+          onClose={handleCloseChargingPanel}
+          onComplete={handleCompleteCharging}
         />
       )}
     </div>

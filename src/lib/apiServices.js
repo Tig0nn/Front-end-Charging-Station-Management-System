@@ -9,7 +9,7 @@ const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === "true" || false;
 const realApiServices = {
   auth: {
     login: (credentials) => api.post("/api/auth/login", credentials),
-    getProfile: () => api.get("/api/auth/profile"),
+    getProfile: () => api.get("/api/users/driver/myInfo"),
     logout: () => api.post("/api/auth/logout"),
   },
 
@@ -63,16 +63,16 @@ const realApiServices = {
 
   payments: {
     // Get user's payment methods
-    getPaymentMethods: () => api.get("/api/payments/methods"),
+    getPaymentMethods: () => api.get("/api/payment-methods"),
     // Add new payment method
     addPaymentMethod: (methodData) =>
-      api.post("/api/payments/methods", methodData),
+      api.post("/api/payment-methods", methodData),
     // Remove payment method
     removePaymentMethod: (methodId) =>
-      api.delete(`/api/payments/methods/${methodId}`),
+      api.delete(`/api/payment-methods/${methodId}`),
     // Set default payment method
     setDefaultPaymentMethod: (methodId) =>
-      api.patch(`/api/payments/methods/${methodId}/default`),
+      api.patch(`/api/payment-methods/${methodId}/default`),
     // Process payment
     processPayment: (paymentData) =>
       api.post("/api/payments/process", paymentData),
@@ -98,7 +98,7 @@ const realApiServices = {
   // =========================
   stations: {
     // Lấy tổng quan tất cả trạm
-    getOverview: () => api.get("/api/stations/overview"),
+    getOverview: () => api.get("/api/stations"),
 
     // Lấy danh sách chi tiết + filter theo status
     getAll: (page = 1, limit = 10) =>

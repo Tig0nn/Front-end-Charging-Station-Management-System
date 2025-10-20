@@ -1,31 +1,89 @@
-/* MapPage Container */
+/* Thêm Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+/* Định nghĩa các lớp icon tiện ích */
+.icon-xs {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  margin-right: 4px;
+  vertical-align: middle;
+  margin-top: -2px;
+}
+.icon-sm {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+  margin-top: -3px; /* Căn chỉnh với text */
+  flex-shrink: 0; /* Không bị co lại */
+}
+.icon-btn {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 8px;
+}
+.icon-control {
+  width: 24px;
+  height: 24px;
+  color: #374151;
+}
+.icon-route {
+  width: 28px;
+  height: 28px;
+  color: #10b981;
+}
+.icon-route-emoji {
+  font-size: 24px;
+}
+.text-green-600 {
+  color: #059669;
+  font-weight: 600;
+}
+.text-red-600 {
+  color: #dc2626;
+  font-weight: 600;
+}
+/* --- Kết thúc lớp icon --- */
+
+/* Map Page Container - Layout mới */
 .map-page-container {
-  display: flex;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 60px); /* Giả sử bạn có header 60px */
   width: 100%;
   overflow: hidden;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 50%, #f0f9ff 100%);
-  position: relative;
-  gap: 20px;
-  padding: 20px;
+  position: relative; /* Quan trọng cho layout mới */
+  background: #f3f4f6; /* Màu nền cho map */
+  font-family: "Inter", sans-serif; /* Áp dụng font mới */
 }
 
-/* Sidebar */
+/* Map Container - Nằm full màn hình bên dưới */
+.map-container {
+  height: 100%;
+  width: 100%;
+  position: relative; /* Để các control nổi lên trên */
+}
+
+/* Sidebar - Nổi lên trên */
 .map-sidebar {
-  width: 420px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 2px solid rgba(16, 185, 129, 0.1);
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: 400px;
+  z-index: 1000; /* Nằm trên map */
+
+  background: rgba(255, 255, 255, 0.9); /* Giảm độ mờ đục */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 24px;
-  margin: 0;
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.05),
-    0 8px 32px rgba(16, 185, 129, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
-  z-index: 10;
 }
 
 .map-sidebar::before {
@@ -36,35 +94,23 @@
   right: 0;
   height: 3px;
   background: linear-gradient(90deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%);
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
 }
 
 /* Station Count Header */
 .station-count-header {
-  padding: 28px 24px 20px 24px;
+  padding: 24px 24px 16px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: none;
-  background: transparent;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  flex-shrink: 0;
 }
 
 .station-count-title {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: #111827;
   margin: 0;
-  letter-spacing: -0.5px;
 }
 
 .station-count-badge {
@@ -75,534 +121,353 @@
   font-size: 0.9rem;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  letter-spacing: 0.3px;
 }
 
-/* Remove old sidebar header styles */
-.sidebar-header {
-  display: none;
+/* Thanh tìm kiếm mới */
+.sidebar-search-container {
+  padding: 16px 20px;
+  flex-shrink: 0;
+  position: relative;
 }
-
-.sidebar-title {
-  display: none;
+.sidebar-search-input {
+  width: 100%;
+  padding: 14px 18px 14px 48px; /* Thêm padding trái cho icon */
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 500;
+  background: #f0fdf4;
+  color: #065f46;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* Quan trọng */
 }
-
-.sidebar-subtitle {
-  display: none;
+.sidebar-search-input::placeholder {
+  color: #047857;
+  opacity: 0.7;
 }
-
-/* Search Box - Hidden */
-.search-box {
-  display: none;
+.sidebar-search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  background: white;
 }
-
-.search-input {
-  display: none;
-}
-
 .search-icon {
-  display: none;
+  position: absolute;
+  left: 38px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #047857;
+  opacity: 0.8;
 }
+/* Kết thúc thanh tìm kiếm */
 
 /* Station List */
 .station-list {
-  flex: 1;
+  flex: 1; /* Tự động co giãn */
   overflow-y: auto;
-  padding: 16px 16px 20px 16px;
+  padding: 4px 16px 16px 16px;
   scroll-behavior: smooth;
 }
-
-/* Custom Scrollbar */
+/* CSS cho Scrollbar */
 .station-list::-webkit-scrollbar {
   width: 8px;
 }
-
 .station-list::-webkit-scrollbar-track {
   background: rgba(16, 185, 129, 0.05);
   border-radius: 10px;
   margin: 8px 0;
 }
-
 .station-list::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #10b981 0%, #059669 100%);
   border-radius: 10px;
-  transition: all 0.3s ease;
-}
-
-.station-list::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #059669 0%, #047857 100%);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 
 /* Station Card */
 .station-card {
   background: white;
-  border: 2px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 20px;
-  padding: 24px 22px 22px 22px;
+  padding: 20px;
   margin-bottom: 16px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-.station-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(16, 185, 129, 0.05),
-    transparent
-  );
-  transition: left 0.6s ease;
-}
-
-.station-card:hover::before {
-  left: 100%;
-}
-
 .station-card:hover {
-  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.2),
-    0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-4px) scale(1.01);
-  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+  transform: translateY(-4px);
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .station-card-active {
   border: 2px solid #10b981;
   background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
-  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.25),
-    0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
   transform: translateY(-2px);
-}
-
-.station-card-active::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #10b981 0%, #3b82f6 50%, #10b981 100%);
-  animation: activeShimmer 2s ease-in-out infinite;
-}
-
-@keyframes activeShimmer {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
 }
 
 .station-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   gap: 12px;
 }
 
 .station-name {
-  font-size: 1.4rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #111827;
   margin: 0;
-  flex: 1;
-  letter-spacing: -0.8px;
   line-height: 1.3;
-  background: linear-gradient(135deg, #111827 0%, #374151 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .status-badge {
-  padding: 7px 14px;
-  border-radius: 12px;
-  font-size: 0.82rem;
-  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-}
-
-.status-badge:hover {
-  transform: scale(1.05);
+  display: flex;
+  align-items: center;
 }
 
 .status-active {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  background: #d1fae5;
   color: #065f46;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-maintenance {
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .status-inactive {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  background: #fee2e2;
   color: #991b1b;
-  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .station-address {
-  font-size: 1rem;
-  color: #6b7280;
-  margin: 10px 0 0 0;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin: 8px 0 0 0;
+  line-height: 1.5;
   font-weight: 500;
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
+  align-items: flex-start; /* Căn chỉnh icon với dòng đầu tiên */
+}
+.station-address .icon-sm {
+  color: #6b7280;
+  margin-top: -1px;
+}
+.station-address span {
+  flex: 1;
 }
 
 .station-distance {
-  font-size: 1rem;
-  color: #10b981;
-  font-weight: 700;
-  margin: 12px 0 0 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(16, 185, 129, 0.08) 0%,
-    rgba(16, 185, 129, 0.15) 100%
-  );
-  border-radius: 10px;
-  width: fit-content;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  font-size: 0.9rem;
+  color: #059669;
+  font-weight: 600;
+  margin: 10px 0 0 0;
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
 }
 
 .station-info {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 2px solid rgba(16, 185, 129, 0.1);
+  border-top: 1px dashed rgba(16, 185, 129, 0.3);
 }
 
 .info-item {
-  font-size: 1rem;
+  flex: 1;
+  font-size: 0.95rem;
   color: #374151;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.info-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-}
-
-/* Charging Button */
-.charging-button {
-  width: 100%;
-  margin-top: 16px;
-  padding: 14px;
-  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  color: white;
-  border: none;
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 8px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #f3f4f6;
 }
 
-.charging-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #111827 0%, #000000 100%);
+/* Khu vực nút bấm mới */
+.station-card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.action-button-primary,
+.action-button-secondary {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
 }
 
-.charging-button:active {
-  transform: translateY(-1px);
+.action-button-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
+.action-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.action-button-secondary {
+  background: #f0fdf4;
+  color: #065f46;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+}
+.action-button-secondary:hover {
+  background: #d1fae5;
+  border-color: #10b981;
+  transform: translateY(-2px);
+}
+/* --- Kết thúc nút bấm --- */
 
 /* Error & Empty States */
 .error-message,
 .no-stations {
   text-align: center;
-  padding: 48px 24px;
+  padding: 40px 24px;
   color: #6b7280;
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  background: #f9fafb;
   border-radius: 16px;
   margin: 12px;
-  border: 2px dashed rgba(239, 68, 68, 0.2);
+  border: 1px dashed #d1d5db;
 }
-
-.error-message p,
-.no-stations p {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 16px;
+.error-icon {
+  width: 40px;
+  height: 40px;
+  color: #ef4444;
+  margin: 0 auto 12px;
 }
 
 .retry-button {
   margin-top: 12px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
   color: white;
   border: none;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 700;
   font-size: 0.95rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: all 0.3s;
 }
-
 .retry-button:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-}
-
-.retry-button:active {
-  transform: translateY(0);
-}
-
-/* Map Container */
-.map-container {
-  flex: 1;
-  position: relative;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(16, 185, 129, 0.1);
-  border: 2px solid rgba(16, 185, 129, 0.1);
+  background: #059669;
 }
 
 /* Map Controls */
 .map-controls {
   position: absolute;
-  bottom: 32px;
-  right: 32px;
-  z-index: 1000;
+  bottom: 12px;
+  left: 12px;
+  z-index: 900; /* Dưới sidebar */
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .control-button {
-  width: 56px;
-  height: 56px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid rgba(16, 185, 129, 0.15);
+  width: 52px;
+  height: 52px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 16px;
   font-size: 1.6rem;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(16, 185, 129, 0.1);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
 }
-
-.control-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: -1;
-}
-
-.control-button:hover::before {
-  opacity: 1;
-}
-
 .control-button:hover {
-  border-color: transparent;
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35),
-    0 4px 12px rgba(59, 130, 246, 0.25);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border-color: #10b981;
+}
+.control-button:hover .icon-control {
+  color: #10b981;
+}
+.clear-route-button {
+  background: #fee2e2;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.clear-route-button .icon-control {
+  color: #ef4444;
+}
+.clear-route-button:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+.clear-route-button:hover .icon-control {
   color: white;
 }
 
-.control-button:active {
-  transform: scale(1.05) rotate(0deg);
-}
-
-/* Custom Popup Styles */
-.leaflet-popup-content-wrapper {
+/* Route Info Panel - Nâng cấp */
+.route-info-panel {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  padding: 12px 20px;
   border-radius: 16px;
-  padding: 0;
-  overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15),
-    0 4px 12px rgba(16, 185, 129, 0.2);
-  border: 2px solid rgba(16, 185, 129, 0.1);
-}
-
-.leaflet-popup-content {
-  margin: 0;
-  min-width: 300px;
-}
-
-.leaflet-popup-tip {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.custom-popup {
-  padding: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-}
-
-.popup-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #111827;
-  margin: 0 0 16px 0;
-  padding-bottom: 12px;
-  border-bottom: 2px solid rgba(16, 185, 129, 0.2);
-  letter-spacing: -0.5px;
-}
-
-.popup-content {
-  font-size: 0.92rem;
-  color: #4b5563;
-  line-height: 1.8;
-}
-
-.popup-content p {
-  margin: 10px 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
-
-.popup-content strong {
-  color: #1f2937;
-  font-weight: 700;
-  min-width: 100px;
+.route-info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-
-.popup-button {
-  width: 100%;
-  margin-top: 16px;
-  padding: 14px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+.route-info-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
 }
-
-.popup-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+.route-info-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1f2937;
 }
-
-.popup-button:active {
-  transform: translateY(-1px);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .map-page-container {
-    flex-direction: column;
-    padding: 12px;
-    gap: 12px;
-  }
-
-  .map-sidebar {
-    width: 100%;
-    height: 50%;
-    border-right: none;
-    border-radius: 20px;
-  }
-
-  .map-sidebar::before {
-    height: 3px;
-  }
-
-  .station-count-header {
-    padding: 20px 16px 12px 16px;
-  }
-
-  .station-count-title {
-    font-size: 1.2rem;
-  }
-
-  .station-count-badge {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-  }
-
-  .search-box {
-    padding: 16px;
-  }
-
-  .station-list {
-    padding: 12px;
-  }
-
-  .station-card {
-    padding: 20px 18px;
-    margin-bottom: 12px;
-  }
-
-  .station-name {
-    font-size: 1.2rem;
-  }
-
-  .map-container {
-    height: 50%;
-    border-radius: 20px;
-  }
-
-  .map-controls {
-    bottom: 20px;
-    right: 20px;
-    gap: 10px;
-  }
-
-  .control-button {
-    width: 48px;
-    height: 48px;
-    font-size: 1.4rem;
-  }
+.route-info-divider {
+  width: 1px;
+  height: 36px;
+  background-color: #e5e7eb;
 }
 
 /* Loading State */
@@ -611,18 +476,20 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 50%, #f0f9ff 100%);
+  background: #f9fafb;
 }
 
 .loading-spinner {
   text-align: center;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: white;
   border-radius: 24px;
-  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+.loading-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
 }
 
 .spinner {
@@ -635,62 +502,122 @@
   border-right-color: #3b82f6;
   margin: 0 auto 20px;
 }
-
-.loading-spinner p {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #374151;
-  margin: 0;
-}
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  -webkit-tap-highlight-color: transparent;
+/* Custom Popup Styles - Nâng cấp */
+.custom-popup .leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.custom-popup .leaflet-popup-content {
+  margin: 0;
+  width: 300px !important; /* Đặt chiều rộng cố định */
+}
+.custom-popup .leaflet-popup-tip {
+  background: white;
+  box-shadow: none;
 }
 
-button,
-.station-card,
-.control-button {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+.popup-content-inner {
+  padding: 0;
 }
 
-/* Add subtle animations on page load */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.popup-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #065f46;
+  margin: 0;
+  padding: 16px 20px;
+  background: #f0fdf4;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.popup-content {
+  font-size: 0.92rem;
+  color: #4b5563;
+  line-height: 1.6;
+  padding: 16px 20px;
+  background: white;
+}
+.popup-content p {
+  margin: 0 0 10px 0;
+}
+.popup-content p:last-child {
+  margin-bottom: 0;
+}
+
+.popup-button {
+  width: calc(100% - 40px); /* Trừ padding */
+  margin: 0 20px 20px 20px;
+  padding: 12px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.popup-button:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+/* Responsive (Đơn giản) */
+@media (max-width: 1024px) {
+  .map-sidebar {
+    width: 360px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+@media (max-width: 768px) {
+  .map-page-container {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+    height: 100vh; /* Full màn hình trên mobile */
   }
-}
 
-.station-card {
-  animation: fadeInUp 0.4s ease-out backwards;
-}
+  /* Trên mobile, sidebar chiếm nửa trên */
+  .map-sidebar {
+    position: relative;
+    width: 100%;
+    height: 50%;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    border-radius: 0 0 24px 24px;
+    background: rgba(255, 255, 255, 0.98); /* Rõ nét hơn */
+    backdrop-filter: blur(10px);
+  }
 
-.station-card:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.station-card:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.station-card:nth-child(3) {
-  animation-delay: 0.15s;
-}
-.station-card:nth-child(4) {
-  animation-delay: 0.2s;
-}
-.station-card:nth-child(5) {
-  animation-delay: 0.25s;
+  /* Map chiếm nửa dưới */
+  .map-container {
+    height: 50%;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .map-controls {
+    bottom: 16px;
+    right: 16px;
+  }
+  .route-info-panel {
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    transform: none;
+    width: calc(100% - 120px); /* Tránh nút control */
+  }
 }

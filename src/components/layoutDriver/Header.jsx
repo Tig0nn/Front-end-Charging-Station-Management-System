@@ -2,7 +2,6 @@ import React from "react";
 import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth.jsx";
-import "./Header.css";
 import { getCurrentRole } from "../../lib/auth.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 

@@ -1,19 +1,11 @@
 // src/pages/PaymentPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import { plansAPI } from "../../lib/apiServices";
+import { plansAPI, paymentsAPI } from "../../lib/apiServices";
 
 // Import các component con
 import PlanCard from "../../components/PlanCard";
 import PaymentMethodItem from "../../components/PaymentMethodItem";
 import UpgradeSummary from "../../components/UpgradeSummary";
-
-// ✨ MoMo payment method structure
-const momoPaymentMethod = {
-  id: "momo",
-  type: "ewallet",
-  name: "Ví MoMo",
-  balance: "Kết nối để thanh toán",
-};
 
 export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -21,7 +13,8 @@ export default function PaymentPage() {
   const [error, setError] = useState(null);
   const [currentSubscription, setCurrentSubscription] = useState(null);
   const [availablePlans, setAvailablePlans] = useState([]);
-  const [isMomoSelected, setIsMomoSelected] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -74,6 +67,55 @@ export default function PaymentPage() {
           setError("Không thể tải danh sách gói dịch vụ");
         }
 
+        // Load payment methods from real backend API
+        try {
+          const paymentMethodsResponse = await paymentsAPI.getPaymentMethods();
+          console.log(
+            "💳 Payment methods API response:",
+            paymentMethodsResponse
+          );
+
+          // Extract payment methods from response
+          let methods = [];
+          if (paymentMethodsResponse?.data?.result) {
+            methods = paymentMethodsResponse.data.result;
+          } else if (paymentMethodsResponse?.result) {
+            methods = paymentMethodsResponse.result;
+          } else if (Array.isArray(paymentMethodsResponse?.data)) {
+            methods = paymentMethodsResponse.data;
+          } else if (Array.isArray(paymentMethodsResponse)) {
+            methods = paymentMethodsResponse;
+          }
+
+          if (methods.length > 0) {
+            // Convert backend payment methods to UI format
+            const apiPaymentMethods = methods.map((method) => ({
+              id: method.pmId,
+              type: method.methodType, // CREDIT_CARD, DEBIT_CARD, EWALLET, etc.
+              name: getPaymentMethodName(method.methodType, method.provider),
+              provider: method.provider,
+              maskedToken: method.maskedToken || "****",
+              balance:
+                method.methodType === "EWALLET"
+                  ? "Kết nối để thanh toán"
+                  : undefined,
+            }));
+
+            console.log(
+              "✅ Converted payment methods from backend:",
+              apiPaymentMethods
+            );
+            setPaymentMethods(apiPaymentMethods);
+          } else {
+            console.warn("⚠️ No payment methods returned from backend");
+            // Don't show error - user might not have added payment methods yet
+          }
+        } catch (error) {
+          console.error("⚠️ Error loading payment methods:", error);
+          // Don't block the page if payment methods fail to load
+          console.log("ℹ️ User might not have payment methods set up yet");
+        }
+
         // Try to load current subscription
         try {
           const subscriptionResponse = await plansAPI.getCurrentSubscription();
@@ -105,6 +147,18 @@ export default function PaymentPage() {
     loadUserData();
   }, []);
 
+  // Helper function to get payment method display name
+  const getPaymentMethodName = (methodType, provider) => {
+    const typeMap = {
+      CREDIT_CARD: "Thẻ tín dụng",
+      DEBIT_CARD: "Thẻ ghi nợ",
+      EWALLET: "Ví điện tử",
+    };
+
+    const baseName = typeMap[methodType] || methodType;
+    return provider ? `${baseName} - ${provider}` : baseName;
+  };
+
   const subscriptionPlans = useMemo(() => {
     // Mark current plan if user has subscription
     return availablePlans.map((plan) => ({
@@ -122,15 +176,17 @@ export default function PaymentPage() {
     setError(null);
   };
 
-  // ✨ Hàm xử lý khi nhấn vào MoMo
-  const handleToggleMomo = () => {
-    setIsMomoSelected((prevState) => !prevState);
+  // Handle payment method selection
+  const handleSelectPaymentMethod = (method) => {
+    setSelectedPaymentMethod((prevMethod) =>
+      prevMethod?.id === method.id ? null : method
+    );
   };
 
   // 🚀 Handle subscription to a plan using real backend
   const handleSubscribe = async (plan) => {
-    if (!isMomoSelected) {
-      alert("Vui lòng chọn phương thức thanh toán MoMo");
+    if (!selectedPaymentMethod) {
+      alert("Vui lòng chọn phương thức thanh toán");
       return;
     }
 
@@ -141,11 +197,15 @@ export default function PaymentPage() {
 
     try {
       console.log("🔄 Subscribing to plan via backend:", plan);
+      console.log("💳 Using payment method:", selectedPaymentMethod);
       setLoading(true);
       setError(null);
 
-      // Call real backend API to subscribe
-      const subscriptionData = await plansAPI.subscribe(plan.id, "momo");
+      // Call real backend API to subscribe with the selected payment method
+      const subscriptionData = await plansAPI.subscribe(
+        plan.id,
+        selectedPaymentMethod.id
+      );
       console.log("✅ Backend subscription response:", subscriptionData);
 
       // Update current subscription
@@ -161,6 +221,7 @@ export default function PaymentPage() {
 
       alert(`Đăng ký gói ${plan.name} thành công!`);
       setSelectedPlan(null);
+      setSelectedPaymentMethod(null);
     } catch (error) {
       console.error("❌ Backend subscription failed:", error);
       console.error("Error details:", {
@@ -222,8 +283,8 @@ export default function PaymentPage() {
           </p>
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-700">
-              💡 <strong>Hướng dẫn:</strong> Chọn MoMo làm phương thức thanh
-              toán trước, sau đó click "Nâng cấp" trên gói bạn muốn đăng ký.
+              💡 <strong>Hướng dẫn:</strong> Chọn phương thức thanh toán trước,
+              sau đó click "Nâng cấp" trên gói bạn muốn đăng ký.
             </p>
           </div>
 
@@ -253,7 +314,7 @@ export default function PaymentPage() {
                   // First select the plan
                   handleSelectPlan(plan);
                   // Then subscribe if payment method is selected
-                  if (isMomoSelected && !plan.isCurrent) {
+                  if (selectedPaymentMethod && !plan.isCurrent) {
                     handleSubscribe(plan);
                   }
                 }}
@@ -272,26 +333,48 @@ export default function PaymentPage() {
             Phương thức thanh toán
           </h2>
           <p className="text-gray-600 mb-6">
-            Chúng tôi hỗ trợ thanh toán qua Ví MoMo.
+            {paymentMethods.length > 0
+              ? "Chọn phương thức thanh toán để tiếp tục"
+              : "Bạn chưa có phương thức thanh toán nào. Vui lòng thêm phương thức thanh toán."}
           </p>
           <div className="space-y-4">
-            {/* Sử dụng trực tiếp component PaymentMethodItem với dữ liệu MoMo */}
-            <PaymentMethodItem
-              method={momoPaymentMethod}
-              isSelected={isMomoSelected}
-              onSelect={handleToggleMomo}
-            />
+            {paymentMethods.length > 0 ? (
+              paymentMethods.map((method) => (
+                <PaymentMethodItem
+                  key={method.id}
+                  method={method}
+                  isSelected={selectedPaymentMethod?.id === method.id}
+                  onSelect={() => handleSelectPaymentMethod(method)}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <p className="text-gray-500 mb-4">
+                  Chưa có phương thức thanh toán
+                </p>
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  onClick={() =>
+                    alert(
+                      "Chức năng thêm phương thức thanh toán sẽ được cập nhật"
+                    )
+                  }
+                >
+                  + Thêm phương thức thanh toán
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* --- Phần Xác Nhận Nâng Cấp --- */}
-        {/* ✨ Điều kiện hiển thị là đã chọn gói VÀ đã chọn MoMo */}
-        {selectedPlan && isMomoSelected && !selectedPlan.isCurrent && (
+        {/* ✨ Điều kiện hiển thị là đã chọn gói VÀ đã chọn phương thức thanh toán */}
+        {selectedPlan && selectedPaymentMethod && !selectedPlan.isCurrent && (
           <UpgradeSummary
             selectedPlan={selectedPlan}
-            selectedPaymentMethod={momoPaymentMethod}
-            onUpgrade={() => alert("Xử lý nâng cấp...")}
-            loading={false}
+            selectedPaymentMethod={selectedPaymentMethod}
+            onUpgrade={() => handleSubscribe(selectedPlan)}
+            loading={loading}
           />
         )}
       </div>

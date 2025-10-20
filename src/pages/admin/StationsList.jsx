@@ -117,7 +117,7 @@ const StationsList = () => {
     const fetchStations = async () => {
       try {
         setLoading(true);
-        const res = await stationsAPI.getAll(1, 100);
+        const res = await stationsAPI.getOverview();
         console.log("API raw response:", res.data);
         // Nếu backend trả về dạng {data: [...]}
         const data = res.data.result;

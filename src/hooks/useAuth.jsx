@@ -1,9 +1,17 @@
-import { useState, useEffect, useContext, createContext } from "react";
+import {
+  useState,
+  useEffect,
+  useContext,
+  createContext,
+  useCallback,
+} from "react";
 import { authAPI } from "../lib/apiServices.js";
 import { setAuthToken, getAuthToken } from "../lib/api";
 // import { setCurrentUser, getCurrentUser, clearAuth } from "../lib/auth.js";
 
 const AuthContext = createContext();
+
+// HÀM DECODETOKEN ĐÃ BỊ XÓA
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -13,41 +21,29 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
-      // Try to get user from localStorage first
+      // Cố gắng lấy user từ localStorage trước
+      // Nếu user đã đăng nhập từ phiên trước và ĐÃ vào trang profile,
+      // thông tin đầy đủ sẽ có ở đây.
       try {
         const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
         if (storedUser && storedUser.email) {
           setUser(storedUser);
           setIsAuthenticated(true);
-          setLoading(false);
-          return;
+        } else {
+          // Có token, nhưng không có thông tin user
+          // Chỉ đơn giản là xác thực
+          setIsAuthenticated(true);
+          setUser({}); // Đặt user là đối tượng rỗng
         }
       } catch (error) {
         console.log("Error reading stored user:", error);
+        // Nếu lỗi, coi như chưa đăng nhập
+        setAuthToken(null);
+      } finally {
+        setLoading(false);
       }
-
-      // If no stored user, verify token with backend
-      authAPI
-        .getProfile()
-        .then((response) => {
-          const userData = response.data.result || response.data;
-          setUser(userData);
-          setIsAuthenticated(true);
-          // Store user data
-          localStorage.setItem("user", JSON.stringify(userData));
-        })
-        .catch(() => {
-          // Token invalid, clear it
-          setAuthToken(null);
-          setUser(null);
-          setIsAuthenticated(false);
-          localStorage.removeItem("user");
-        })
-        .finally(() => {
-          setLoading(false);
-        });
     } else {
-      setLoading(false);
+      setLoading(false); // Không có token
     }
   }, []);
 
@@ -55,78 +51,57 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      // Clear old data before login
-      localStorage.removeItem("users");
+      // 1. Dọn dẹp state và localStorage cũ
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
       localStorage.removeItem("currentUserId");
+      localStorage.removeItem("authToken");
+      setAuthToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
 
-      const response = await authAPI.login(credentials);
-      console.log("Login response:", response);
+      // 2. Gọi API login để lấy token
+      const loginResponse = await authAPI.login(credentials);
+      console.log("Login response:", loginResponse);
 
-      // Get token from response
-      let token = response.data?.result?.token || response.data?.token;
+      const token =
+        loginResponse.data?.result?.token || loginResponse.data?.token;
 
       if (!token) {
-        throw new Error("No token received from server");
+        throw new Error("Không nhận được token từ server");
       }
 
-      // Decode JWT token to get user info
-      const decodeToken = (token) => {
-        try {
-          const base64Url = token.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          const jsonPayload = decodeURIComponent(
-            atob(base64)
-              .split('')
-              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-              .join('')
-          );
-          return JSON.parse(jsonPayload);
-        } catch (error) {
-          console.error("Error decoding token:", error);
-          return null;
-        }
-      };
-
-      const decodedToken = decodeToken(token);
-      console.log("Decoded token:", decodedToken);
-
-      if (!decodedToken) {
-        throw new Error("Failed to decode token");
-      }
-
-      // Extract user data from decoded token
-      const userData = {
-        userId: decodedToken.sub || decodedToken.userId || decodedToken.id,
-        email: decodedToken.email || decodedToken.sub,
-        role: decodedToken.role || decodedToken.scope,
-        fullName: decodedToken.fullName || decodedToken.name,
-        firstName: decodedToken.firstName,
-        lastName: decodedToken.lastName,
-      };
-
-      console.log("User data extracted:", userData);
-
+      // 3. Lưu token ngay lập tức
       setAuthToken(token);
+
+      // 4. (ĐÃ SỬA) KHÔNG giải mã token, KHÔNG gọi getProfile
+      // Chỉ đơn giản là thông báo đã đăng nhập.
+      // User sẽ là một đối tượng rỗng cho đến khi được cập nhật.
+      const userData = {};
+
+      // 5. Cập nhật state (User là rỗng)
       setUser(userData);
       setIsAuthenticated(true);
 
-      // Store user data in localStorage for persistence
-      localStorage.setItem("user", JSON.stringify(userData));
-      // Also store role separately for easy access
-      if (userData.role) {
-        localStorage.setItem("role", userData.role);
-      }
-      if (userData.userId) {
-        localStorage.setItem("currentUserId", userData.userId);
-      }
+      // KHÔNG lưu gì vào localStorage "user" vì chúng ta không có dữ liệu
+      // Nó sẽ được cập nhật bởi trang Profile
 
       return { success: true, user: userData };
     } catch (error) {
-      console.error("Login error:", error);
-      console.error("Error details:", error.response?.data || error.message);
+      console.error("Lỗi đăng nhập:", error);
+      console.error("Chi tiết lỗi:", error.response?.data || error.message);
+
+      setAuthToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.clear();
+
       return {
         success: false,
-        error: error.response?.data?.message || error.message || "Login failed",
+        error:
+          error.response?.data?.message ||
+          error.message ||
+          "Đăng nhập thất bại",
       };
     } finally {
       setLoading(false);
@@ -135,36 +110,42 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Clear local state first (guaranteed to happen)
       setAuthToken(null);
       setUser(null);
       setIsAuthenticated(false);
 
-      // Clear ALL localStorage keys to prevent old data from persisting
+      // Xóa tất cả
       localStorage.removeItem("user");
-      localStorage.removeItem("users");
       localStorage.removeItem("role");
       localStorage.removeItem("authToken");
       localStorage.removeItem("currentUserId");
-      localStorage.removeItem("authUser");
-      localStorage.removeItem("driverTab");
-      localStorage.removeItem("adminTab");
-      localStorage.removeItem("staffTab");
 
-      // Try to call logout API (optional, don't fail if it errors)
       await authAPI.logout();
     } catch (error) {
       console.warn("Logout API call failed (ignoring):", error);
-      // Continue with logout process even if API call fails
     } finally {
-      // Always redirect to login page
       window.location.href = "/login";
     }
   };
 
-  const updateUser = (userData) => {
-    setUser(userData);
-  };
+  // HÀM NÀY SỬA LỖI ĐƠ/TREO MÁY (VÒNG LẶP VÔ HẠN)
+  // (Giữ nguyên)
+  const updateUser = useCallback((newUserData) => {
+    setUser((currentUser) => {
+      const updatedUser = { ...currentUser, ...newUserData };
+
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (updatedUser.role) {
+        localStorage.setItem("role", updatedUser.role);
+      }
+      if (updatedUser.userId) {
+        localStorage.setItem("currentUserId", updatedUser.userId);
+      }
+      console.log("AuthContext updated with new user data:", updatedUser);
+
+      return updatedUser;
+    });
+  }, []); // <-- Mảng dependency rỗng (rất quan trọng)
 
   const value = {
     user,
@@ -178,7 +159,7 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
+// Hook: useAuth
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -187,8 +168,7 @@ export const useAuth = () => {
   return context;
 };
 
-// Higher-order component for protected routes
-// eslint-disable-next-line no-unused-vars, react-refresh/only-export-components
+// HOC: withAuth
 export const withAuth = (Component) => {
   return (props) => {
     const { isAuthenticated, loading } = useAuth();
@@ -213,18 +193,16 @@ export const withAuth = (Component) => {
   };
 };
 
-// Hook for role-based access control
-// eslint-disable-next-line react-refresh/only-export-components
+// Hook: useRole
 export const useRole = () => {
   const { user } = useAuth();
 
   const hasRole = (requiredRole) => {
+    // Cảnh báo: user.role sẽ là UNDEFINED khi mới đăng nhập
+    // cho đến khi trang Profile cập nhật nó
     if (!user || !user.role) return false;
 
-    // Admin has access to everything
     if (user.role === "Admin") return true;
-
-    // Check specific role
     return user.role === requiredRole;
   };
 

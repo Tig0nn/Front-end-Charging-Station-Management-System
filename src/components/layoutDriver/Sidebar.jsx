@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "./Sidebar.css"; // Dùng chung file CSS với Admin Sidebar
 
 // ---== PHẦN CẦN CẬP NHẬT BẮT ĐẦU TỪ ĐÂY ==---
 const USER_NAVIGATION_ITEMS = [

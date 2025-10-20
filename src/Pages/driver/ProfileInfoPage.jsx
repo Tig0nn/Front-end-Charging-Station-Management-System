@@ -3,19 +3,20 @@ import { Card, Button, Form, Row, Col, Spinner, Alert } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 // Sử dụng hook thật thay vì mock
 import { useDriverProfile } from "../../hooks/useDriverProfile.js";
+import { useAuth } from "../../hooks/useAuth.jsx";
 
 const ProfileInfoPage = () => {
   const { driverProfile, loading, error, updateProfile, setError } =
     useDriverProfile();
-
+  const { updateUser } = useAuth();
   // Local form state
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
+    email: "", // Vẫn giữ email trong form state để hiển thị
     phone: "",
     dateOfBirth: "",
-    gender: false,
+    gender: "F", // SỬA 1: Đổi sang string "M" / "F", mặc định là "F" (Nữ)
     address: "",
   });
 
@@ -35,11 +36,13 @@ const ProfileInfoPage = () => {
         dateOfBirth: driverProfile.dateOfBirth
           ? driverProfile.dateOfBirth.split("T")[0]
           : "",
-        gender: driverProfile.gender || false,
+        // SỬA 2: Đảm bảo gender luôn là "M" hoặc "F"
+        gender: driverProfile.gender === "M" ? "M" : "F",
         address: driverProfile.address || "",
       });
+      updateUser(driverProfile);
     }
-  }, [driverProfile]);
+  }, [driverProfile, updateUser]);
 
   // Xử lý khi người dùng thay đổi giá trị trong form
   const handleChange = (e) => {
@@ -54,15 +57,7 @@ const ProfileInfoPage = () => {
     if (successMessage) setSuccessMessage("");
   };
 
-  // Xử lý thay đổi giới tính
-  const handleGenderChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      gender: e.target.value === "true",
-    }));
-    if (error) setError(null);
-    if (successMessage) setSuccessMessage("");
-  };
+  // SỬA 3: Xóa hàm handleGenderChange (không cần thiết nữa)
 
   // Kiểm tra tính hợp lệ của từng trường
   const isFieldValid = (fieldName) => {
@@ -94,7 +89,7 @@ const ProfileInfoPage = () => {
         dateOfBirth: driverProfile.dateOfBirth
           ? driverProfile.dateOfBirth.split("T")[0]
           : "",
-        gender: driverProfile.gender || false,
+        gender: driverProfile.gender === "M" ? "M" : "F", // Sửa cả ở đây
         address: driverProfile.address || "",
       });
     }
@@ -131,16 +126,33 @@ const ProfileInfoPage = () => {
       setError(null);
       setSuccessMessage("");
 
-      // Chỉ gửi những dữ liệu đã được trim và hợp lệ
+      // SỬA 4: Chỉ gửi những dữ liệu API PATCH cho phép
+      const allowedUpdateKeys = [
+        "phone",
+        "dateOfBirth",
+        "gender",
+        "firstName",
+        "lastName",
+        "address",
+      ];
+
       const updateData = Object.keys(formData).reduce((acc, key) => {
-        const value = formData[key];
-        if (typeof value === "string") {
-          acc[key] = value.trim();
-        } else {
-          acc[key] = value;
+        // Chỉ thêm vào đối tượng nếu key nằm trong danh sách cho phép
+        if (allowedUpdateKeys.includes(key)) {
+          const value = formData[key];
+          if (typeof value === "string") {
+            acc[key] = value.trim();
+          } else {
+            acc[key] = value; // Giữ nguyên (cho trường hợp gender, mặc dù nó đã là string)
+          }
         }
         return acc;
       }, {});
+
+      // Xử lý trường hợp ngày sinh rỗng (gửi null thay vì string rỗng)
+      if (updateData.dateOfBirth === "") {
+        updateData.dateOfBirth = null;
+      }
 
       console.log("📝 Sending update data:", updateData);
 
@@ -309,13 +321,19 @@ const ProfileInfoPage = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  readOnly={!isEditMode}
-                  className={!isEditMode ? "bg-light" : ""}
+                  // SỬA 5: Email luôn luôn ReadOnly vì không được phép cập nhật
+                  readOnly={true}
+                  className={"bg-light"} // Luôn luôn là bg-light
                   pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
                 />
                 <Form.Control.Feedback type="invalid">
                   Vui lòng nhập địa chỉ email hợp lệ.
                 </Form.Control.Feedback>
+                {isEditMode && (
+                  <Form.Text className="text-muted">
+                    Email không thể thay đổi.
+                  </Form.Text>
+                )}
               </Form.Group>
             </Row>
 
@@ -362,19 +380,20 @@ const ProfileInfoPage = () => {
             <Row className="mb-3">
               <Form.Group as={Col} md="6" controlId="gender">
                 <Form.Label>Giới tính</Form.Label>
+                {/* SỬA 6: Cập nhật logic cho gender */}
                 {isEditMode ? (
                   <Form.Select
                     name="gender"
-                    value={formData.gender.toString()}
-                    onChange={handleGenderChange}
+                    value={formData.gender}
+                    onChange={handleChange} // Dùng handleChange chung
                   >
-                    <option value="false">Nữ</option>
-                    <option value="true">Nam</option>
+                    <option value="F">Nữ</option>
+                    <option value="M">Nam</option>
                   </Form.Select>
                 ) : (
                   <Form.Control
                     type="text"
-                    value={formData.gender ? "Nam" : "Nữ"}
+                    value={formData.gender === "M" ? "Nam" : "Nữ"}
                     readOnly
                     className="bg-light"
                   />
