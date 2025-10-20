@@ -1,6 +1,7 @@
 import "./App.css";
 
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Login from "./Pages/Login";
 import Signup from "./Pages/SignUp";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
@@ -15,35 +16,97 @@ import ProfileInfoPage from "./Pages/driver/ProfileInfoPage";
 import VehicleInfoPage from "./Pages/driver/VehicleInfoPage";
 import PaymentPage from "./Pages/driver/PaymentPage";
 import AddUserInfoPage from "./Pages/AddUserInfoPage";
-import { useAuth } from "./hooks/useAuth";
+import { usersAPI } from "./lib/apiServices";
 
-// Guard nội tuyến: chỉ cho Driver vào khi đã có phone
+// Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
-  const { user: ctxUser, isAuthenticated } = useAuth();
   const loc = useLocation();
-  const storedUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; } })();
-  const user = ctxUser ?? storedUser;
 
-  if (!isAuthenticated) return <Navigate to="/login" state={{ from: loc }} replace />;
+  // Kiểm tra token để xác định đã đăng nhập
+  const isAuthenticated = !!localStorage.getItem("authToken");
 
-  // Cho phép trang add-info
-  if (loc.pathname.startsWith("/driver/add-info")) return children;
+  useEffect(() => {
+    const syncDriverInfo = async () => {
+      // Chỉ sync nếu đã đăng nhập và không ở trang add-info
+      if (!isAuthenticated || loc.pathname.startsWith("/driver/add-info")) {
+        return;
+      }
 
-  // BYPASS 1 lần sau khi lưu thành công
-  const bypass = sessionStorage.getItem("bypassDriverInfoOnce") === "1" || loc.state?.from === "add-info-success";
-  if (bypass) {
-    sessionStorage.removeItem("bypassDriverInfoOnce");
+      // Lấy user hiện tại từ localStorage
+      let user = null;
+      try {
+        user = JSON.parse(localStorage.getItem("user") || "null");
+      } catch {
+        return;
+      }
+
+      const role = String(user?.role || "").toUpperCase();
+
+      // Chỉ sync nếu là DRIVER
+      if (role !== "DRIVER") {
+        return;
+      }
+
+      // Gọi API getDriverInfo để lấy thông tin mới nhất
+      try {
+        console.log("Syncing driver info from API...");
+        const response = await usersAPI.getDriverInfo();
+        console.log("Driver info response:", response.data);
+
+        const driverData = response.data?.result || response.data;
+
+        // Merge driver info vào user hiện tại
+        const updatedUser = {
+          ...user,
+          ...driverData,
+          // Đảm bảo role không bị ghi đè
+          role: user.role,
+        };
+
+        console.log("Updated user with driver info:", updatedUser);
+
+        // Lưu lại vào localStorage
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      } catch (error) {
+        console.warn("Cannot sync driver info:", error);
+      }
+    };
+
+    syncDriverInfo();
+  }, [isAuthenticated, loc.pathname]);
+
+  // 1) Chưa đăng nhập → về login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: loc }} replace />;
+  }
+
+  // 2) Đang ở trang add-info → cho qua luôn
+  if (loc.pathname.startsWith("/driver/add-info")) {
     return children;
   }
 
-  const role = String(user?.role || "").toUpperCase();
-  const phone =
-    user?.phone ?? user?.phoneNum ?? user?.phone_number ?? user?.phoneNumber ?? "";
-  const hasPhone = !!String(phone).trim();
+  // 3) Kiểm tra phone từ localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    user = null;
+  }
 
+  const role = String(user?.role || "").toUpperCase();
+  const phone = user?.phone || user?.phoneNum || user?.phoneNumber;
+  const hasPhone = phone && String(phone).trim() !== "";
+
+  console.log("Guard check - role:", role, "hasPhone:", hasPhone, "phone:", phone);
+
+  // 4) Nếu là DRIVER và không có phone → redirect về add-info
   if (role === "DRIVER" && !hasPhone) {
+    console.log("❌ No phone found, redirecting to add-info");
     return <Navigate to="/driver/add-info" replace />;
   }
+
+  // 5) Có phone hoặc không phải DRIVER → cho qua
+  console.log("✅ Allowing access to:", loc.pathname);
   return children;
 }
 
