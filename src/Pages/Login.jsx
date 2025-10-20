@@ -8,7 +8,7 @@ import { Form, Button, Alert } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Login() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
   const { login } = useAuth();
   const [loginErr, setLoginErr] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,14 +47,16 @@ function Login() {
       setIsSubmitting(true);
       setLoginErr(""); // Xóa lỗi cũ nếu có
 
-      const result = await login({
-        email: email.trim(),
-        password: password,
-      });
-
+      const result = await login({ email, password });
       if (result.success) {
-        alert("Đăng nhập thành công!");
-        navigate("/admin/dashboard");
+        const role = String(result.user?.role || "").toUpperCase();
+        if (role === "DRIVER") {
+          navigate(result.needsProfile ? "/driver/add-info" : "/driver");
+        } else if (role === "ADMIN") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       } else {
         setLoginErr(result.error || "Đăng nhập thất bại");
       }
