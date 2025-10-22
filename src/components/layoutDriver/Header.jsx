@@ -124,15 +124,15 @@ const Header = () => {
             className="d-flex align-items-center gap-2 me-4"
             style={{ marginTop: "11px" }}
           >
-            <div
-              className="bg-primary rounded"
+            <img
+              src="/src/assets/image/img.png" // Đường dẫn đến file ảnh của bạn
+              alt="BankDash Logo" // Luôn thêm alt text cho khả năng tiếp cận
+              className="rounded" // Giữ lại bo tròn nếu muốn
               style={{
                 width: "36px",
                 height: "36px",
-                backgroundImage: "url(/iconfinder-vector-65-09-473792-1.png)",
-                backgroundSize: "cover",
-                backgroundPosition: "50% 50%",
-                backgroundColor: "var(--primary-color)",
+                objectFit: "cover", // Tương đương với backgroundSize: "cover"
+                marginTop: "5px", // Có thể cần điều chỉnh lại margin-top nếu cần
               }}
             />
             <span
@@ -145,7 +145,7 @@ const Header = () => {
                 fontWeight: "normal",
               }}
             >
-              BankDash.
+              Juudensha
             </span>
           </Navbar.Brand>
 

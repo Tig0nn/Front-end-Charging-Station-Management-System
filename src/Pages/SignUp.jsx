@@ -3,7 +3,7 @@ import "./SignUp.css";
 import "./BackGround.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // <— thêm useNavigate
 import { usersAPI } from "../lib/apiServices";
 import logo from "../assets/image/logo.png";
 
@@ -29,6 +29,7 @@ export default function Signup() {
       [e.target.name]: e.target.value,
     });
   };
+  const navigate = useNavigate(); // <— khởi tạo navigate
 
   // Khi người dùng focus (nhấp chuột) vào một ô input, hàm này sẽ được gọi.
   // Nó kiểm tra xem có lỗi nào đang hiển thị cho ô đó không, nếu có thì sẽ xóa lỗi đó đi.
@@ -103,7 +104,7 @@ export default function Signup() {
           alert("Đăng ký thành công!");
           console.log("User created:", response.data.result);
           // Tùy chọn: Chuyển người dùng đến trang đăng nhập
-          // navigate("/login");
+          navigate("/login", { replace: true }); // <— điều hướng sang login
         } else {
           throw new Error(response.data?.message || "Đăng ký thất bại");
         }

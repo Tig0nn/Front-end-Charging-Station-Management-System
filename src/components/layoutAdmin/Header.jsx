@@ -2,12 +2,11 @@ import React from "react";
 import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth.jsx";
-import { getCurrentRole } from "../../lib/auth.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -15,93 +14,7 @@ const Header = () => {
   };
 
   // Get user name from useAuth context first, then fallback to localStorage
-  const getUserName = () => {
-    // First try to get from useAuth context
-    if (user?.fullName) return user.fullName;
-    if (user?.firstName && user?.lastName)
-      return `${user.firstName} ${user.lastName}`;
-    if (user?.firstName) return user.firstName;
-    if (user?.name) return user.name;
-    if (user?.email) return user.email.split("@")[0]; // Get username part of email
 
-    // Fallback to localStorage
-    try {
-      // Try to get from 'user' key first (single object)
-      let storedUser = localStorage.getItem("user");
-      if (storedUser && storedUser !== "null") {
-        storedUser = JSON.parse(storedUser);
-        if (storedUser.fullName) return storedUser.fullName;
-        if (storedUser.firstName && storedUser.lastName)
-          return `${storedUser.firstName} ${storedUser.lastName}`;
-        if (storedUser.firstName) return storedUser.firstName;
-        if (storedUser.name) return storedUser.name;
-        if (storedUser.email) return storedUser.email.split("@")[0];
-      }
-
-      // Try to get from 'users' key (might be array)
-      let storedUsers = localStorage.getItem("users");
-      if (storedUsers && storedUsers !== "null") {
-        storedUsers = JSON.parse(storedUsers);
-        // If it's an array, get the first user
-        const currentUser = Array.isArray(storedUsers)
-          ? storedUsers[0]
-          : storedUsers;
-        if (currentUser?.fullName) return currentUser.fullName;
-        if (currentUser?.firstName && currentUser?.lastName)
-          return `${currentUser.firstName} ${currentUser.lastName}`;
-        if (currentUser?.firstName) return currentUser.firstName;
-        if (currentUser?.name) return currentUser.name;
-        if (currentUser?.email) return currentUser.email.split("@")[0];
-      }
-
-      // Default fallback
-      return "User";
-    } catch {
-      return "User";
-    }
-  };
-
-  // Get user role from useAuth context first, then fallback to localStorage
-  const getUserRole = () => {
-    // First try to get from useAuth context
-    const cleanRole = (role) => {
-      if (!role) return "User";
-      // Remove quotes if present
-      return role.replace(/^"(.*)"$/, "$1");
-    };
-    if (user?.role) return cleanRole(user.role);
-
-    // Fallback to localStorage
-    try {
-      // Try to get from 'role' key directly
-      const storedRole = localStorage.getItem("role");
-      if (storedRole && storedRole !== "null") {
-        return cleanRole(storedRole);
-      }
-
-      // Try to get from 'user' key first (single object)
-      let storedUser = localStorage.getItem("user");
-      if (storedUser && storedUser !== "null") {
-        storedUser = JSON.parse(storedUser);
-        if (storedUser.role) return cleanRole(storedUser.role);
-      }
-
-      // Try to get from 'users' key (might be array)
-      let storedUsers = localStorage.getItem("users");
-      if (storedUsers && storedUsers !== "null") {
-        storedUsers = JSON.parse(storedUsers);
-        // If it's an array, get the first user
-        const currentUser = Array.isArray(storedUsers)
-          ? storedUsers[0]
-          : storedUsers;
-        if (currentUser?.role) return cleanRole(currentUser.role);
-      }
-
-      return cleanRole(getCurrentRole()) || "User";
-    } catch {
-      return cleanRole(getCurrentRole()) || "User";
-    }
-  };
   return (
     <div className="relative w-full h-[101px]">
       <Navbar
@@ -124,15 +37,15 @@ const Header = () => {
             className="d-flex align-items-center gap-2 me-4"
             style={{ marginTop: "11px" }}
           >
-            <div
-              className="bg-primary rounded"
+            <img
+              src="/src/assets/image/img.png" // Đường dẫn đến file ảnh của bạn
+              alt="BankDash Logo" // Luôn thêm alt text cho khả năng tiếp cận
+              className="rounded" // Giữ lại bo tròn nếu muốn
               style={{
                 width: "36px",
                 height: "36px",
-                backgroundImage: "url(/iconfinder-vector-65-09-473792-1.png)",
-                backgroundSize: "cover",
-                backgroundPosition: "50% 50%",
-                backgroundColor: "var(--primary-color)",
+                objectFit: "cover", // Tương đương với backgroundSize: "cover"
+                marginTop: "5px", // Có thể cần điều chỉnh lại margin-top nếu cần
               }}
             />
             <span
@@ -145,7 +58,7 @@ const Header = () => {
                 fontWeight: "normal",
               }}
             >
-              BankDash.
+              Juudensha
             </span>
           </Navbar.Brand>
 
@@ -168,63 +81,19 @@ const Header = () => {
                     style={{ lineHeight: "1.2" }}
                   >
                     <span
-                      className="text-dark fw-medium"
-                      style={{ fontSize: "14px" }}
-                    >
-                      {getUserName()}
-                    </span>
-                    <span
                       className="text-muted text-capitalize"
                       style={{ fontSize: "12px" }}
                     >
-                      {getUserRole()}
+                      ADMIN
                     </span>
-                  </div>
-                </div>
-
-                {/* Mobile User Info */}
-                <div className="d-flex d-md-none align-items-center gap-2">
-                  <div
-                    className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
-                    style={{
-                      width: "28px",
-                      height: "28px",
-                      fontSize: "12px",
-                      marginTop: "5px",
-                    }}
-                  >
-                    {getUserName().charAt(0).toUpperCase()}
                   </div>
                 </div>
 
                 {/* Logout Button */}
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="d-flex align-items-center gap-2"
-                  style={{
-                    marginTop: "5px",
-                    borderRadius: "25px",
-                    padding: "8px 16px",
-                    fontWeight: "500",
-                    border: "2px solid #dc3545",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#dc3545";
-                    e.target.style.color = "white";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                    e.target.style.color = "#dc3545";
-                  }}
-                >
-                  <span style={{ fontSize: "14px" }}>
-                    <i class="bi bi-box-arrow-right"></i>
-                  </span>
-                  <span className="d-none d-sm-inline">Đăng xuất</span>
-                </Button>
+                <button className="logout-button" onClick={handleLogout}>
+                  <i className="bi bi-box-arrow-right"></i>
+                  <span>Đăng xuất</span>
+                </button>
               </div>
             </Nav>
           </Navbar.Collapse>

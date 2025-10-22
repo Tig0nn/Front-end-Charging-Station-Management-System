@@ -1,301 +1,193 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Spinner } from "react-bootstrap";
+import { stationsAPI } from "../../lib/apiServices.js";
 
-// --- IMPORT ICON ĐÃ SỬA LẦN CUỐI ---
-import {
-  ClockIcon,
-  XMarkIcon,
-  BoltIcon,
-  PowerIcon,
-  CheckCircleIcon,
-  BanknotesIcon,
-  ExclamationTriangleIcon,
-  ArrowUturnLeftIcon,
-  // Đã xóa StopwatchIcon khỏi solid
-} from "@heroicons/react/24/solid";
+export default function ChargingSessionPage({ sessionId }) {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-export default function ChargingSessionPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const formatTime = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
-  const { station, charger } = location.state || {};
-
-  const [sessionState, setSessionState] = useState("waiting"); // "waiting" | "charging" | "completed"
-  const [countdown, setCountdown] = useState(300); // 5 minutes
-  const [batteryLevel, setBatteryLevel] = useState(58);
-  const [chargingTime, setChargingTime] = useState(0);
-  const [estimatedTime] = useState("16:00"); // Giữ nguyên
-
-  const handleCancel = useCallback(() => {
-    if (window.confirm("Bạn có chắc muốn hủy phiên sạc?")) {
-      navigate("/driver/map");
-    }
-  }, [navigate]);
-
-  // Countdown timer for waiting state
   useEffect(() => {
-    if (sessionState === "waiting" && countdown > 0) {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleCancel();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [sessionState, countdown, handleCancel]);
+    if (!sessionId) return;
 
-  // Charging timer
-  useEffect(() => {
-    if (sessionState === "charging") {
-      const timer = setInterval(() => {
-        setChargingTime((prev) => prev + 1);
-        setBatteryLevel((prev) => {
-          if (prev >= 100) {
-            clearInterval(timer);
-            setSessionState("completed");
-            return 100;
-          }
-          return Math.min(prev + 0.1, 100);
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [sessionState]);
+    const fetchSession = async () => {
+      try {
+        setLoading(true);
+        const res = await stationsAPI.fake(sessionId);
+        const data = res.data.result;
+        setSession(data);
+      } catch (err) {
+        console.log("Lỗi tải session sạc:", err);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Format time functions (không đổi)
-  const formatCountdown = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+    fetchSession();
+    const timer = setInterval(fetchSession, 5000);
+    return () => clearInterval(timer);
+  }, [sessionId]);
 
-  const formatChargingTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hours > 0) {
-      return `${hours}:${mins.toString().padStart(2, "0")}:${secs
-        .toString()
-        .padStart(2, "0")}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleConfirmConnection = () => {
-    setSessionState("charging");
-    setChargingTime(0);
-  };
-
-  const handleStopCharging = () => {
-    if (window.confirm("Bạn có chắc muốn dừng sạc?")) {
-      setSessionState("completed");
-      // TODO: Call API to stop charging session
-    }
-  };
-
-  const handleCompleteSession = () => {
-    navigate("/driver/history");
-  };
-
-  // Nền chung cho tất cả các trạng thái
-  const pageBackground =
-    "min-h-screen bg-gradient-to-br from-gray-100 to-white flex items-center justify-center p-5";
-
-  if (!station || !charger) {
+  // -------------------- MÀN HÌNH KHÔNG CÓ SESSION --------------------
+  if (!sessionId) {
     return (
-      <div className={pageBackground}>
-        <div className="bg-white p-10 rounded-[24px] text-center shadow-2xl max-w-md w-full animate-slideUp">
-          <ExclamationTriangleIcon className="text-6xl text-red-500 mb-5 mx-auto" />
-          <p className="text-xl text-red-500 mb-6 font-semibold">
-            Không tìm thấy thông tin phiên sạc
-          </p>
-          <button
-            onClick={() => navigate("/driver/map")}
-            className="bg-blue-600 text-white border-none px-8 py-3 rounded-xl text-base font-bold cursor-pointer transition-all duration-300 hover:bg-blue-700 hover:-translate-y-0.5 shadow-lg shadow-blue-500/30 flex items-center gap-2 mx-auto"
-          >
-            <ArrowUturnLeftIcon className="w-5 h-5" />
-            Quay lại bản đồ
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Waiting for connection state
-  if (sessionState === "waiting") {
-    return (
-      <div className={pageBackground}>
-        <div className="bg-white p-8 rounded-[24px] shadow-2xl max-w-[500px] w-full text-center animate-slideUp">
-          <ClockIcon className="text-6xl mb-5 text-blue-500 animate-pulse mx-auto" />
-          <h2 className="text-2xl text-gray-800 mb-6 font-bold">
-            Đang chờ kết nối súng sạc
-          </h2>
-
-          <div className="bg-gray-50 p-5 rounded-xl mb-6 text-left">
-            <h3 className="text-lg text-gray-800 mb-1 font-semibold">
-              {station.stationName} - {charger.chargerName}
-            </h3>
-            <p className="text-gray-500 text-sm mb-3">{station.address}</p>
-            <p className="text-blue-600 text-sm italic font-medium">
-              Hệ thống đang tự động phát hiện kết nối...
+      <div className="min-h-screen bg-gray-50 px-8 py-10">
+        <div className="max-w-6xl mx-auto text-center">
+          {/* Thông báo không có phiên sạc */}
+          <div className="bg-white rounded-2xl shadow-sm py-16 px-6 border mb-8">
+            <div className="text-5xl mb-4">⚡</div>
+            <h2 className="text-2xl font-semibold mb-2">
+              Hiện không có phiên sạc nào đang diễn ra
+            </h2>
+            <p className="text-gray-600">
+              Vui lòng chọn trạm sạc từ tab <b>“Bản đồ trạm sạc”</b> để bắt đầu.
             </p>
           </div>
 
-          <div className="text-lg mb-8">
-            <span className="text-gray-600">Thời gian còn lại:</span>
-            <span className="text-3xl font-bold text-red-600 font-mono ml-2">
-              {formatCountdown(countdown)}
-            </span>
-          </div>
+          {/* Grid hướng dẫn + thông tin xe */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Hướng dẫn */}
+            <div className="bg-blue-50 rounded-xl p-5 text-left border border-blue-100">
+              <h3 className="text-lg font-semibold mb-3">Hướng dẫn sử dụng</h3>
+              <ol className="text-gray-700 space-y-2 text-sm list-decimal list-inside">
+                <li>Tìm trạm sạc: Mở tab “Bản đồ trạm sạc”.</li>
+                <li>Chọn trụ sạc: Bấm “Sạc” trên trạm phù hợp.</li>
+                <li>Kết nối và sạc: Cắm sạc vào xe trong 5 phút.</li>
+                <li>
+                  Theo dõi & thanh toán: Kiểm tra tiến độ và thanh toán khi hoàn
+                  tất.
+                </li>
+              </ol>
+            </div>
 
-          <div className="flex gap-4">
-            <button
-              className="flex-1 bg-gray-200 text-gray-700 border-none px-4 py-4 rounded-[12px] text-base font-bold cursor-pointer transition-all duration-300 hover:bg-gray-300 hover:-translate-y-0.5"
-              onClick={handleCancel}
-            >
-              Hủy
-            </button>
-            <button
-              className="flex-1 bg-green-600 text-white border-none px-4 py-4 rounded-[12px] text-base font-bold cursor-pointer transition-all duration-300 shadow-lg shadow-green-500/30 hover:bg-green-700 hover:-translate-y-0.5 flex items-center justify-center gap-2"
-              onClick={handleConfirmConnection}
-            >
-              <BoltIcon className="w-5 h-5" />
-              Đã kết nối
-            </button>
+            {/* Thông tin xe */}
+            <div className="bg-white rounded-xl p-5 border">
+              <h3 className="text-lg font-semibold mb-3">
+                Thông tin xe hiện tại
+              </h3>
+              <div className="flex justify-between items-center mb-2">
+                <span>Mức pin hiện tại:</span>
+                <span>75%</span>
+              </div>
+              <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden mb-3">
+                <div className="bg-black h-full" style={{ width: "75%" }}></div>
+              </div>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p>Dung lượng pin: 60 kWh</p>
+                <p>Phạm vi còn lại: ~300 km</p>
+                <p>Loại cổng sạc: CCS Combo 2</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Charging state
-  if (sessionState === "charging") {
+  // -------------------- MÀN HÌNH ĐANG SẠC --------------------
+  if (loading || !session) {
     return (
-      <div className={pageBackground}>
-        <div className="bg-white p-8 rounded-[24px] shadow-2xl max-w-[600px] w-full animate-slideUp">
-          <h2 className="text-3xl text-gray-800 font-bold text-center mb-6">
-            Đang sạc xe
-          </h2>
-
-          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl mb-6">
-            <h3 className="text-xl text-gray-800 mb-2 font-semibold">
-              {station.stationName}
-            </h3>
-            <p className="text-gray-600 mb-3">{station.address}</p>
-            <div className="flex gap-2.5 mt-2.5">
-              <span className="bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
-                <BoltIcon className="w-4 h-4" />
-                {charger.powerOutput}
-              </span>
-              <span className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
-                <PowerIcon className="w-4 h-4" />
-                {charger.connectorType}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl mb-6">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-gray-600 font-medium">Pin hiện tại:</span>
-              <span className="text-4xl font-bold text-green-600">
-                {Math.round(batteryLevel)}%
-              </span>
-            </div>
-
-            <div className="w-full h-[30px] bg-gray-200 rounded-full overflow-hidden mb-6 relative">
-              <div
-                className="h-full bg-gradient-to-r from-green-500 to-lime-400 rounded-full transition-all duration-500 animate-pulse"
-                style={{ width: `${batteryLevel}%` }}
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col items-center p-3 bg-gray-100 rounded-lg">
-                <span className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                  <ClockIcon className="w-4 h-4" />
-                  Bắt đầu
-                </span>
-                <span className="text-base font-semibold text-gray-800">
-                  {estimatedTime}
-                </span>
-              </div>
-              <div className="flex flex-col items-center p-3 bg-gray-100 rounded-lg">
-                <span className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                  <StopwatchIcon className="w-4 h-4" />{" "}
-                  {/* --- SẼ DÙNG ICON TỪ OUTLINE --- */}
-                  Thời gian
-                </span>
-                <span className="text-base font-semibold text-gray-800">
-                  {formatChargingTime(chargingTime)}
-                </span>
-              </div>
-              <div className="flex flex-col items-center p-3 bg-gray-100 rounded-lg">
-                <span className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                  <BanknotesIcon className="w-4 h-4" />
-                  Giá
-                </span>
-                <span className="text-base font-semibold text-gray-800">
-                  {station.pricePerKwh || "3,500đ/kWh"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            className="w-full bg-red-600 text-white border-none py-4 rounded-[14px] text-lg font-bold cursor-pointer transition-all duration-300 shadow-lg shadow-red-500/30 hover:bg-red-700 hover:-translate-y-0.5"
-            onClick={handleStopCharging}
-          >
-            Dừng sạc
-          </button>
-        </div>
+      <div className="min-h-screen flex justify-center items-center">
+        <Spinner animation="border" variant="primary" />
+        <span className="ml-2 text-gray-700">
+          Đang tải dữ liệu phiên sạc...
+        </span>
       </div>
     );
   }
 
-  // Completed state
-  if (sessionState === "completed") {
-    return (
-      <div className={pageBackground}>
-        <div className="bg-white p-10 rounded-[24px] shadow-2xl max-w-[500px] w-full text-center animate-slideUp">
-          <CheckCircleIcon className="text-[5rem] mb-5 text-green-500 animate-bounceIn mx-auto" />
-          <h2 className="text-3xl text-green-600 mb-8 font-bold">
-            Sạc hoàn tất!
-          </h2>
+  return (
+    <div className="min-h-screen bg-gray-50 px-8 py-10">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* CỘT TRÁI: Thông tin sạc */}
+          <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">
+                Đang sạc tại <b>{session.stationName}</b>
+              </h2>
+              <span className="text-green-700 bg-green-100 px-3 py-1 rounded-lg text-sm font-medium">
+                {session.statusMessage}
+              </span>
+            </div>
 
-          <div className="bg-gray-50 p-6 rounded-xl mb-8 text-left divide-y divide-gray-200">
-            <div className="flex justify-between py-4 text-base">
-              <span className="text-gray-600">Pin đạt:</span>
-              <span className="text-green-600 font-bold text-lg">
-                {Math.round(batteryLevel)}%
-              </span>
+            <div>
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Mức pin hiện tại</span>
+                <span>{session.currentSocPercent}%</span>
+              </div>
+              <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+                <div
+                  className="bg-green-600 h-full"
+                  style={{
+                    width: `${session.currentSocPercent}%`,
+                    transition: "width 0.3s",
+                  }}
+                ></div>
+              </div>
             </div>
-            <div className="flex justify-between py-4 text-base">
-              <span className="text-gray-600">Thời gian sạc:</span>
-              <span className="font-semibold">
-                {formatChargingTime(chargingTime)}
-              </span>
+
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+              <p>🔌 Loại cổng sạc: {session.plugType}</p>
+              <p>⚙️ Điện áp: {session.voltage}</p>
+              <p>🔋 Dung lượng pin: {session.batteryCapacity}</p>
+              <p>📍 Trạm: {session.stationName}</p>
             </div>
-            <div className="flex justify-between py-4 text-base">
-              <span className="text-gray-600">Trạm:</span>
-              <span className="font-semibold">{station.stationName}</span>
+
+            <div className="flex justify-between items-center border-t pt-4 text-gray-700">
+              <div>
+                <p className="text-sm">
+                  Công suất: <b>{session.maxPowerKw}kW</b>
+                </p>
+                <p className="text-sm">
+                  Giá điện: <b>{session.pricePerKwh.toLocaleString()}đ/kWh</b>
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Thời gian đã sạc</p>
+                <p className="font-semibold text-lg">
+                  {formatTime(session.elapsedTimeMinutes * 60)}
+                </p>
+              </div>
             </div>
           </div>
 
-          <button
-            className="w-full bg-blue-600 text-white border-none py-4 rounded-[14px] text-lg font-bold cursor-pointer transition-all duration-300 shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:-translate-y-0.5"
-            onClick={handleCompleteSession}
-          >
-            Xem lịch sử
-          </button>
+          {/* CỘT PHẢI: Dự kiến hoàn thành & chi phí */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border shadow-sm p-6">
+              <h3 className="font-semibold text-gray-700 mb-3">
+                {" "}
+                Dự kiến hoàn thành
+              </h3>
+              <div className="text-green-600 text-3xl font-bold mb-1">
+                {session.estimatedRemainingMinutes} phút
+              </div>
+              <p className="text-gray-500 text-sm mb-2">
+                Thời gian còn lại (ước tính)
+              </p>
+              <p className="text-gray-700 text-sm">
+                Mục tiêu: <b>{session.targetSocPercent}%</b>
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border shadow-sm p-6">
+              <h3 className="font-semibold text-gray-700 mb-3">
+                {" "}
+                Chi phí hiện tại
+              </h3>
+              <p className="text-3xl font-bold text-blue-600 mb-1">
+                {session.currentCost.toLocaleString()}đ
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }

@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./MapPage.css"; // Chúng ta sẽ cập nhật file này
-import { stationsAPI } from "../../lib/apiServices";
+import { stationsAPI } from "../../lib/apiServices.js";
 import ChargerSelectionModal from "../../components/ChargerSelectionModal";
 import RoutingControl from "../../components/RoutingControl";
 import ChargingPanel from "../../components/ChargingPanel";
@@ -195,7 +195,7 @@ export default function MapPage() {
     setShowChargingPanel(true);
   };
 
-  const handleCloseChargingPanel = () => {
+  const handleCloseChargingPanel = () => {a
     setShowChargingPanel(false);
     setActiveCharger(null);
     setActiveStation(null);
