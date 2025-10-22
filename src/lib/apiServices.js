@@ -192,6 +192,14 @@ const realApiServices = {
     },
   },
 
+  // =========================
+  // 🔌 Charging Sessions
+  // =========================
+  chargingSessions: {
+    // Lịch sử sạc của driver hiện tại
+    getMySessions: () => api.get("/api/charging-sessions/my-sessions"),
+  },
+
   staff: {
     getAllStaffs: () => api.get("/api/stations/staff/all"),
   },
@@ -210,6 +218,7 @@ export const paymentsAPI = apiServices.payments;
 export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;
 export const vehiclesAPI = apiServices.vehicles;
+export const chargingSessionsAPI = apiServices.chargingSessions; // <-- add export
 
 // Helper function to check if using mock API
 export const isMockMode = () => USE_MOCK_API;

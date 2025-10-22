@@ -17,14 +17,7 @@ const Header = () => {
 
   // Get user name from useAuth context first, then fallback to localStorage
   const getUserName = () => {
-    // First try to get from useAuth context
-    if (user?.fullName) return user.fullName;
-    if (user?.firstName && user?.lastName)
-      return `${user.firstName} ${user.lastName}`;
-    if (user?.firstName) return user.firstName;
-    if (user?.name) return user.name;
-    if (user?.email) return user.email.split("@")[0]; // Get username part of email
-
+  
     // Fallback to localStorage
     try {
       // Try to get from 'user' key first (single object)
