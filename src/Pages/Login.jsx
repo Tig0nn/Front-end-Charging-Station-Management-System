@@ -54,6 +54,8 @@ function Login() {
           navigate(result.needsProfile ? "/driver/add-info" : "/driver");
         } else if (role === "ADMIN") {
           navigate("/admin");
+        } else if (role === "STAFF") { // check có phải staff không
+          navigate("/staff");
         } else {
           navigate("/");
         }

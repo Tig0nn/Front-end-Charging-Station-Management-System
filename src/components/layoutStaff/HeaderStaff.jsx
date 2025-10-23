@@ -1,8 +1,15 @@
 import React from "react";
 import { Navbar, Container, Nav, NavDropdown } from "react-bootstrap";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router";
+import { useAuth } from "../../hooks/useAuth.jsx";
 export default function Header() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
   return (
     <Navbar bg="white" expand="lg" className="border-bottom shadow-sm" sticky="top">
       <Container fluid>
@@ -37,7 +44,7 @@ export default function Header() {
                 Thông tin cá nhân
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item as={Link} to="/logout" className="text-danger">
+              <NavDropdown.Item onClick={handleLogout} className="text-danger">
                 Đăng xuất
               </NavDropdown.Item>
             </NavDropdown>

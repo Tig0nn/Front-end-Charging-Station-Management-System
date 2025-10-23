@@ -194,6 +194,9 @@ const realApiServices = {
 
   staff: {
     getAllStaffs: () => api.get("/api/stations/staff/all"),
+    getStaffDashboard: () => api.get("/api/staff/dashboard"),
+    getStaffProfile: () => api.get("/api/staff/profile"),
+    getChargingPoint: () => api.get("/api/staff/my-station/charging-points"),
   },
 };
 

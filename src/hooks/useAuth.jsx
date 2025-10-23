@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, createContext } from "react";
-import { authAPI, usersAPI } from "../lib/apiServices.js";
+import { authAPI, usersAPI, staffAPI } from "../lib/apiServices.js";
 import { setAuthToken, getAuthToken } from "../lib/api";
 // import { setCurrentUser, getCurrentUser, clearAuth } from "../lib/auth.js";
 
@@ -35,10 +35,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
         if (storedUser && storedUser.email) {
+          // Prefill UI, nhưng KHÔNG return, KHÔNG setLoading(false)
           setUser(storedUser);
           setIsAuthenticated(true);
-          setLoading(false);
-          return;
         }
       } catch (error) {
         console.log("Error reading stored user:", error);
@@ -62,7 +61,6 @@ export const AuthProvider = ({ children }) => {
         userInfo.role || decodedToken.role || decodedToken.scope || ""
       ).toUpperCase();
 
-      // Nếu là DRIVER, gọi getDriverInfo
       if (role === "DRIVER") {
         usersAPI
           .getDriverInfo()
@@ -78,26 +76,31 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(false);
             localStorage.removeItem("user");
           })
-          .finally(() => {
-            setLoading(false);
-          });
+          .finally(() => setLoading(false));
+      } else if (role === "STAFF") {
+        staffAPI
+          .getStaffProfile()
+          .then((response) => {
+            const userData = response.data.result || response.data;
+            setUser(userData);
+            setIsAuthenticated(true);
+            localStorage.setItem("user", JSON.stringify(userData));
+          })
+          .catch(() => {
+            setAuthToken(null);
+            setUser(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem("user");
+          })
+          .finally(() => setLoading(false));
       } else {
-        // Nếu là ADMIN hoặc role khác, chỉ dùng thông tin từ token
         const userData = {
-          userId:
-            userInfo.userId ||
-            decodedToken.sub ||
-            decodedToken.userId ||
-            decodedToken.id,
+          userId: userInfo.userId || decodedToken.sub || decodedToken.userId || decodedToken.id,
           email: userInfo.email || decodedToken.email || decodedToken.sub,
           role: role,
           firstName: userInfo.firstName || decodedToken.firstName || null,
           lastName: userInfo.lastName || decodedToken.lastName || null,
-          fullName:
-            userInfo.fullName ||
-            decodedToken.fullName ||
-            decodedToken.name ||
-            null,
+          fullName: userInfo.fullName || decodedToken.fullName || decodedToken.name || null,
         };
         setUser(userData);
         setIsAuthenticated(true);

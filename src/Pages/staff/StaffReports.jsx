@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { staffAPI } from "../../lib/apiServices";
 import {
   Container,
   Row,
@@ -10,6 +11,8 @@ import {
   ListGroup,
   ButtonGroup,
 } from "react-bootstrap";
+
+
 
 // Dữ liệu mẫu cho các sự cố gần đây
 const recentIncidents = [
@@ -31,6 +34,10 @@ const recentIncidents = [
   },
 ];
 
+
+
+
+
 // Hàm để lấy màu badge dựa trên mức độ nghiêm trọng
 const getSeverityBadge = (severity) => {
   switch (severity) {
@@ -46,11 +53,42 @@ const getSeverityBadge = (severity) => {
 };
 
 const StaffReports = () => {
-  const [activeTab, setActiveTab] = useState("Sự cố");
+  const [report, setReport] = useState({
+    email: "",
+    password: "",
+  });
+  const [charging_point, setChargingPoint] = useState([]);
+  const handleChangeValue = (e) => {
+    setReport({
+      ...report,
+      [e.target.name]: e.target.value,
+    });
+  };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      try{
+        
+        console.log("Submitting report:", report);
+      } catch (err) {
+        console.error("Lỗi khi gửi báo cáo sự cố:", err); 
+    }
+  };
+  useEffect(() => {
+    const fetchChargingPoint = async () => {
+      try {
+        const res = await staffAPI.getChargingPoint();
+        setChargingPoint(res.data.result || []);
+      } catch (err) {
+        console.error("Lỗi khi tải danh sách cổng sạc:", err);
+      }
+    };
+    fetchChargingPoint();
+  }, []);
+  
 
   return (
     <Container fluid className="p-4">
-   
+
       {/* Form Báo cáo sự cố */}
       <Card className="shadow-sm mb-4">
         <Card.Body className="p-4">
@@ -58,30 +96,43 @@ const StaffReports = () => {
           <Card.Subtitle className="mb-4 text-muted">
             Ghi nhận và báo cáo sự cố tại trạm sạc
           </Card.Subtitle>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="incidentType">
               <Form.Label>Loại sự cố</Form.Label>
-              <Form.Select>
+              <Form.Select  onChange={handleChangeValue} name="incidentType" required>
                 <option>Chọn loại sự cố</option>
-                <option value="1">Lỗi kết nối</option>
-                <option value="2">Trụ sạc không hoạt động</option>
-                <option value="3">Vấn đề thanh toán</option>
-                <option value="4">Hư hỏng vật lý</option>
+                <option value="Lỗi kết nối">Lỗi kết nối</option>
+                <option value="Trụ sạc không hoạt động">Trụ sạc không hoạt động</option>
+                <option value="Vấn đề thanh toán">Vấn đề thanh toán</option>
+                <option value="Hư hỏng vật lý">Hư hỏng vật lý</option>
               </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="severityLevel">
               <Form.Label>Mức độ nghiêm trọng</Form.Label>
-              <Form.Select defaultValue="Trung bình">
-                <option>Thấp</option>
-                <option>Trung bình</option>
-                <option>Cao</option>
+              <Form.Select  onChange={handleChangeValue} name="severityLevel" defaultValue="Trung bình">
+                <option value="Thấp">Thấp</option>
+                <option value="Trung bình">Trung bình</option>
+                <option value="Cao">Cao</option>
               </Form.Select>
             </Form.Group>
-
+            <Form.Group className="mb-3" controlId="chargingPoint">
+              <Form.Label>Cổng sạc</Form.Label>
+              <Form.Select  onChange={handleChangeValue} name="pointId" required>
+                <option value="">Chọn cổng sạc</option>
+                {charging_point.map((p) => (
+                  <option key={p.pointId} value={p.pointId}>
+                    {p.pointId}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
             <Form.Group className="mb-4" controlId="incidentDescription">
               <Form.Label>Mô tả chi tiết</Form.Label>
               <Form.Control
+                onChange={handleChangeValue}
+                type="text"
+                name="report"
                 as="textarea"
                 rows={4}
                 placeholder="Mô tả chi tiết về sự cố..."
