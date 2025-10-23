@@ -1,8 +1,11 @@
 // src/pages/StationOverview.jsx
 import React from "react";
 import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
-
+import { chargingPointsAPI } from "../../lib/apiServices.js";
+import { useState, useEffect } from "react";
 // Mock data (có thể fetch API sau)
+
+
 const stations = [
   {
     id: 1,
@@ -62,7 +65,18 @@ const stations = [
   },
 ];
 
-// Hàm lấy màu theo trạng thái
+
+
+export default function StationOverview() {
+  // State để lưu danh sách trụ sạc từ API
+  const [chargingPoints, setChargingPoints] = useState([]);
+  // State để quản lý trạng thái tải dữ liệu
+  const [loading, setLoading] = useState(true);
+  // State để lưu thông báo lỗi nếu có
+  const [error, setError] = useState(null);
+
+
+  // Hàm lấy màu theo trạng thái
 const getStatusBadge = (status) => {
   switch (status) {
     case "Đang sạc":
@@ -72,13 +86,52 @@ const getStatusBadge = (status) => {
     case "Offline":
       return <Badge bg="danger">Offline</Badge>;
     case "Bảo trì":
-      return <Badge bg="warning" text="dark">Bảo trì</Badge>;
+      return (
+        <Badge bg="warning" text="dark">
+          Bảo trì
+        </Badge>
+      );
     default:
       return <Badge bg="secondary">{status}</Badge>;
   }
 };
 
-export default function StationOverview() {
+const idStation = "a09fc6f4-aba2-11f0-bfb5-a2aa8cd208e5"; // ID trạm sạc mẫu
+
+  useEffect(() => {
+    const fetchChargingPoints = async () => {
+      if (!idStation) {
+        setError("Không xác định được ID của trạm sạc.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        // Gọi API thật bằng hàm bạn đã chỉ định
+        const response = await chargingPointsAPI.getChargersByStation(
+          managedStationId
+        );
+
+        if (response.data && response.data.result) {
+          // Lưu dữ liệu vào state
+          setChargingPoints(response.data.result);
+        } else {
+          setChargingPoints([]);
+        }
+      } catch (err) {
+        console.error("Error fetching charging points:", err);
+        setError("Không thể tải danh sách trụ sạc. Vui lòng thử lại.");
+        setChargingPoints([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChargingPoints();
+  }, []); // Chỉ chạy 1 lần khi component được render
+
   return (
     <Container className="py-4">
       <h4 className="mb-2">Trạm sạc: Vincom Đồng Khởi</h4>
@@ -146,18 +199,20 @@ export default function StationOverview() {
                 )}
 
                 {s.status === "Offline" && (
-                  <div className="text-center text-danger py-3">Không kết nối</div>
+                  <div className="text-center text-danger py-3">
+                    Không kết nối
+                  </div>
                 )}
 
                 {s.status === "Bảo trì" && (
-                  <div className="text-center text-warning py-3">Đang bảo trì</div>
+                  <div className="text-center text-warning py-3">
+                    Đang bảo trì
+                  </div>
                 )}
 
                 <div className="d-flex gap-2">
                   <Button
-                    variant={
-                      s.status === "Đang sạc" ? "light" : "dark"
-                    }
+                    variant={s.status === "Đang sạc" ? "light" : "dark"}
                     disabled={s.status === "Offline" || s.status === "Bảo trì"}
                     className="w-50"
                   >

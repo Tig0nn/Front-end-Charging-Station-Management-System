@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Spinner } from "react-bootstrap";
-import { stationsAPI } from "../../lib/apiServices.js";
+import {  chargingPointsAPI } from "../../lib/apiServices.js";
+import { useParams, useNavigate } from "react-router-dom";
+import { StopCircleIcon, ArrowUturnLeftIcon } from "@heroicons/react/24/solid";
 
-export default function ChargingSessionPage({ sessionId }) {
+export default function ChargingSessionPage() {
+  const { sessionId } = useParams(); // Lấy sessionId từ URL
+//  dừng phiên sạc
+  const navigate = useNavigate();
+  const [isStopping, setIsStopping] = useState(false);
+
+
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60);
@@ -17,10 +25,10 @@ export default function ChargingSessionPage({ sessionId }) {
 
     const fetchSession = async () => {
       try {
-        setLoading(true);
-        const res = await stationsAPI.fake(sessionId);
-        const data = res.data.result;
-        setSession(data);
+        // Gọi API thật để lấy thông tin phiên sạc
+        // Giả sử bạn có API này: chargingPointsAPI.getSessionById(sessionId)
+        const res = await chargingPointsAPI.simulateCharging(sessionId);
+        setSession(res.data.result);
       } catch (err) {
         console.log("Lỗi tải session sạc:", err);
         setSession(null);
@@ -33,6 +41,23 @@ export default function ChargingSessionPage({ sessionId }) {
     const timer = setInterval(fetchSession, 5000);
     return () => clearInterval(timer);
   }, [sessionId]);
+  
+// Hàm dừng phiên sạc
+  const handleStopSession = async () => {
+    if (!sessionId) return;
+    setIsStopping(true);
+    try {
+      // Giả sử bạn có API này
+      await chargingPointsAPI.stopCharging(sessionId);
+      // Lần fetch tiếp theo sẽ tự động cập nhật trạng thái
+    } catch (err) {
+      console.error("Lỗi khi dừng phiên sạc:", err);
+      alert("Không thể dừng phiên sạc, vui lòng thử lại.");
+    } finally {
+      setIsStopping(false);
+    }
+  };
+
 
   // -------------------- MÀN HÌNH KHÔNG CÓ SESSION --------------------
   if (!sessionId) {
@@ -98,6 +123,56 @@ export default function ChargingSessionPage({ sessionId }) {
         <span className="ml-2 text-gray-700">
           Đang tải dữ liệu phiên sạc...
         </span>
+      </div>
+    );
+  }
+
+  // --- MÀN HÌNH MỚI: HOÀN TẤT SẠC ---
+  if (
+    session &&
+    (session.status === "COMPLETED" || session.status === "STOPPED")
+  ) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border p-8 text-center">
+          <h2 className="text-2xl font-bold text-green-600 mb-2">
+            Sạc Hoàn Tất!
+          </h2>
+          <p className="text-gray-600 mb-6">Cảm ơn bạn đã sử dụng dịch vụ.</p>
+
+          <div className="bg-gray-100 rounded-lg p-4 space-y-3 text-left mb-8">
+            <div className="flex justify-between">
+              <span>Trạm sạc:</span>
+              <span className="font-semibold">{session.stationName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Thời gian sạc:</span>
+              <span className="font-semibold">
+                {formatTime(session.elapsedTimeMinutes * 60)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Năng lượng đã nạp:</span>
+              <span className="font-semibold">
+                {session.energyConsumedKwh.toFixed(2)} kWh
+              </span>
+            </div>
+            <div className="flex justify-between text-lg">
+              <strong>Tổng chi phí:</strong>
+              <strong className="text-blue-600">
+                {session.currentCost.toLocaleString()}đ
+              </strong>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate("/driver/map")}
+            className="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
+          >
+            <ArrowUturnLeftIcon className="w-5 h-5" />
+            Quay về bản đồ
+          </button>
+        </div>
       </div>
     );
   }
@@ -185,6 +260,20 @@ export default function ChargingSessionPage({ sessionId }) {
                 {session.currentCost.toLocaleString()}đ
               </p>
             </div>
+
+            {/* NÚT DỪNG SẠC MỚI */}
+            <button
+              onClick={handleStopSession}
+              disabled={isStopping}
+              className="w-full bg-red-600 text-white font-bold py-4 rounded-xl text-lg hover:bg-red-700 disabled:bg-gray-400 flex items-center justify-center gap-3"
+            >
+              {isStopping ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                <StopCircleIcon className="w-6 h-6" />
+              )}
+              {isStopping ? "Đang xử lý..." : "Dừng phiên sạc"}
+            </button>
           </div>
         </div>
       </div>

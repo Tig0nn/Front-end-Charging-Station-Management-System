@@ -13,6 +13,7 @@ const NAVIGATION_ITEMS = [
     path: "/sessions",
     label: "Quản lý phiên sạc",
     icon: "bi-ev-station",
+    
   },
   {
     path: "/maintenance",

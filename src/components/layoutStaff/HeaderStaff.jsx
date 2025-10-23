@@ -14,7 +14,7 @@ export default function Header() {
     <Navbar bg="white" expand="lg" className="border-bottom shadow-sm" sticky="top">
       <Container fluid>
         <Navbar.Brand as={Link} to="/staff/overview" className="fw-bold">
-          <span className="text-success">⚡</span> Staff Panel
+          <span className="text-success"></span> Judensha
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="staff-navbar-nav" />
         <Navbar.Collapse id="staff-navbar-nav">

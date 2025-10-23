@@ -138,6 +138,18 @@ const realApiServices = {
     getUnassignedStaff: () => api.get("/api/stations/staff/unassigned"),
     update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),
   },
+  chargingPoints: {
+    // Lấy danh sách trụ sạc của một trạm
+    getChargersByStation: (stationId) =>
+      api.get(`/api/stations/${stationId}/charging-points`),
+    startCharging: (data) => api.post(`/api/charging-sessions/start`, data),
+    //giả lập sạc
+    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}`),
+
+    //  Dừng sạc
+    stopCharging: (sessionId) =>
+      api.post(`/api/charging-sessions/${sessionId}/stop`),
+  },
 
   // =========================
   // 🚗 Vehicles API Services
@@ -213,6 +225,7 @@ export const paymentsAPI = apiServices.payments;
 export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;
 export const vehiclesAPI = apiServices.vehicles;
+export const chargingPointsAPI = apiServices.chargingPoints;
 
 // Helper function to check if using mock API
 export const isMockMode = () => USE_MOCK_API;

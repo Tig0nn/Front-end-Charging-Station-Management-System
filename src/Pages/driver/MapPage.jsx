@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -69,6 +70,7 @@ function MapController({ center, zoom }) {
 }
 
 export default function MapPage() {
+  const navigate = useNavigate();
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -138,7 +140,7 @@ export default function MapPage() {
 
       setStations(mappedStations);
       setError(null);
-
+     
       console.log(`✅ Loaded ${mappedStations.length} stations`);
     } catch (err) {
       console.error("❌ Error fetching stations:", err);
@@ -179,6 +181,8 @@ export default function MapPage() {
   };
 
   const handleOpenChargerModal = (station) => {
+    //log station ra
+    console.log("Opening modal for station:", station);
     setStationForCharging(station);
     setShowChargerModal(true);
   };
@@ -188,11 +192,41 @@ export default function MapPage() {
     setStationForCharging(null);
   };
 
-  const handleStartCharging = (charger) => {
-    console.log("Starting charging with charger:", charger);
-    setActiveCharger(charger);
-    setActiveStation(stationForCharging);
-    setShowChargingPanel(true);
+    const handleStartCharging = async (charger, vehicle, targetSoc) => {
+    console.log("Attempting to start charge with:", {
+      chargerId: charger.chargingPointId,
+      vehicleId: vehicle.vehicleId,
+      targetSoc: targetSoc,
+    });
+
+    try {
+      // 1. Đóng modal ngay lập tức để người dùng thấy phản hồi
+      setShowChargerModal(false);
+
+      // 2. Tạo payload chính xác
+      const payload = {
+        chargingPointId: charger.chargingPointId,
+        vehicleId: vehicle.vehicleId,
+        targetSocPercent: targetSoc,
+      };
+
+      // 3. Gọi API để bắt đầu phiên sạc
+      const response = await chargingPointsAPI.startCharging(payload);
+
+      // 4. Lấy sessionId từ kết quả trả về
+      const sessionId = response.data?.result?.sessionId;
+
+      if (sessionId) {
+        console.log(` Charging session started. Session ID: ${sessionId}`);
+        // 5. Điều hướng đến trang ChargingSessionPage với ID
+        navigate(`/driver/charging-session/${sessionId}`);
+      } else {
+        throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
+      }
+    } catch (err) {
+      console.error("Failed to start charging session:", err);
+      alert(`Không thể bắt đầu phiên sạc: ${err.response?.data?.message || err.message}`);
+    }
   };
 
   const handleCloseChargingPanel = () => {a
