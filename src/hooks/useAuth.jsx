@@ -185,6 +185,32 @@ export const AuthProvider = ({ children }) => {
           };
           needsProfile = true;
         }
+      } else if (role === "STAFF") {
+        // 7) Nếu là STAFF, gọi staffAPI.getStaffProfile để lấy thông tin đầy đủ
+        try {
+          const userInfoResponse = await staffAPI.getStaffProfile();
+          console.log("Staff info response:", userInfoResponse.data);
+          const staffData =
+            userInfoResponse.data?.result || userInfoResponse.data;
+
+          userData = {
+            staffId: staffData.staffId,
+            email: staffData.email,
+            fullName: staffData.fullName,
+            phone: staffData.phone,
+            employeeNo: staffData.employeeNo,
+            position: staffData.position,
+            stationId: staffData.stationId,
+            stationName: staffData.stationName,
+            stationAddress: staffData.stationAddress,
+            role: staffData.role || role,
+          };
+        } catch (staffError) {
+          console.warn(
+            "Cannot get staff info:",
+            staffError
+          );
+        }
       } else {
         // 6) Nếu là ADMIN hoặc role khác, chỉ dùng thông tin từ token
         userData = {
