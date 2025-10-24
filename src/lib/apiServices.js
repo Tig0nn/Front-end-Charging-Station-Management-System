@@ -203,6 +203,10 @@ const realApiServices = {
       return api.get(`/api/vehicles/driver/${driverId}`);
     },
   },
+    chargingSessions: {
+    // Lịch sử sạc của driver hiện tại
+    getMySessions: () => api.get("/api/charging-sessions/my-sessions"),
+  },
 
   staff: {
     getAllStaffs: () => api.get("/api/stations/staff/all"),
@@ -226,6 +230,7 @@ export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;
 export const vehiclesAPI = apiServices.vehicles;
 export const chargingPointsAPI = apiServices.chargingPoints;
+export const chargingSessionsAPI = apiServices.chargingSessions; // <-- add export
 
 // Helper function to check if using mock API
 export const isMockMode = () => USE_MOCK_API;

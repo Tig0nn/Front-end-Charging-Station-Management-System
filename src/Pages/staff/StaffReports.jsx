@@ -97,7 +97,7 @@ const StaffReports = () => {
             Ghi nhận và báo cáo sự cố tại trạm sạc
           </Card.Subtitle>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="incidentType">
+            <Form.Group className="mb-3" name="severity">
               <Form.Label>Loại sự cố</Form.Label>
               <Form.Select  onChange={handleChangeValue} name="incidentType" required>
                 <option>Chọn loại sự cố</option>
@@ -116,7 +116,7 @@ const StaffReports = () => {
                 <option value="Cao">Cao</option>
               </Form.Select>
             </Form.Group>
-            <Form.Group className="mb-3" controlId="chargingPoint">
+            <Form.Group className="mb-3" name="chargingPointId">
               <Form.Label>Cổng sạc</Form.Label>
               <Form.Select  onChange={handleChangeValue} name="pointId" required>
                 <option value="">Chọn cổng sạc</option>
@@ -127,7 +127,7 @@ const StaffReports = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-            <Form.Group className="mb-4" controlId="incidentDescription">
+            <Form.Group className="mb-4" name="description">
               <Form.Label>Mô tả chi tiết</Form.Label>
               <Form.Control
                 onChange={handleChangeValue}
