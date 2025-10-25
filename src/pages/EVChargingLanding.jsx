@@ -320,10 +320,7 @@ export default function EVChargingLanding() {
                 <div className="space-y-4 text-white/90">
                   <p>
                     <strong>Loại thanh toán:</strong>{" "}
-                    {plans[activeFeature]?.billingType ===
-                    "MONTHLY_SUBSCRIPTION"
-                      ? "Theo tháng"
-                      : plans[activeFeature]?.billingType}
+                    {plans[activeFeature]?.name}
                   </p>
                   <p>
                     <strong>Phí hàng tháng:</strong>{" "}

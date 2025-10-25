@@ -230,7 +230,6 @@ export default function Signup() {
               )}
             </Form.Group>
 
-            <Form.Group className="mb-3" controlId="formBasicCheckbox">
               <Form.Check
                 type="checkbox"
                 id="agree-checkbox"
@@ -238,7 +237,16 @@ export default function Signup() {
                 checked={agree}
                 onChange={handleAgree}
               />
-            </Form.Group>
+
+
+            {/* Hiển thị lỗi form general */}
+            {errors.form && (
+              <div
+                style={{ color: "red", marginTop: "10px", textAlign: "center" }}
+              >
+                {errors.form}
+              </div>
+            )}
 
             <Button
               variant="primary"
@@ -249,14 +257,6 @@ export default function Signup() {
               {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
             </Button>
 
-            {/* Hiển thị lỗi form general */}
-            {errors.form && (
-              <div
-                style={{ color: "red", marginTop: "10px", textAlign: "center" }}
-              >
-                {errors.form}
-              </div>
-            )}
 
             <div className="login">
               <label>Đã có tài khoản? </label>{" "}
