@@ -54,8 +54,10 @@ const getSeverityBadge = (severity) => {
 
 const StaffReports = () => {
   const [report, setReport] = useState({
-    email: "",
-    password: "",
+    stationId: localStorage.getItem('stationId'),
+    chargingPointId: "",
+    description: "",
+    severity: ""
   });
   const [charging_point, setChargingPoint] = useState([]);
   const handleChangeValue = (e) => {
@@ -64,13 +66,13 @@ const StaffReports = () => {
       [e.target.name]: e.target.value,
     });
   };
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try{
-        
-        console.log("Submitting report:", report);
-      } catch (err) {
-        console.error("Lỗi khi gửi báo cáo sự cố:", err); 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await staffAPI.submitReport(report);
+      console.log("Submitting report:", report);
+    } catch (err) {
+      console.error("Lỗi khi gửi báo cáo sự cố:", err);
     }
   };
   useEffect(() => {
@@ -84,7 +86,7 @@ const StaffReports = () => {
     };
     fetchChargingPoint();
   }, []);
-  
+
 
   return (
     <Container fluid className="p-4">
@@ -97,20 +99,9 @@ const StaffReports = () => {
             Ghi nhận và báo cáo sự cố tại trạm sạc
           </Card.Subtitle>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" name="severity">
-              <Form.Label>Loại sự cố</Form.Label>
-              <Form.Select  onChange={handleChangeValue} name="incidentType" required>
-                <option>Chọn loại sự cố</option>
-                <option value="Lỗi kết nối">Lỗi kết nối</option>
-                <option value="Trụ sạc không hoạt động">Trụ sạc không hoạt động</option>
-                <option value="Vấn đề thanh toán">Vấn đề thanh toán</option>
-                <option value="Hư hỏng vật lý">Hư hỏng vật lý</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="severityLevel">
+            <Form.Group className="mb-3" controlId="severity">
               <Form.Label>Mức độ nghiêm trọng</Form.Label>
-              <Form.Select  onChange={handleChangeValue} name="severityLevel" defaultValue="Trung bình">
+              <Form.Select onChange={handleChangeValue} name="severityLevel" defaultValue="Trung bình">
                 <option value="Thấp">Thấp</option>
                 <option value="Trung bình">Trung bình</option>
                 <option value="Cao">Cao</option>
@@ -118,11 +109,11 @@ const StaffReports = () => {
             </Form.Group>
             <Form.Group className="mb-3" name="chargingPointId">
               <Form.Label>Cổng sạc</Form.Label>
-              <Form.Select  onChange={handleChangeValue} name="pointId" required>
+              <Form.Select onChange={handleChangeValue} name="pointId" required>
                 <option value="">Chọn cổng sạc</option>
                 {charging_point.map((p) => (
                   <option key={p.pointId} value={p.pointId}>
-                    {p.pointId}
+                    {p.name}
                   </option>
                 ))}
               </Form.Select>
