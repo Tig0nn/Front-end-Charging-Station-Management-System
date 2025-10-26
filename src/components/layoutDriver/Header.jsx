@@ -16,15 +16,6 @@ const Header = () => {
 
   // Get user name from useAuth context first, then fallback to localStorage
   const getUserName = () => {
-    // First try to get from useAuth context
-    if (user?.fullName) return user.fullName;
-    if (user?.firstName && user?.lastName)
-      return `${user.firstName} ${user.lastName}`;
-    if (user?.firstName) return user.firstName;
-    if (user?.name) return user.name;
-    if (user?.email) return user.email.split("@")[0]; // Get username part of email
-
-    // Fallback to localStorage
     try {
       // Try to get from 'user' key first (single object)
       let storedUser = localStorage.getItem("user");
@@ -33,25 +24,6 @@ const Header = () => {
         if (storedUser.fullName) return storedUser.fullName;
         if (storedUser.firstName && storedUser.lastName)
           return `${storedUser.firstName} ${storedUser.lastName}`;
-        if (storedUser.firstName) return storedUser.firstName;
-        if (storedUser.name) return storedUser.name;
-        if (storedUser.email) return storedUser.email.split("@")[0];
-      }
-
-      // Try to get from 'users' key (might be array)
-      let storedUsers = localStorage.getItem("users");
-      if (storedUsers && storedUsers !== "null") {
-        storedUsers = JSON.parse(storedUsers);
-        // If it's an array, get the first user
-        const currentUser = Array.isArray(storedUsers)
-          ? storedUsers[0]
-          : storedUsers;
-        if (currentUser?.fullName) return currentUser.fullName;
-        if (currentUser?.firstName && currentUser?.lastName)
-          return `${currentUser.firstName} ${currentUser.lastName}`;
-        if (currentUser?.firstName) return currentUser.firstName;
-        if (currentUser?.name) return currentUser.name;
-        if (currentUser?.email) return currentUser.email.split("@")[0];
       }
 
       // Default fallback
@@ -125,7 +97,7 @@ const Header = () => {
             style={{ marginTop: "11px" }}
           >
             <img
-              src="/src/assets/image/img.png" // Đường dẫn đến file ảnh của bạn
+              src="/src/assets/image/logo.png" // Đường dẫn đến file ảnh của bạn
               alt="BankDash Logo" // Luôn thêm alt text cho khả năng tiếp cận
               className="rounded" // Giữ lại bo tròn nếu muốn
               style={{

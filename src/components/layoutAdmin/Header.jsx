@@ -38,7 +38,7 @@ const Header = () => {
             style={{ marginTop: "11px" }}
           >
             <img
-              src="/src/assets/image/img.png" // Đường dẫn đến file ảnh của bạn
+              src="/src/assets/image/logo.png" // Đường dẫn đến file ảnh của bạn
               alt="BankDash Logo" // Luôn thêm alt text cho khả năng tiếp cận
               className="rounded" // Giữ lại bo tròn nếu muốn
               style={{

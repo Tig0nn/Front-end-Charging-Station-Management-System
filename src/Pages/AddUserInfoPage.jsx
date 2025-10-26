@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./BackGround.css"; // import nền gradient
 import { usersAPI } from "../lib/apiServices"; // dùng usersAPI cho update + get info
-import { useAuth } from "../hooks/useAuth";
-
+import { useAuth } from "../hooks/useAuth.jsx";
 export default function AddUserInfoPage() {
+  const { logout } = useAuth();
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
   const [form, setForm] = useState({
     last_name: "",
     first_name: "",
@@ -17,7 +21,6 @@ export default function AddUserInfoPage() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { user, setUser } = useAuth?.() || {}; // lấy cả user để fallback
 
   const handleChangeValue = (e) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -67,33 +70,16 @@ export default function AddUserInfoPage() {
         phone: phoneNum.trim(),
       });
 
-      // Lấy lại hồ sơ driver từ usersAPI (không dùng authAPI)
       const prof = await usersAPI.getDriverInfo().catch(() => null);
-      const updatedUser = prof?.data?.result ||
-        prof?.data || {
-          ...(user || {}),
-          lastName: last_name.trim(),
-          firstName: first_name.trim(),
-          gender: Number(gender),
-          dateOfBirth: dob,
-          phone: phoneNum.trim(),
-        };
+      const updatedUser = prof?.data?.result;
 
       // Chuẩn hóa role để guard không chặn
       if (!updatedUser.role)
-        updatedUser.role = String(user?.role || "DRIVER").toUpperCase();
-
-      if (typeof setUser === "function") setUser(updatedUser);
+        updatedUser.role = String("DRIVER").toUpperCase();
       localStorage.setItem("user", JSON.stringify(updatedUser));
-
-      // Bypass guard 1 lần và chuyển thẳng vào Driver
-      sessionStorage.setItem("bypassDriverInfoOnce", "1");
-      navigate("/driver", {
-        replace: true,
-        state: { from: "add-info-success" },
-      });
+      navigate("/driver");
     } catch (err) {
-      alert(err?.response?.data?.message || err.message || "Cập nhật thất bại");
+      alert(err?.response?.data?.message || err.message || "Đã có lỗi xảy ra");
     } finally {
       setIsSubmitting(false);
     }
@@ -266,7 +252,7 @@ export default function AddUserInfoPage() {
 
           <button
             type="button"
-            onClick={() => navigate("/logout")}
+            onClick={handleLogout}
             className="!mt-3 !w-full !rounded-[10px] !py-3 !font-semibold !text-white !bg-gradient-to-r !from-[#e82a2a] !to-[#f00707]
                        !transition-all !duration-200 !ease-out hover:!translate-y-0.5 active:!translate-y-[1px]
                        hover:!shadow-[0_0_8px_#f00707,0_0_16px_#f00707,0_0_24px_#f00707]

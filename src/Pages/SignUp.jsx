@@ -1,9 +1,11 @@
+//**Phần code này do Nguyễn Vũ Trường Huy thực hiện
+//Khai báo, import thư viện
 import React, { useState } from "react";
 import "./SignUp.css";
 import "./BackGround.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Link, useNavigate } from "react-router-dom"; // <— thêm useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import { usersAPI } from "../lib/apiServices";
 import logo from "../assets/image/logo.png";
 
@@ -29,11 +31,11 @@ export default function Signup() {
       [e.target.name]: e.target.value,
     });
   };
-  const navigate = useNavigate(); // <— khởi tạo navigate
+  //tạo navigate
+  const navigate = useNavigate(); 
 
-  // Khi người dùng focus (nhấp chuột) vào một ô input, hàm này sẽ được gọi.
-  // Nó kiểm tra xem có lỗi nào đang hiển thị cho ô đó không, nếu có thì sẽ xóa lỗi đó đi.
-  // Điều này giúp cải thiện trải nghiệm người dùng.
+  /*Khi người dùng focus (nhấp chuột) vào một ô input đang hiện lỗi, xóa lỗi
+  đó đi*/
   const handleFocus = (e) => {
     const fieldName = e.target.name;
     if (errors[fieldName]) {
@@ -55,7 +57,7 @@ export default function Signup() {
     // Tạo một đối tượng rỗng để chứa các lỗi nếu có.
     const newErrors = {}; //chứa tất cả lỗi
 
-    // Phần kiểm tra (validation) dữ liệu
+    // validate dữ liệu
     if (!email.trim()) {
       // check email có trống không
       newErrors.email = "Vui lòng điền email.";
@@ -77,7 +79,6 @@ export default function Signup() {
     }
 
     // Cập nhật state 'errors' với các lỗi vừa tìm thấy.
-    // Việc này sẽ khiến component render lại và hiển thị các thông báo lỗi.
     setErrors(newErrors);
 
     // Chỉ gọi API nếu không có lỗi validation
@@ -99,16 +100,18 @@ export default function Signup() {
 
         console.log("Registration successful:", response.data);
 
-        // Check response format
+        // Check response 
         if (response.data?.code === 1000) {
           alert("Đăng ký thành công!");
           console.log("User created:", response.data.result);
-          // Tùy chọn: Chuyển người dùng đến trang đăng nhập
-          navigate("/login", { replace: true }); // <— điều hướng sang login
+          // chuyển sang trang login
+          navigate("/login", { replace: true });
         } else {
+          //ném lỗi
           throw new Error(response.data?.message || "Đăng ký thất bại");
         }
       } catch (err) {
+        //bắt lỗi và hiện trên console web
         console.error("Lỗi khi đăng ký:", err);
         console.error("Error response:", err.response);
         console.error("Error status:", err.response?.status);
@@ -122,21 +125,14 @@ export default function Signup() {
 
         // Hiển thị lỗi dựa trên response
         if (err.response?.status === 400) {
-          // Check if it's email already exists error
+          // Email đã được đăng kí
           if (
-            errorMessage.toLowerCase().includes("email") ||
-            errorMessage.toLowerCase().includes("đã tồn tại")
+            errorMessage.toLowerCase().includes("user existed")
           ) {
-            setErrors({ email: "Email đã được sử dụng" });
+            setErrors({ form: "Email đã được sử dụng" });
           } else {
             setErrors({ form: errorMessage });
           }
-        } else if (err.response?.status === 401) {
-          setErrors({
-            form: "Không có quyền truy cập - có thể API yêu cầu authentication",
-          });
-        } else if (err.message.includes("Network Error")) {
-          setErrors({ form: "Lỗi mạng: Không thể kết nối đến máy chủ" });
         } else {
           setErrors({ form: errorMessage });
         }
@@ -144,8 +140,8 @@ export default function Signup() {
         setIsSubmitting(false);
       }
     }
-
-    console.log(email, password, confirmed_password); //Check thông tin trên console
+    //Check thông tin trên console
+    console.log(email, password, confirmed_password); 
   };
   return (
     <div className="signup-page">
@@ -239,8 +235,7 @@ export default function Signup() {
               />
 
 
-            {/* Hiển thị lỗi form general */}
-            {errors.form && (
+            {errors.form&& (
               <div
                 style={{ color: "red", marginTop: "10px", textAlign: "center" }}
               >
@@ -273,3 +268,4 @@ export default function Signup() {
     </div>
   );
 }
+//**Hết phần code do Nguyễn Vũ Trường Huy thực hiện
