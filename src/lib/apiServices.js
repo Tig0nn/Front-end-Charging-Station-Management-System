@@ -99,6 +99,8 @@ const realApiServices = {
   stations: {
     // Lấy tổng quan tất cả trạm
     getOverview: () => api.get("/api/stations"),
+    //Lấy trạm chi tiết 
+    getAllDetails: () => api.get("/api/stations/detail"),
 
     // Lấy danh sách chi tiết + filter theo status
     getAll: (page = 1, limit = 10) =>
@@ -144,7 +146,7 @@ const realApiServices = {
       api.get(`/api/stations/${stationId}/charging-points`),
     startCharging: (data) => api.post(`/api/charging-sessions/start`, data),
     //giả lập sạc
-    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}`),
+    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}/active`),
 
     //  Dừng sạc
     stopCharging: (sessionId) =>

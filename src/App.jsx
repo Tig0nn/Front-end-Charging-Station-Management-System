@@ -196,6 +196,7 @@ function App() {
                 <Route path="/" element={<MapPage />} />
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/session" element={<ChargingSessionPage />} />
+                <Route path="/session/:sessionId" element={<ChargingSessionPage />} />
                 <Route path="/history/*" element={<HistoryPage />} />
 
                 {/* Các route con của trang hồ sơ */}

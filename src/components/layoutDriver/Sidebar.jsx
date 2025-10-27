@@ -11,7 +11,7 @@ const USER_NAVIGATION_ITEMS = [
     icon: "bi-geo-alt",
   },
   {
-    path: "/driver/session",
+    path: "/driver/session/:sessionId",
     label: "Phiên sạc",
     icon: "bi-lightning-charge",
   },

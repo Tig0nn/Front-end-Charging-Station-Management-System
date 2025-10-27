@@ -38,6 +38,7 @@ export default function ChargerSelectionModal({
 
   // --- CÁC HÀM GỌI API ---
 
+  // --- HÀM LẤY DANH SÁCH TRỤ SẠC ---
   const fetchChargers = async () => {
     if (!station?.stationId) {
       setError("ID của trạm không hợp lệ.");
@@ -50,6 +51,7 @@ export default function ChargerSelectionModal({
       const response = await chargingPointsAPI.getChargersByStation(station.stationId);
       if (response.data && response.data.result) {
         setChargers(response.data.result);
+        console.log(response.data.result);
       } else {
         setChargers([]);
       }
@@ -61,7 +63,7 @@ export default function ChargerSelectionModal({
       setChargerLoading(false);
     }
   };
-
+// --- HÀM LẤY DANH SÁCH XE CỦA NGƯỜI DÙNG ---
   const fetchVehicles = async () => {
     try {
       setVehicleLoading(true);
@@ -70,6 +72,7 @@ export default function ChargerSelectionModal({
       if (response.data && response.data.result) {
         const userVehicles = response.data.result;
         setVehicles(userVehicles);
+        console.log("User vehicles:", userVehicles);
         if (userVehicles.length === 1) {
           setSelectedVehicle(userVehicles[0]);
         }
@@ -114,17 +117,26 @@ export default function ChargerSelectionModal({
     setError(null); // Xóa lỗi có thể xảy ra ở màn hình chọn xe
   };
 
-  const handleConfirmAndStartCharging = async () => {
-     if (!selectedCharger || !selectedVehicle) return;
+ const handleConfirmAndStartCharging = async () => {
+    if (!selectedCharger || !selectedVehicle) return;
     setIsStarting(true);
-    // Gọi hàm prop từ cha và truyền cả 3 thông tin
-    await onStartCharging(selectedCharger, selectedVehicle, targetSoc);
-   
-    setIsStarting(false);
-    onClose();
+    try {
+      await onStartCharging(selectedCharger, selectedVehicle, targetSoc);
+      onClose();
+    } catch(err) {
+      console.error(err);
+      setError("Không thể bắt đầu sạc.");
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   // --- CÁC HÀM TIỆN ÍCH CHO GIAO DIỆN ---
+  const formatPower = (powerString) => {
+    if (!powerString) return "N/A";
+    const match = powerString.match(/\d+/); // lấy ra số trong chuỗi
+    return match ? `${match[0]} KW` : powerString;
+  };
 
   const getChargerIcon = (status) => {
     switch (status) {
@@ -154,11 +166,11 @@ export default function ChargerSelectionModal({
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
             {chargers.map((charger) => (
-              <div key={charger.chargingPointId} onClick={() => handleSelectCharger(charger)} className={`bg-white border-2 rounded-2xl p-4 text-center transition-all duration-300 relative ${charger.status === "AVAILABLE" ? "cursor-pointer hover:-translate-y-1" : "cursor-not-allowed opacity-70"} ${selectedCharger?.chargingPointId === charger.chargingPointId ? "border-emerald-500 scale-[1.02]" : "border-gray-200"}`}>
-                {selectedCharger?.chargingPointId === charger.chargingPointId && <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center"><CheckCircleIcon className="w-6 h-6" /></div>}
+              <div key={charger.pointId} onClick={() => handleSelectCharger(charger)} className={`bg-white border-2 rounded-2xl p-4 text-center transition-all duration-300 relative ${charger.status === "AVAILABLE" ? "cursor-pointer hover:-translate-y-1" : "cursor-not-allowed opacity-70"} ${selectedCharger?.pointId === charger.pointId ? "border-emerald-500 scale-[1.02]" : "border-gray-200"}`}>
+                {selectedCharger?.pointId === charger.pointId && <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center"><CheckCircleIcon className="w-6 h-6" /></div>}
                 <div className="h-12 flex items-center justify-center mb-2">{getChargerIcon(charger.status)}</div>
                 <h3 className="text-lg font-extrabold text-gray-900 mb-1">{charger.name}</h3>
-                <p className="text-sm text-gray-600 my-0.5 font-semibold">{charger.powerKw}kW</p>
+                <p className="text-sm text-gray-600 my-0.5 font-semibold">{formatPower(charger.chargingPower)}</p>
                 <p className="text-xs text-gray-500 my-0.5 mb-2 font-medium">{charger.connectorType}</p>
                 <div className={`inline-block px-3 py-1 rounded-xl text-xs font-bold uppercase mt-1 ${charger.status === "AVAILABLE" ? "bg-emerald-100 text-emerald-800" : "bg-gray-200 text-gray-600"}`}>{getChargerStatusText(charger.status)}</div>
               </div>
@@ -190,6 +202,7 @@ export default function ChargerSelectionModal({
                   <div>
                     <p className="font-semibold">{vehicle.brand} {vehicle.model}</p>
                     <p className="text-sm text-gray-500">{vehicle.licensePlate}</p>
+                    <p className="text-sm text-gray-500">Mức pin hiện tại: <span className="font-bold">{vehicle.currentSocPercent}%</span></p>
                   </div>
                   {selectedVehicle?.vehicleId === vehicle.vehicleId && <CheckCircleIcon className="h-6 w-6 text-emerald-600 ml-auto" />}
                 </div>

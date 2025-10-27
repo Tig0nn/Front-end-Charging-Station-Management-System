@@ -11,8 +11,7 @@ import {
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { stationsAPI } from "../../lib/apiServices";
-import { staffAPI } from "../../lib/apiServices";
+import { stationsAPI, staffAPI } from "../../lib/apiServices";
 
 const StationsList = () => {
   const [stations, setStations] = useState([]);
@@ -23,13 +22,11 @@ const StationsList = () => {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
 
-  // State danh sách nhân viên
-  const [searchText, setSearchText] = useState([]);
-  // State tìm kiếm nhân viên
-  const [searchStaff, setSearchStaff] = useState("");
-  //quản lý danh sách nhân viên
-  const [staffs, setStaffs] = useState([]);
-  const [loadingStaff, setLoadingStaff] = useState(true);
+  // State quản lý search nhân viên
+  const [searchText, setSearchText] = useState(""); // text nhập vào ô tìm kiếm
+  const [searchStaff, setSearchStaff] = useState([]); // danh sách nhân viên hiển thị
+  const [staffs, setStaffs] = useState([]); // toàn bộ danh sách nhân viên
+  const [selectedStaffId, setSelectedStaffId] = useState(""); // nhân viên được chọn
 
   // Khi bấm nút "Chỉnh sửa"
   const handleEditClick = (station) => {
@@ -92,24 +89,28 @@ const StationsList = () => {
     const fetchStaff = async () => {
       try {
         const res = await staffAPI.getAllStaffs();
-        setStaffs(res.data.result || []);
-        setSearchStaff(res.data.result || []);
+        const allStaffs = res.data.result || [];
+        setStaffs(allStaffs);
+        setSearchStaff(allStaffs); // mặc định hiển thị toàn bộ
       } catch (err) {
         console.error("Lỗi khi tải danh sách nhân viên:", err);
-      } finally {
-        setLoadingStaff(false);
       }
     };
     fetchStaff();
   }, []);
 
-  //  Lọc danh sách staff khi searchText thay đổi
+  // Lọc danh sách khi searchText thay đổi
   useEffect(() => {
-    const filtered = staffs.filter((s) => {
-      const name = (s.fullName || s.name || "");
-      return name.includes(searchText);
-    });
-    setSearchStaff(filtered);
+    if (searchText.trim() === "") {
+      setSearchStaff(staffs); // hiển thị toàn bộ khi rỗng
+    } else {
+      const filtered = staffs.filter((s) =>
+        (s.fullName || s.name || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
+      );
+      setSearchStaff(filtered);
+    }
   }, [searchText, staffs]);
 
   //  Gọi API lấy danh sách trạm khi component mount
@@ -117,7 +118,7 @@ const StationsList = () => {
     const fetchStations = async () => {
       try {
         setLoading(true);
-        const res = await stationsAPI.getOverview();
+        const res = await stationsAPI.getAllDetails();
         console.log("API raw response:", res.data);
         // Nếu backend trả về dạng {data: [...]}
         const data = res.data.result;
@@ -276,11 +277,15 @@ const StationsList = () => {
                       <td className="text-center small">
                         <>
                           <div className="fw-semibold text-success">
-                            Tổng: {station.totalPoints || 0}
+                            Tổng: {station.totalChargingPoints || 0}
                           </div>
                           <div className="mt-1">
-                            Hoạt động: {station.activePoints || 0} / Bảo trì:{" "}
-                            {station.maintenancePoints || 0}
+                            Hoạt động: {station.activeChargingPoints || 0}{" "}
+                            <br />
+                            Bảo trì: {station.maintenanceChargingPoints ||
+                              0}{" "}
+                            <br /> Ngưng hoạt động:{" "}
+                            {station.offlineChargingPoints || 0}
                           </div>
                         </>
                       </td>
@@ -292,14 +297,14 @@ const StationsList = () => {
                       {/* Thanh tiến trình sử dụng */}
                       <td className="text-center">
                         <ProgressBar
-                          now={station.utilization || 0}
+                          now={station.usagePercent || 0}
                           variant={getUtilizationColor(
-                            station.utilization || 0
+                            station.usagePercent || 0
                           )}
                           style={{ width: "80px", height: "6px" }}
                           className="mx-auto"
                         />
-                        <small>{station.utilization || 0}%</small>
+                        <small>{station.usagePercent || 0}%</small>
                       </td>
 
                       <td>
@@ -328,12 +333,9 @@ const StationsList = () => {
                             />
                             <Form.Select
                               name="staffId"
-                              value={searchStaff.staffId}
+                              value={selectedStaffId}
                               onChange={(e) =>
-                                setSearchStaff({
-                                  ...searchStaff,
-                                  staffId: e.target.value,
-                                })
+                                setSelectedStaffId(e.target.value)
                               }
                               required
                             >

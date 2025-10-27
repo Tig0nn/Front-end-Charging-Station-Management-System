@@ -1,5 +1,5 @@
 import "tailwindcss";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.jsx";
 import "./BackGround.css";
@@ -8,14 +8,23 @@ import { Form, Button, Alert } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Login() {
+  // Điều hướng và xác thực
   const navigate = useNavigate();
+
+  // State quản lý form và lỗi
   const { login } = useAuth();
   const [loginErr, setLoginErr] = useState("");
+  // State quản lý trạng thái gửi form
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State quản lý dữ liệu form
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
+
+  // State quản lý ghi nhớ đăng nhập
+  const [remember, setRemember] = useState(false);
 
   // Handle input changes
   const handleChangeValue = (e) => {
@@ -32,6 +41,20 @@ function Login() {
     }
   };
 
+  //Lấy thông tin đăng nhập trong component Login lần đầu render
+ useEffect(() => {
+    // Chỉ đọc email/pass đã lưu
+    const savedEmail = localStorage.getItem("savedEmail");
+    const savedPassword = localStorage.getItem("savedPassword");
+
+    if (savedEmail && savedPassword) {
+      // Nếu có, điền vào form và check ô "Ghi nhớ"
+      setForm({ email: savedEmail, password: savedPassword });
+      setRemember(true);
+    }
+    // Không cần logic lastActive hay dọn dẹp gì cả
+  }, []);
+
   // Xử lý đăng nhập
   async function HandleClick(e) {
     e.preventDefault();
@@ -46,15 +69,28 @@ function Login() {
     try {
       setIsSubmitting(true);
       setLoginErr(""); // Xóa lỗi cũ nếu có
-
       const result = await login({ email, password });
+      console.log("Login result:", result);
       if (result.success) {
         const role = String(result.user?.role || "").toUpperCase();
+        console.log("Checkbox ghi nhớ:", remember);
+        if (remember) {
+          localStorage.setItem("savedEmail", form.email || ""); //lưu email tạm thời
+          localStorage.setItem("savedPassword", form.password || ""); //lưu password tạm thời
+          console.log(localStorage.getItem("savedEmail"));
+          console.log(localStorage.getItem("savedPassword"));
+        } else {
+          localStorage.removeItem("savedEmail");
+          localStorage.removeItem("savedPassword");
+          localStorage.removeItem("loginTime");
+        }
+
         if (role === "DRIVER") {
           navigate(result.needsProfile ? "/driver/add-info" : "/driver");
         } else if (role === "ADMIN") {
           navigate("/admin");
-        } else if (role === "STAFF") { // check có phải staff không
+        } else if (role === "STAFF") {
+          // check có phải staff không
           navigate("/staff");
         } else {
           navigate("/");
@@ -95,6 +131,8 @@ function Login() {
       <Form.Check
         type="checkbox"
         label="Ghi nhớ"
+        checked={remember}
+        onChange={(e) => setRemember(e.target.checked)}
         style={{ color: "#eaeaea" }}
       />
       <div className="flex flex-col justify-center items-center gap-6 mt-3">

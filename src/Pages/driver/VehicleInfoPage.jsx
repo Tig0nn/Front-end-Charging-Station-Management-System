@@ -369,6 +369,7 @@ const VehicleInfoPage = () => {
                 <Form.Label>
                   Mẫu xe <span className="text-danger">*</span>
                 </Form.Label>
+                
                 <Form.Control
                   required
                   type="text"

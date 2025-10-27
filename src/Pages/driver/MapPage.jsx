@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./MapPage.css"; // Chúng ta sẽ cập nhật file này
-import { stationsAPI } from "../../lib/apiServices.js";
+import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices.js";
 import ChargerSelectionModal from "../../components/ChargerSelectionModal";
 import RoutingControl from "../../components/RoutingControl";
 import ChargingPanel from "../../components/ChargingPanel";
@@ -181,6 +181,20 @@ export default function MapPage() {
   };
 
   const handleOpenChargerModal = (station) => {
+    // Lấy currentSessionId từ localStorage
+    const currentId = localStorage.getItem("currentSessionId");
+
+    // --- THÊM LOGIC KIỂM TRA VÀO ĐÂY ---
+    if (currentId) {
+      // 1. Báo cho người dùng 
+      alert("Bạn đang trong một phiên sạc. Đang điều hướng bạn đến phiên sạc...");
+
+      // 2. Điều hướng họ đến phiên sạc đó
+      navigate(`/driver/session/${currentId}`);
+
+    // 3. Dừng hàm ngay lập tức để không mở modal
+    return; 
+  }
     //log station ra
     console.log("Opening modal for station:", station);
     setStationForCharging(station);
@@ -193,11 +207,8 @@ export default function MapPage() {
   };
 
     const handleStartCharging = async (charger, vehicle, targetSoc) => {
-    console.log("Attempting to start charge with:", {
-      chargerId: charger.chargingPointId,
-      vehicleId: vehicle.vehicleId,
-      targetSoc: targetSoc,
-    });
+    console.log("--- BẮT ĐẦU LUỒNG SẠC ---");
+    console.log("1. Dữ liệu nhận được:", { charger, vehicle, targetSoc });
 
     try {
       // 1. Đóng modal ngay lập tức để người dùng thấy phản hồi
@@ -205,31 +216,34 @@ export default function MapPage() {
 
       // 2. Tạo payload chính xác
       const payload = {
-        chargingPointId: charger.chargingPointId,
+        chargingPointId: charger.pointId,
         vehicleId: vehicle.vehicleId,
         targetSocPercent: targetSoc,
       };
 
       // 3. Gọi API để bắt đầu phiên sạc
+      console.log("3. Đang gọi API startCharging...");
       const response = await chargingPointsAPI.startCharging(payload);
 
       // 4. Lấy sessionId từ kết quả trả về
       const sessionId = response.data?.result?.sessionId;
 
+      console.log("4. API Response thành công:", response.data);
+      console.log("5. Trích xuất sessionId:", sessionId);
       if (sessionId) {
-        console.log(` Charging session started. Session ID: ${sessionId}`);
-        // 5. Điều hướng đến trang ChargingSessionPage với ID
-        navigate(`/driver/charging-session/${sessionId}`);
+         console.log(`6. Thành công! Đang điều hướng đến /driver/session/${sessionId}`);
+         localStorage.setItem("activeSessionId", sessionId);      
+        navigate(`/driver/session/${sessionId}`);
       } else {
         throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
       }
     } catch (err) {
-      console.error("Failed to start charging session:", err);
+       console.error(" LỖI khi bắt đầu phiên sạc:", err);
       alert(`Không thể bắt đầu phiên sạc: ${err.response?.data?.message || err.message}`);
     }
   };
 
-  const handleCloseChargingPanel = () => {a
+  const handleCloseChargingPanel = () => {
     setShowChargingPanel(false);
     setActiveCharger(null);
     setActiveStation(null);
