@@ -3,7 +3,23 @@ import { Navbar, Nav, Container, Button, Dropdown } from "react-bootstrap";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth.jsx";
 import "bootstrap-icons/font/bootstrap-icons.css";
+const getUserName = () => {
+  try {
+    // Try to get from 'user' key first (single object)
+    let storedUser = localStorage.getItem("user");
+    if (storedUser && storedUser !== "null") {
+      storedUser = JSON.parse(storedUser);
+      if (storedUser.fullName) return storedUser.fullName;
+      if (storedUser.firstName && storedUser.lastName)
+        return `${storedUser.firstName} ${storedUser.lastName}`;
+    }
 
+    // Default fallback
+    return "User";
+  } catch {
+    return "User";
+  }
+};
 const Header = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -80,6 +96,12 @@ const Header = () => {
                     className="d-flex flex-column"
                     style={{ lineHeight: "1.2" }}
                   >
+                    <span
+                      className="text-dark fw-medium"
+                      style={{ fontSize: "14px" }}
+                    >
+                      {getUserName()}
+                    </span>
                     <span
                       className="text-muted text-capitalize"
                       style={{ fontSize: "12px" }}

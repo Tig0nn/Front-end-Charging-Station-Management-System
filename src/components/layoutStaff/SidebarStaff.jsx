@@ -16,11 +16,6 @@ const NAVIGATION_ITEMS = [
     
   },
   {
-    path: "/maintenance",
-    label: "Lịch bảo trì",
-    icon: "bi-tools",
-  },
-  {
     path: "/transactions",
     label: "Giao dịch",
     icon: "bi-wallet2",

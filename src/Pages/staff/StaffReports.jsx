@@ -80,7 +80,6 @@ const StaffReports = () => {
       // Check response 
       if (response.data?.message === "Báo cáo sự cố thành công") {
         alert("Đã gửi báo cáo!");
-        console.log("Báo cáo:", response.data.result);
       } else {
         //ném lỗi
         throw new Error(response.data?.message || "Gửi báo cáo thất bại");
@@ -88,7 +87,15 @@ const StaffReports = () => {
       const reports = await staffAPI.getAllReports();
       console.log("Fetched reports:", reports.data);
       setReports(reports.data?.result || reports.data || []);
-      
+      setReport({
+        stationId: stationId,
+        chargingPointId: "",
+        description: "",
+        severity: ""
+      });
+
+      // Reset luôn các input/select trong giao diện
+      e.target.reset();
     } catch (err) {
       console.error("Lỗi khi gửi báo cáo sự cố:", err);
     }
@@ -170,26 +177,26 @@ const StaffReports = () => {
           ) : (
             <ListGroup variant="flush">
               {reports
-              .map((incident) => (
-                <ListGroup.Item
-                  key={incident.incidentId}
-                  className="d-flex justify-content-between align-items-start px-0 py-3"
-                >
-                  <div>
-                    <div className="fw-bold">
-                      <span className={`text-${incident.severity === 'Cao' ? 'danger' : 'warning'} me-2`}>●</span>
-                      {incident.stationName} -  
-                      Trụ sạc: {incident.chargingPointName}
+                .map((incident) => (
+                  <ListGroup.Item
+                    key={incident.incidentId}
+                    className="d-flex justify-content-between align-items-start px-0 py-3"
+                  >
+                    <div>
+                      <div className="fw-bold">
+                        <span className={`text-${incident.severity === 'Cao' ? 'danger' : 'warning'} me-2`}>●</span>
+                        {incident.stationName} -
+                        Trụ sạc: {incident.chargingPointName}
+                      </div>
+                      <p className="mb-1 ms-4">{incident.description}</p>
+                      <small className="text-muted ms-4">
+                        {moment.utc(incident.reportedAt).utcOffset(7).format("HH:mm - DD/MM/YYYY")} -
+                        Báo cáo bởi: {incident.reporterName}
+                      </small>
                     </div>
-                    <p className="mb-1 ms-4">{incident.description}</p>
-                    <small className="text-muted ms-4">
-                        {moment(incident.reportedAt).format("HH:mm - DD/MM/YYYY")} - 
-                      Báo cáo bởi: {incident.reporterName} 
-                    </small>
-                  </div>
-                  {getSeverityBadge(incident.severity)}
-                </ListGroup.Item>
-              ))}
+                    {getSeverityBadge(incident.severity)}
+                  </ListGroup.Item>
+                ))}
             </ListGroup>
           )}
         </Card.Body>

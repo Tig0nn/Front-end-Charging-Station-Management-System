@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {} from "react";
 import {
   Container,
   Row,
@@ -45,32 +45,9 @@ const recentTransactions = [
 ];
 
 const StaffTransactions = () => {
-  const [activeTab, setActiveTab] = useState("Giao dịch");
 
   return (
     <Container fluid className="p-4">
-      {/* Tabs chuyển đổi */}
-      <ButtonGroup className="mb-4">
-        <Button
-          variant={activeTab === "Điểm sạc" ? "dark" : "outline-secondary"}
-          onClick={() => setActiveTab("Điểm sạc")}
-        >
-          <i className="bi bi-ev-station me-2"></i> Điểm sạc
-        </Button>
-        <Button
-          variant={activeTab === "Giao dịch" ? "dark" : "outline-secondary"}
-          onClick={() => setActiveTab("Giao dịch")}
-        >
-          <i className="bi bi-receipt me-2"></i> Giao dịch
-        </Button>
-        <Button
-          variant={activeTab === "Sự cố" ? "dark" : "outline-secondary"}
-          onClick={() => setActiveTab("Sự cố")}
-        >
-          <i className="bi bi-exclamation-triangle me-2"></i> Sự cố
-        </Button>
-      </ButtonGroup>
-
       {/* Form Giao dịch tại chỗ */}
       <Card className="shadow-sm mb-4">
         <Card.Body className="p-4">
