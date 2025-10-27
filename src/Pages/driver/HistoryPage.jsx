@@ -321,14 +321,14 @@ const ChargingHabits = () => {
     );
   }
 
-  // Biểu đồ thói quen theo giờ (bin 2 tiếng)
-  const bins = Array(12).fill(0); // 0-2,2-4,...,22-24
+  // Biểu đồ thói quen theo giờ (đủ 24 giờ, mỗi giờ 1 cột)
+  const bins = Array(24).fill(0); // 00-23
   sessions.forEach((s) => {
     const h = new Date(s.startTime).getHours();
-    bins[Math.floor(h / 2)]++;
+    bins[h]++;
   });
   const habitData = bins.map((c, i) => ({
-    hour: `${String(i * 2).padStart(2, "0")}:00`,
+    hour: `${String(i).padStart(2, "0")}:00`,
     count: c,
   }));
 
@@ -357,16 +357,6 @@ const ChargingHabits = () => {
   const maxIdx = hourBins.indexOf(Math.max(...hourBins));
   const pad = (n) => String(n).padStart(2, "0");
   const popularHours = `${pad(maxIdx * 2)}:00 - ${pad((maxIdx * 2 + 2) % 24)}:00`;
-
-  const weekdaysNames = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-  const weekdayCount = Array(7).fill(0);
-  sessions.forEach((s) => weekdayCount[new Date(s.startTime).getDay()]++);
-  const topDays = weekdayCount
-    .map((v, i) => ({ v, i }))
-    .sort((a, b) => b.v - a.v)
-    .slice(0, 2)
-    .map((x) => weekdaysNames[x.i])
-    .join(", ");
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
@@ -405,10 +395,6 @@ const ChargingHabits = () => {
               <tr>
                 <td style={{ paddingRight: 12 }}>Giờ sạc phổ biến:</td>
                 <td>{popularHours}</td>
-              </tr>
-              <tr>
-                <td style={{ paddingRight: 12 }}>Ngày trong tuần:</td>
-                <td>{topDays}</td>
               </tr>
             </tbody>
           </table>

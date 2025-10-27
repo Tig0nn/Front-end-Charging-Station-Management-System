@@ -209,10 +209,12 @@ const realApiServices = {
   },
 
   staff: {
+    getAllReports: () => api.get("/api/staff/incidents"),
     getAllStaffs: () => api.get("/api/stations/staff/all"),
     getStaffDashboard: () => api.get("/api/staff/dashboard"),
     getStaffProfile: () => api.get("/api/staff/profile"),
     getChargingPoint: () => api.get("/api/staff/my-station/charging-points"),
+    submitReport: (reportData) => api.post("/api/staff/incidents", reportData),
   },
 };
 
