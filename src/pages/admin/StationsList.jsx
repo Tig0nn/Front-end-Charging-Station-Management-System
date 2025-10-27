@@ -90,6 +90,7 @@ const StationsList = () => {
       try {
         const res = await staffAPI.getAllStaffs();
         const allStaffs = res.data.result || [];
+        console.log("Danh sách nhân viên:", allStaffs);
         setStaffs(allStaffs);
         setSearchStaff(allStaffs); // mặc định hiển thị toàn bộ
       } catch (err) {
@@ -211,7 +212,6 @@ const StationsList = () => {
                   <th className="px-2 py-3 text-center">Điểm sạc</th>
                   <th className="px-2 py-3 text-end">Doanh thu</th>
                   <th className="px-2 py-3 text-center">Sử dụng</th>
-                  <th className="px-2 py-3">Chủ</th>
                   <th className="px-2 py-3 text-center">Nhân viên</th>
                   <th className="px-4 py-3 text-center">Thao tác</th>
                 </tr>
@@ -307,18 +307,7 @@ const StationsList = () => {
                         <small>{station.usagePercent || 0}%</small>
                       </td>
 
-                      <td>
-                        {editingId === station.stationId ? (
-                          <Form.Control
-                            type="text"
-                            name="operatorName"
-                            value={editData.operatorName || ""}
-                            onChange={handleChangeEdit}
-                          />
-                        ) : (
-                          station.operatorName || "Chưa có"
-                        )}
-                      </td>
+                    
 
                       {/* Chức năng tìm kiếm nhân viên */}
                       <td className="text-center">

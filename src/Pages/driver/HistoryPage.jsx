@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import PopUpPayment from "../../components/layoutDriver/PopUpPayment";
 import {
   BarChart,
   Bar,
@@ -13,6 +14,7 @@ import {
   Line,
 } from "recharts";
 import { chargingSessionsAPI } from "../../lib/apiServices";
+
 
 // Helpers
 const formatCurrency = (value) =>
@@ -55,7 +57,9 @@ const EmptyState = ({ icon = "bi-ev-station", title, message }) => (
     <div className="flex items-start gap-3">
       <i className={`bi ${icon} text-2xl text-gray-400`} />
       <div>
-        {title ? <div className="font-semibold text-gray-800 mb-1">{title}</div> : null}
+        {title ? (
+          <div className="font-semibold text-gray-800 mb-1">{title}</div>
+        ) : null}
         <div className="text-gray-600">{message}</div>
       </div>
     </div>
@@ -66,9 +70,11 @@ const EmptyState = ({ icon = "bi-ev-station", title, message }) => (
 let sessionsCache = null;
 
 function useMySessions() {
+
   const [data, setData] = useState(sessionsCache || []);
   const [loading, setLoading] = useState(!sessionsCache);
   const [error, setError] = useState("");
+
 
   const reload = React.useCallback(async () => {
     try {
@@ -76,6 +82,7 @@ function useMySessions() {
       setLoading(true);
       const res = await chargingSessionsAPI.getMySessions();
       const list = res?.data?.result || [];
+      console.log("Lịch sử sạc tải về:", list);
       const normalized = list.map((s) => {
         let durationMin = Number(s.durationMin || 0);
         if (!durationMin && s.startTime && s.endTime) {
@@ -107,6 +114,10 @@ function useMySessions() {
 const TransactionHistory = () => {
   const { data: sessions, loading, error, reload } = useMySessions();
 
+   // Thêm state cho modal và session được chọn
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
+  
   if (loading) return <div>Đang tải...</div>;
 
   if (error) {
@@ -127,14 +138,48 @@ const TransactionHistory = () => {
     );
   }
 
-  const headers = ["Ngày", "Trạm sạc", "Thời gian", "Năng lượng", "Chi phí", "Trạng thái"];
+  // Hàm mở popup và chọn session
+  const handleOpenPaymentModal = (session) => {
+    setSelectedSession(session); // Lưu lại session đang được chọn
+    setIsModalOpen(true);       // Bật "công tắc" để mở popup
+  };
+  // Hàm này được truyền cho popup để nó tự đóng
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedSession(null); // Xóa session đã chọn
+  };
+
+  const handleProcessPayment = async (sessionId, method) => {
+    console.log(`Đang xử lý thanh toán ${method} cho ${sessionId}`);
+    
+    // TẠM THỜI: Chỉ hiển thị thông báo
+    alert(`Đã chọn thanh toán ${method} cho phiên ${sessionId}. (Đây là demo)`);
+    
+    // Đóng modal và tải lại dữ liệu để cập nhật trạng thái
+    handleCloseModal();
+    reload(); 
+  };
+
+  const headers = [
+    "Ngày",
+    "Trạm sạc",
+    "Thời gian",
+    "Năng lượng",
+    "Chi phí",
+    "Trạng thái",
+    "Trạng Thái Thanh Toán",
+    "Thanh Toán",
+  ];
 
   // Empty state
   if (!sessions.length) {
     return (
       <div className="overflow-x-auto">
         <h2 className="text-2xl font-semibold mb-4">Lịch sử Giao dịch</h2>
-        <EmptyState icon="bi-lightning-charge" message="Hiện tại chưa có lịch sử sạc" />
+        <EmptyState
+          icon="bi-lightning-charge"
+          message="Hiện tại chưa có lịch sử sạc"
+        />
       </div>
     );
   }
@@ -146,7 +191,10 @@ const TransactionHistory = () => {
         <thead className="bg-gray-100">
           <tr>
             {headers.map((h) => (
-              <th key={h} className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                key={h}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 {h}
               </th>
             ))}
@@ -155,16 +203,44 @@ const TransactionHistory = () => {
         <tbody className="divide-y divide-gray-200">
           {sessions.map((s) => (
             <tr key={s.sessionId} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-gray-800">{formatDateTime(s.startTime)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-gray-800">{s.stationName}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-gray-800">{formatDuration(s.durationMin)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-gray-800">{(Number(s.energyKwh || 0)).toFixed(1)} kWh</td>
-              <td className="px-6 py-4 whitespace-nowrap text-gray-800">{formatCurrency(s.costTotal)}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                {formatDateTime(s.startTime)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                {s.stationName}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                {formatDuration(s.durationMin)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                {Number(s.energyKwh || 0).toFixed(1)} kWh
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                {formatCurrency(s.costTotal)}
+              </td>
               <td className="px-6 py-4 whitespace-nowrap">{s.status || ""}</td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {s.paymentStatus || "nothing"}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <button
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  onClick={() => handleOpenPaymentModal(s)}
+                >
+                  Thanh toán
+                </button>
+                
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <PopUpPayment
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        session={selectedSession}
+        onProcessPayment={handleProcessPayment} // Truyền hàm xử lý vào
+      />
     </div>
   );
 };
@@ -179,7 +255,11 @@ const CostAnalysis = () => {
       <div className="flex flex-col gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-2xl font-semibold mb-4">Chi phí theo tháng</h2>
-          <EmptyState icon="bi-exclamation-triangle" title="Không thể tải dữ liệu" message={error} />
+          <EmptyState
+            icon="bi-exclamation-triangle"
+            title="Không thể tải dữ liệu"
+            message={error}
+          />
           <div className="mt-3">
             <button className="px-3 py-2 border rounded" onClick={reload}>
               Thử lại
@@ -196,16 +276,25 @@ const CostAnalysis = () => {
       <div className="flex flex-col gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-2xl font-semibold mb-4">Chi phí theo tháng</h2>
-          <EmptyState icon="bi-graph-up" message="Chưa có dữ liệu để theo dõi và tính toán" />
+          <EmptyState
+            icon="bi-graph-up"
+            message="Chưa có dữ liệu để theo dõi và tính toán"
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-xl font-semibold mb-3">Năng lượng tiêu thụ</h3>
-            <EmptyState icon="bi-activity" message="Chưa có dữ liệu để theo dõi và tính toán" />
+            <EmptyState
+              icon="bi-activity"
+              message="Chưa có dữ liệu để theo dõi và tính toán"
+            />
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-xl font-semibold mb-3">Số phiên sạc</h3>
-            <EmptyState icon="bi-bar-chart" message="Chưa có dữ liệu để theo dõi và tính toán" />
+            <EmptyState
+              icon="bi-bar-chart"
+              message="Chưa có dữ liệu để theo dõi và tính toán"
+            />
           </div>
         </div>
       </div>
@@ -238,10 +327,19 @@ const CostAnalysis = () => {
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Chi phí theo tháng</h2>
         <ResponsiveContainer width="100%" height={360}>
-          <BarChart data={costData} margin={{ top: 5, right: 20, left: 30, bottom: 5 }}>
+          <BarChart
+            data={costData}
+            margin={{ top: 5, right: 20, left: 30, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
-            <YAxis tickFormatter={(v) => new Intl.NumberFormat("vi-VN", { notation: "compact" }).format(v)} />
+            <YAxis
+              tickFormatter={(v) =>
+                new Intl.NumberFormat("vi-VN", { notation: "compact" }).format(
+                  v
+                )
+              }
+            />
             <Tooltip formatter={(v) => [formatCurrency(v), "Chi phí"]} />
             <Legend />
             <Bar dataKey="cost" name="Chi phí" fill="#10B981" />
@@ -253,13 +351,28 @@ const CostAnalysis = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-xl font-semibold mb-3">Năng lượng tiêu thụ</h3>
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={energyData} margin={{ top: 5, right: 20, left: 30, bottom: 5 }}>
+            <LineChart
+              data={energyData}
+              margin={{ top: 5, right: 20, left: 30, bottom: 5 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip formatter={(v) => [`${v.toFixed ? v.toFixed(0) : v} kWh`, "Năng lượng"]} />
+              <Tooltip
+                formatter={(v) => [
+                  `${v.toFixed ? v.toFixed(0) : v} kWh`,
+                  "Năng lượng",
+                ]}
+              />
               <Legend />
-              <Line dataKey="kwh" name="kWh" type="monotone" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} />
+              <Line
+                dataKey="kwh"
+                name="kWh"
+                type="monotone"
+                stroke="#3B82F6"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -267,7 +380,10 @@ const CostAnalysis = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-xl font-semibold mb-3">Số phiên sạc</h3>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={sessionData} margin={{ top: 5, right: 20, left: 30, bottom: 5 }}>
+            <BarChart
+              data={sessionData}
+              margin={{ top: 5, right: 20, left: 30, bottom: 5 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis allowDecimals={false} />
@@ -291,7 +407,11 @@ const ChargingHabits = () => {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Thói quen Sạc theo Giờ</h2>
-        <EmptyState icon="bi-exclamation-triangle" title="Không thể tải dữ liệu" message={error} />
+        <EmptyState
+          icon="bi-exclamation-triangle"
+          title="Không thể tải dữ liệu"
+          message={error}
+        />
         <div className="mt-3">
           <button className="px-3 py-2 border rounded" onClick={reload}>
             Thử lại
@@ -306,15 +426,24 @@ const ChargingHabits = () => {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Thói quen Sạc theo Giờ</h2>
-        <EmptyState icon="bi-clock-history" message="Chưa có dữ liệu để theo dõi và tính toán" />
+        <EmptyState
+          icon="bi-clock-history"
+          message="Chưa có dữ liệu để theo dõi và tính toán"
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div className="border rounded p-4">
             <h3 className="font-semibold mb-3">Trạm sạc yêu thích</h3>
-            <EmptyState icon="bi-geo-alt" message="Chưa có dữ liệu để theo dõi và tính toán" />
+            <EmptyState
+              icon="bi-geo-alt"
+              message="Chưa có dữ liệu để theo dõi và tính toán"
+            />
           </div>
           <div className="border rounded p-4">
             <h3 className="font-semibold mb-3">Thống kê khác</h3>
-            <EmptyState icon="bi-info-circle" message="Chưa có dữ liệu để theo dõi và tính toán" />
+            <EmptyState
+              icon="bi-info-circle"
+              message="Chưa có dữ liệu để theo dõi và tính toán"
+            />
           </div>
         </div>
       </div>
@@ -356,13 +485,18 @@ const ChargingHabits = () => {
   });
   const maxIdx = hourBins.indexOf(Math.max(...hourBins));
   const pad = (n) => String(n).padStart(2, "0");
-  const popularHours = `${pad(maxIdx * 2)}:00 - ${pad((maxIdx * 2 + 2) % 24)}:00`;
+  const popularHours = `${pad(maxIdx * 2)}:00 - ${pad(
+    (maxIdx * 2 + 2) % 24
+  )}:00`;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <h2 className="text-2xl font-semibold mb-4">Thói quen Sạc theo Giờ</h2>
       <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={habitData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+        <BarChart
+          data={habitData}
+          margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="hour" />
           <YAxis allowDecimals={false} />

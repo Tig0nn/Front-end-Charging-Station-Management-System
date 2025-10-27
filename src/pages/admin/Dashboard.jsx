@@ -17,6 +17,7 @@ const Dashboard = () => {
 
         if (res.data.code === 1000) {
           setOverview(res.data.result);
+          console.log("Tổng quan hệ thống:", res.data.result);
         } else {
           setError("Không thể tải dữ liệu tổng quan.");
         }

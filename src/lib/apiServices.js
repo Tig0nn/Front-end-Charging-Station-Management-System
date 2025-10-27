@@ -171,7 +171,8 @@ const realApiServices = {
       api.get(`/api/stations/${stationId}/charging-points`),
     startCharging: (data) => api.post(`/api/charging-sessions/start`, data),
     //giả lập sạc
-    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}/active`),
+    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}`),
+    // Cập nhật trạng thái trụ sạc
     updateStatus: (power, stationId, chargingPointId, status) =>
       api.put(`/api/stations/${stationId}/charging-points/${chargingPointId}`, {
         chargingPower: power,

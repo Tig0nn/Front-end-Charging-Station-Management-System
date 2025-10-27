@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Spinner } from "react-bootstrap";
 import { chargingPointsAPI, vehiclesAPI } from "../../lib/apiServices.js";
 import { useParams, useNavigate } from "react-router-dom";
+
 import {
   StopCircleIcon,
   ArrowUturnLeftIcon,
@@ -34,16 +35,6 @@ export default function ChargingSessionPage() {
     const match = powerString.match(/\d+/); // lấy ra số trong chuỗi
     return match ? `${match[0]} KW` : powerString;
   };
-
-
-  
-  useEffect(() => {
-    // Hook này chỉ chạy MỘT LẦN DUY NHẤT khi component tải
-    console.log("Chạy dọn dẹp key cũ (activeSessionId) 1 lần.");
-    localStorage.removeItem("activeSessionId");
-   
-  }, []); //  Mảng rỗng [] nghĩa là "chỉ chạy 1 lần khi mount"
-
 
   // (Xử lý F5 hoặc vào trang /driver/session/ trống)
 
@@ -132,7 +123,7 @@ export default function ChargingSessionPage() {
     // Bật polling
     // Chỉ bật polling NẾU chưa có lỗi và chưa hoàn thành
     if (!error && !session) { // Kiểm tra !session để đảm bảo logic hoàn thành ở trên đã chạy
-      timerRef.current = setInterval(fetchSession, 5000);
+      timerRef.current = setInterval(fetchSession, 2000); // mỗi 2 giây
     }
     
     // Logic trong fetchSession sẽ tự hủy timer khi hoàn tất.
@@ -171,11 +162,14 @@ export default function ChargingSessionPage() {
     }
   }, [sessionId, error]);
 
+
+
   // Hàm dừng phiên sạc
   const handleStopSession = async () => {
     if (!sessionId) return;
     setIsStopping(true);
     try {
+      console.log("Gửi yêu cầu dừng phiên sạc:", sessionId);
       await chargingPointsAPI.stopCharging(sessionId);
     } catch (err) {
       console.error("Lỗi khi dừng phiên sạc:", err);
@@ -314,7 +308,7 @@ export default function ChargingSessionPage() {
 
   // 4. MÀN HÌNH HOÀN TẤT 
   if (
-    session &&
+    (session && isStopping) ||
     (session.status === "COMPLETED" || session.status === "STOPPED")
   ) {
     return (
@@ -335,13 +329,13 @@ export default function ChargingSessionPage() {
             <div className="flex justify-between">
               <span>Thời gian sạc:</span>
               <span className="font-semibold">
-                {formatTime((session.elapsedTimeMinutes || 0) * 60)}
+                {formatTime((session.durationMin || 0) * 60)} Phút
               </span>
             </div>
             <div className="flex justify-between">
               <span>Năng lượng đã nạp:</span>
               <span className="font-semibold">
-                {(session.energyConsumedKw || 0).toFixed(2)} kWh
+                {(session.energyConsumedKwh || 0).toFixed(2)} kWh
               </span>
             </div>
             <div className="flex justify-between text-lg">
@@ -353,12 +347,18 @@ export default function ChargingSessionPage() {
           </div>
 
           <button
-            onClick={() => navigate("/driver/map")}
+           onClick={() => {
+              // === THÊM LOGIC XÓA TẠI ĐÂY ===
+              localStorage.removeItem("currentSessionId");
+              setSession(null);
+              navigate("/driver/map");
+            }}
             className="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
           >
             <ArrowUturnLeftIcon className="w-5 h-5" />
             Quay về bản đồ
           </button>
+          
         </div>
       </div>
     );
@@ -425,7 +425,7 @@ export default function ChargingSessionPage() {
                 <p className="text-sm text-gray-500">Thời gian đã sạc</p>
                 <p className="font-semibold text-lg">
                   {/* Sửa: Dùng elapsedTimeMinutes */}
-                  {formatTime((session.elapsedTimeMinutes || 0) * 60)}
+                  {formatTime((session.durationMin || 0) * 60)}
                 </p>
               </div>
             </div>
