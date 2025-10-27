@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 // SỬA LẠI IMPORT CHO ĐÚNG
 import { Link } from "react-router-dom";
 import {
@@ -21,6 +22,7 @@ import {
 import { plansAPI } from "../lib/apiServices";
 
 export default function EVChargingLanding() {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
   // STATE ĐỂ LƯU CÁC GÓI THUÊ BAO TỪ API
@@ -171,7 +173,7 @@ export default function EVChargingLanding() {
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <button
+              <button  onClick={() => navigate("/signup")}
                 className="font-bold !rounded-2xl transition-[background_0.4s_ease,box-shadow_0.4s_ease,transform_0.1s_ease] group px-8 py-4 
               bg-gradient-to-r from-[#2bf0b5] to-[#00ffc6] text-white hover:scale-105 hover: bg-gradient-to-r from-[#5fffd4] to-[#2bf0b5]
               hover:shadow-[0_0_8px_#00ffc6,0_0_16px_#00ffc6,0_0_24px_#00ffc6] flex items-center"
