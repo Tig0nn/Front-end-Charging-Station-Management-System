@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Button,
@@ -10,23 +10,18 @@ import {
   Modal,
   Badge,
   Container,
+  ListGroup,
 } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import useVehicle from "../../hooks/useVehicle.js";
+import { vehiclesAPI } from "../../lib/apiServices.js";
 
 const VehicleInfoPage = () => {
-  const {
-    vehicles,
-    selectedVehicle,
-    loading,
-    error,
-    successMessage,
-    createVehicle,
-    updateVehicle,
-    deleteVehicle,
-    clearMessages,
-    setSelectedVehicle,
-  } = useVehicle();
+  // Vehicle data state
+  const [vehicles, setVehicles] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
@@ -34,35 +29,245 @@ const VehicleInfoPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState(null);
 
-  // Form states
+  // Form states - CHỈ CẦN licensePlate và model
   const [formData, setFormData] = useState({
     licensePlate: "",
-    model: "",
-    batteryCapacityKwh: "",
-    batteryType: "Lithium-ion",
+    model: "", // Enum model: VINFAST_VF8, TESLA_MODEL_3, etc.
   });
+
+  // 2-step selection states
+  const [brands, setBrands] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [models, setModels] = useState([]);
+  const [loadingBrands, setLoadingBrands] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
 
   const [validated, setValidated] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
-  // Battery type options
-  const batteryTypes = [
-    "Lithium-ion",
-    "Lithium-ion NCM",
-    "Lithium-ion NCA",
-    "LFP",
-    "Lithium Iron Phosphate",
-    "Solid State",
-  ];
+  // ===== API Methods =====
+
+  // Fetch all vehicles
+  const fetchVehicles = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await vehiclesAPI.getMyVehicles();
+      const vehicleData = response?.data?.result || response?.data || [];
+      setVehicles(vehicleData);
+    } catch (err) {
+      console.error("❌ Error fetching vehicles:", err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Không thể tải danh sách xe";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Create vehicle
+  const createVehicle = async (vehicleData) => {
+    try {
+      setFormLoading(true);
+      setError("");
+      setSuccessMessage("");
+
+      const processedData = {
+        licensePlate: vehicleData.licensePlate,
+        model: vehicleData.model,
+      };
+
+      const response = await vehiclesAPI.createVehicle(processedData);
+      const newVehicle =
+        response?.data?.result || response?.data || response?.result;
+
+      if (newVehicle) {
+        setVehicles((prev) => [...prev, newVehicle]);
+      }
+
+      setSuccessMessage("Xe đã được thêm thành công!");
+      return { success: true, data: newVehicle };
+    } catch (err) {
+      console.error("❌ Error creating vehicle:", err);
+      let errorMessage = "Không thể tạo xe mới";
+
+      if (err.response?.data?.code === 5002) {
+        errorMessage = "Biển số xe đã tồn tại trong hệ thống";
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // Update vehicle
+  const updateVehicle = async (vehicleId, vehicleData) => {
+    try {
+      setFormLoading(true);
+      setError("");
+      setSuccessMessage("");
+
+      const processedData = {};
+      if (vehicleData.licensePlate) {
+        processedData.licensePlate = vehicleData.licensePlate;
+      }
+      if (vehicleData.model) {
+        processedData.model = vehicleData.model;
+      }
+
+      const response = await vehiclesAPI.updateVehicle(
+        vehicleId,
+        processedData
+      );
+      const updatedVehicle =
+        response?.data?.result || response?.data || response?.result;
+
+      if (updatedVehicle) {
+        setVehicles((prev) =>
+          prev.map((vehicle) =>
+            vehicle.vehicleId === vehicleId ? updatedVehicle : vehicle
+          )
+        );
+        setSelectedVehicle(updatedVehicle);
+      }
+
+      setSuccessMessage("Thông tin xe đã được cập nhật thành công!");
+      return { success: true, data: updatedVehicle };
+    } catch (err) {
+      console.error("❌ Error updating vehicle:", err);
+      let errorMessage = "Không thể cập nhật thông tin xe";
+
+      if (err.response?.data?.code === 5001) {
+        errorMessage = "Không tìm thấy xe";
+      } else if (err.response?.data?.code === 5002) {
+        errorMessage = "Biển số xe đã tồn tại trong hệ thống";
+      } else if (err.response?.data?.code === 5003) {
+        errorMessage = "Xe không thuộc về bạn";
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // Delete vehicle
+  const deleteVehicle = async (vehicleId) => {
+    try {
+      setFormLoading(true);
+      setError("");
+      setSuccessMessage("");
+
+      await vehiclesAPI.deleteVehicle(vehicleId);
+
+      setVehicles((prev) =>
+        prev.filter((vehicle) => vehicle.vehicleId !== vehicleId)
+      );
+
+      if (selectedVehicle?.vehicleId === vehicleId) {
+        setSelectedVehicle(null);
+      }
+
+      setSuccessMessage("Xe đã được xóa thành công!");
+      return { success: true };
+    } catch (err) {
+      console.error("❌ Error deleting vehicle:", err);
+      let errorMessage = "Không thể xóa xe";
+
+      if (err.response?.data?.code === 5001) {
+        errorMessage = "Không tìm thấy xe";
+      } else if (err.response?.data?.code === 5003) {
+        errorMessage = "Xe không thuộc về bạn";
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // Clear messages
+  const clearMessages = () => {
+    setError("");
+    setSuccessMessage("");
+  };
+
+  // Load vehicles on mount
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+
+  // Load brands when component mounts
+  useEffect(() => {
+    loadBrands();
+  }, []);
+
+  // Load models when brand is selected
+  useEffect(() => {
+    if (selectedBrand) {
+      loadModels(selectedBrand);
+    } else {
+      setModels([]);
+      setFormData((prev) => ({ ...prev, model: "" }));
+    }
+  }, [selectedBrand]);
+
+  // Load all brands
+  const loadBrands = async () => {
+    try {
+      setLoadingBrands(true);
+      const response = await vehiclesAPI.getBrands();
+      const brandData = response?.data?.result || response?.data || [];
+      setBrands(brandData);
+    } catch (error) {
+      console.error("Error loading brands:", error);
+    } finally {
+      setLoadingBrands(false);
+    }
+  };
+
+  // Load models by brand
+  const loadModels = async (brand) => {
+    try {
+      setLoadingModels(true);
+      const response = await vehiclesAPI.getModelsByBrand(brand);
+      const modelData = response?.data?.result || response?.data || [];
+      setModels(modelData);
+    } catch (error) {
+      console.error("Error loading models:", error);
+      setModels([]);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
 
   // Reset form data
   const resetForm = () => {
     setFormData({
       licensePlate: "",
       model: "",
-      batteryCapacityKwh: "",
-      batteryType: "Lithium-ion",
     });
+    setSelectedBrand("");
+    setModels([]);
     setValidated(false);
   };
 
@@ -75,11 +280,17 @@ const VehicleInfoPage = () => {
     }));
   };
 
-  // Validate license plate format (Vietnam format)
-  const validateLicensePlate = (plate) => {
-    // Vietnam license plate formats: 30A-12345, 51K-123.45, 29B-67890
-    const regex = /^[0-9]{2}[A-Z]{1,2}-[0-9]{3}\.?[0-9]{2}$/;
-    return regex.test(plate);
+  // Handle brand selection
+  const handleBrandChange = (e) => {
+    const brand = e.target.value;
+    setSelectedBrand(brand);
+    setFormData((prev) => ({ ...prev, model: "" }));
+  };
+
+  // Handle model selection
+  const handleModelChange = (e) => {
+    const model = e.target.value;
+    setFormData((prev) => ({ ...prev, model }));
   };
 
   // Handle add vehicle
@@ -87,35 +298,13 @@ const VehicleInfoPage = () => {
     const form = event.currentTarget;
     event.preventDefault();
 
-    // Custom validation
-    let isValid = true;
-    const errors = [];
-
-    if (!formData.licensePlate) {
-      errors.push("Biển số xe là bắt buộc");
-      isValid = false;
-    } else if (!validateLicensePlate(formData.licensePlate)) {
-      errors.push("Biển số xe không đúng định dạng (VD: 30A-12345)");
-      isValid = false;
+    // Validation
+    if (!formData.licensePlate || !formData.model) {
+      setValidated(true);
+      return;
     }
 
-    if (!formData.model) {
-      errors.push("Mẫu xe là bắt buộc");
-      isValid = false;
-    }
-
-    if (!formData.batteryCapacityKwh) {
-      errors.push("Dung lượng pin là bắt buộc");
-      isValid = false;
-    } else if (
-      isNaN(formData.batteryCapacityKwh) ||
-      parseFloat(formData.batteryCapacityKwh) <= 0
-    ) {
-      errors.push("Dung lượng pin phải là số dương");
-      isValid = false;
-    }
-
-    if (form.checkValidity() === false || !isValid) {
+    if (form.checkValidity() === false) {
       event.stopPropagation();
       setValidated(true);
       return;
@@ -193,9 +382,14 @@ const VehicleInfoPage = () => {
     setFormData({
       licensePlate: vehicle.licensePlate || "",
       model: vehicle.model || "",
-      batteryCapacityKwh: vehicle.batteryCapacityKwh?.toString() || "",
-      batteryType: vehicle.batteryType || "Lithium-ion",
     });
+
+    // Extract brand from model (e.g., VINFAST_VF8 -> VINFAST)
+    if (vehicle.brand) {
+      setSelectedBrand(vehicle.brand);
+      loadModels(vehicle.brand);
+    }
+
     setValidated(false);
     setShowEditModal(true);
   };
@@ -219,7 +413,10 @@ const VehicleInfoPage = () => {
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start mb-3">
           <div>
-            <h5 className="mb-1">{vehicle.model}</h5>
+            <h5 className="mb-1">
+              {vehicle.brandDisplayName || vehicle.brand}{" "}
+              {vehicle.modelName || vehicle.model}
+            </h5>
             <Badge bg="primary" className="mb-2">
               <i className="bi bi-car-front me-1"></i>
               {vehicle.licensePlate}
@@ -262,7 +459,15 @@ const VehicleInfoPage = () => {
             </div>
             <div className="col-6">
               <small className="text-muted d-block">Loại pin</small>
-              <strong>{vehicle.batteryType}</strong>
+              <strong className="small">{vehicle.batteryType}</strong>
+            </div>
+          </div>
+          <div className="row g-2">
+            <div className="col-12">
+              <small className="text-muted d-block">Model code</small>
+              <Badge bg="secondary" className="font-monospace">
+                {vehicle.model}
+              </Badge>
             </div>
           </div>
         </div>
@@ -347,84 +552,114 @@ const VehicleInfoPage = () => {
         </Modal.Header>
         <Modal.Body>
           <Form noValidate validated={validated} onSubmit={handleAddVehicle}>
-            <Row className="mb-3">
-              <Form.Group as={Col} md="6" controlId="addLicensePlate">
-                <Form.Label>
-                  Biển số xe <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  required
-                  type="text"
-                  placeholder="VD: 30A-12345"
-                  name="licensePlate"
-                  value={formData.licensePlate}
-                  onChange={handleFormChange}
-                />
-                <Form.Control.Feedback type="invalid">
-                  Vui lòng nhập biển số xe đúng định dạng.
-                </Form.Control.Feedback>
-              </Form.Group>
+            {/* Biển số xe */}
+            <Form.Group className="mb-3" controlId="addLicensePlate">
+              <Form.Label>
+                Biển số xe <span className="text-danger">*</span>
+              </Form.Label>
+              <Form.Control
+                required
+                type="text"
+                placeholder="VD: 30A-12345"
+                name="licensePlate"
+                value={formData.licensePlate}
+                onChange={handleFormChange}
+              />
+              <Form.Control.Feedback type="invalid">
+                Vui lòng nhập biển số xe.
+              </Form.Control.Feedback>
+            </Form.Group>
 
-              <Form.Group as={Col} md="6" controlId="addModel">
-                <Form.Label>
-                  Mẫu xe <span className="text-danger">*</span>
-                </Form.Label>
-                
-                <Form.Control
-                  required
-                  type="text"
-                  placeholder="VD: Tesla Model 3"
-                  name="model"
-                  value={formData.model}
-                  onChange={handleFormChange}
-                />
-                <Form.Control.Feedback type="invalid">
-                  Vui lòng nhập mẫu xe.
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Row>
+            {/* Step 1: Chọn hãng xe */}
+            <Form.Group className="mb-3" controlId="addBrand">
+              <Form.Label>
+                Hãng xe <span className="text-danger">*</span>
+              </Form.Label>
+              <Form.Select
+                required
+                value={selectedBrand}
+                onChange={handleBrandChange}
+                disabled={loadingBrands}
+              >
+                <option value="">-- Chọn hãng xe --</option>
+                {brands.map((brand) => (
+                  <option key={brand.brand} value={brand.brand}>
+                    {brand.displayName} ({brand.country})
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                Vui lòng chọn hãng xe.
+              </Form.Control.Feedback>
+            </Form.Group>
 
-            <Row className="mb-3">
-              <Form.Group as={Col} md="6" controlId="addBatteryCapacity">
+            {/* Step 2: Chọn model xe */}
+            {selectedBrand && (
+              <Form.Group className="mb-3" controlId="addModel">
                 <Form.Label>
-                  Dung lượng pin (kWh) <span className="text-danger">*</span>
+                  Model xe <span className="text-danger">*</span>
                 </Form.Label>
-                <Form.Control
-                  required
-                  type="number"
-                  step="0.1"
-                  min="1"
-                  placeholder="VD: 75.0"
-                  name="batteryCapacityKwh"
-                  value={formData.batteryCapacityKwh}
-                  onChange={handleFormChange}
-                />
-                <Form.Control.Feedback type="invalid">
-                  Vui lòng nhập dung lượng pin hợp lệ.
-                </Form.Control.Feedback>
-              </Form.Group>
+                {loadingModels ? (
+                  <div className="text-center py-3">
+                    <Spinner animation="border" size="sm" />
+                    <small className="ms-2 text-muted">
+                      Đang tải models...
+                    </small>
+                  </div>
+                ) : (
+                  <>
+                    <Form.Select
+                      required
+                      value={formData.model}
+                      onChange={handleModelChange}
+                    >
+                      <option value="">-- Chọn model xe --</option>
+                      {models.map((model) => (
+                        <option key={model.model} value={model.model}>
+                          {model.modelName} ({model.batteryCapacityKwh} kWh,{" "}
+                          {model.batteryType})
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      Vui lòng chọn model xe.
+                    </Form.Control.Feedback>
 
-              <Form.Group as={Col} md="6" controlId="addBatteryType">
-                <Form.Label>
-                  Loại pin <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Select
-                  required
-                  name="batteryType"
-                  value={formData.batteryType}
-                  onChange={handleFormChange}
-                >
-                  {batteryTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                  Vui lòng chọn loại pin.
-                </Form.Control.Feedback>
+                    {/* Hiển thị thông tin model đã chọn */}
+                    {formData.model &&
+                      models.find((m) => m.model === formData.model) && (
+                        <Card className="mt-3 bg-light border-0">
+                          <Card.Body className="py-2">
+                            <small className="text-muted d-block mb-1">
+                              <strong>Thông tin model:</strong>
+                            </small>
+                            <div className="d-flex gap-3">
+                              <small>
+                                <i className="bi bi-battery-charging text-success me-1"></i>
+                                <strong>
+                                  {
+                                    models.find(
+                                      (m) => m.model === formData.model
+                                    ).batteryCapacityKwh
+                                  }{" "}
+                                  kWh
+                                </strong>
+                              </small>
+                              <small>
+                                <i className="bi bi-lightning-charge text-warning me-1"></i>
+                                {
+                                  models.find((m) => m.model === formData.model)
+                                    .batteryType
+                                }
+                              </small>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      )}
+                  </>
+                )}
               </Form.Group>
-            </Row>
+            )}
 
             <div className="d-flex justify-content-end gap-2">
               <Button
@@ -434,7 +669,11 @@ const VehicleInfoPage = () => {
               >
                 Hủy
               </Button>
-              <Button variant="dark" type="submit" disabled={formLoading}>
+              <Button
+                variant="dark"
+                type="submit"
+                disabled={formLoading || !formData.model}
+              >
                 {formLoading ? (
                   <>
                     <Spinner
@@ -471,59 +710,104 @@ const VehicleInfoPage = () => {
         </Modal.Header>
         <Modal.Body>
           <Form noValidate validated={validated} onSubmit={handleEditVehicle}>
-            <Row className="mb-3">
-              <Form.Group as={Col} md="6" controlId="editLicensePlate">
-                <Form.Label>Biển số xe</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="VD: 30A-12345"
-                  name="licensePlate"
-                  value={formData.licensePlate}
-                  onChange={handleFormChange}
-                />
-              </Form.Group>
+            {/* Biển số xe */}
+            <Form.Group className="mb-3" controlId="editLicensePlate">
+              <Form.Label>Biển số xe</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="VD: 30A-12345"
+                name="licensePlate"
+                value={formData.licensePlate}
+                onChange={handleFormChange}
+              />
+            </Form.Group>
 
-              <Form.Group as={Col} md="6" controlId="editModel">
-                <Form.Label>Mẫu xe</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="VD: Tesla Model 3"
-                  name="model"
-                  value={formData.model}
-                  onChange={handleFormChange}
-                />
-              </Form.Group>
-            </Row>
+            {/* Step 1: Chọn hãng xe */}
+            <Form.Group className="mb-3" controlId="editBrand">
+              <Form.Label>Hãng xe</Form.Label>
+              <Form.Select
+                value={selectedBrand}
+                onChange={handleBrandChange}
+                disabled={loadingBrands}
+              >
+                <option value="">-- Chọn hãng xe --</option>
+                {brands.map((brand) => (
+                  <option key={brand.brand} value={brand.brand}>
+                    {brand.displayName} ({brand.country})
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
-            <Row className="mb-3">
-              <Form.Group as={Col} md="6" controlId="editBatteryCapacity">
-                <Form.Label>Dung lượng pin (kWh)</Form.Label>
-                <Form.Control
-                  type="number"
-                  step="0.1"
-                  min="1"
-                  placeholder="VD: 75.0"
-                  name="batteryCapacityKwh"
-                  value={formData.batteryCapacityKwh}
-                  onChange={handleFormChange}
-                />
-              </Form.Group>
+            {/* Step 2: Chọn model xe */}
+            {selectedBrand && (
+              <Form.Group className="mb-3" controlId="editModel">
+                <Form.Label>Model xe</Form.Label>
+                {loadingModels ? (
+                  <div className="text-center py-3">
+                    <Spinner animation="border" size="sm" />
+                    <small className="ms-2 text-muted">
+                      Đang tải models...
+                    </small>
+                  </div>
+                ) : (
+                  <>
+                    <Form.Select
+                      value={formData.model}
+                      onChange={handleModelChange}
+                    >
+                      <option value="">-- Chọn model xe --</option>
+                      {models.map((model) => (
+                        <option key={model.model} value={model.model}>
+                          {model.modelName} ({model.batteryCapacityKwh} kWh,{" "}
+                          {model.batteryType})
+                        </option>
+                      ))}
+                    </Form.Select>
 
-              <Form.Group as={Col} md="6" controlId="editBatteryType">
-                <Form.Label>Loại pin</Form.Label>
-                <Form.Select
-                  name="batteryType"
-                  value={formData.batteryType}
-                  onChange={handleFormChange}
-                >
-                  {batteryTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </Form.Select>
+                    {/* Hiển thị thông tin model đã chọn */}
+                    {formData.model &&
+                      models.find((m) => m.model === formData.model) && (
+                        <Card className="mt-3 bg-light border-0">
+                          <Card.Body className="py-2">
+                            <small className="text-muted d-block mb-1">
+                              <strong>Thông tin model:</strong>
+                            </small>
+                            <div className="d-flex gap-3">
+                              <small>
+                                <i className="bi bi-battery-charging text-success me-1"></i>
+                                <strong>
+                                  {
+                                    models.find(
+                                      (m) => m.model === formData.model
+                                    ).batteryCapacityKwh
+                                  }{" "}
+                                  kWh
+                                </strong>
+                              </small>
+                              <small>
+                                <i className="bi bi-lightning-charge text-warning me-1"></i>
+                                {
+                                  models.find((m) => m.model === formData.model)
+                                    .batteryType
+                                }
+                              </small>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      )}
+                  </>
+                )}
               </Form.Group>
-            </Row>
+            )}
+
+            <Alert variant="info" className="mb-3">
+              <small>
+                <i className="bi bi-info-circle me-2"></i>
+                Khi thay đổi model, thông tin battery sẽ tự động được cập nhật
+                theo model mới.
+              </small>
+            </Alert>
 
             <div className="d-flex justify-content-end gap-2">
               <Button
@@ -569,14 +853,22 @@ const VehicleInfoPage = () => {
             <div>
               <p>Bạn có chắc chắn muốn xóa xe này không?</p>
               <div className="bg-light p-3 rounded">
-                <strong>{vehicleToDelete.model}</strong>
+                <strong>
+                  {vehicleToDelete.brandDisplayName || vehicleToDelete.brand}{" "}
+                  {vehicleToDelete.modelName || vehicleToDelete.model}
+                </strong>
                 <br />
                 <small className="text-muted">
                   Biển số: {vehicleToDelete.licensePlate}
                 </small>
+                <br />
+                <small className="text-muted">
+                  {vehicleToDelete.batteryCapacityKwh} kWh |{" "}
+                  {vehicleToDelete.batteryType}
+                </small>
               </div>
               <p className="text-danger mt-2 mb-0">
-                <small>⚠️ Hành động này không thể hoàn tác!</small>
+                <small> Hành động này không thể hoàn tác!</small>
               </p>
             </div>
           )}

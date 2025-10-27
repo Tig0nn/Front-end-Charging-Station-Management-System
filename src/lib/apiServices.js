@@ -46,9 +46,17 @@ const realApiServices = {
   },
 
   plans: {
-    getAll: () => api.get("/api/plans"),
+    getAll: () => {
+      // Thêm timestamp để tránh cache
+      const timestamp = Date.now();
+      return api.get(`/api/plans?_t=${timestamp}`);
+    },
     // Create general plan
     create: (planData) => api.post("/api/plans", planData),
+    // Update plan (partial update với PUT theo spec)
+    update: (planId, planData) => api.put(`/api/plans/${planId}`, planData),
+    // Delete plan
+    delete: (planId) => api.delete(`/api/plans/${planId}`),
     // Create prepaid plan
     createPrepaid: (planData) => api.post("/api/plans/prepaid", planData),
     // Create postpaid plan
@@ -59,6 +67,19 @@ const realApiServices = {
     getCurrentSubscription: () => api.get("/api/plans/current"),
     // Get all available plans
     getAvailable: () => api.get("/api/plans/available"),
+    // Subscribe to a plan with payment method
+    subscribe: (planId, paymentMethodId) =>
+      api.post("/api/subscriptions", { planId, paymentMethodId }),
+  },
+
+  subscriptions: {
+    // Get driver's current active subscription
+    getActive: () => {
+      console.log(
+        "🔍 Calling getActive subscription endpoint: /api/subscriptions/active"
+      );
+      return api.get("/api/subscriptions/active");
+    },
   },
 
   payments: {
@@ -106,6 +127,9 @@ const realApiServices = {
     getAll: (page = 1, limit = 10) =>
       api.get(`/api/stations/overview?page=${page}&limit=${limit}`),
 
+    // Tạo trạm sạc mới
+    create: (stationData) => api.post("/api/stations/create", stationData),
+
     // Cập nhật trạng thái hoạt động (status)
     updateStatus: (stationId, status) =>
       api.patch(`/api/stations/${stationId}/status?status=${status}`),
@@ -120,6 +144,7 @@ const realApiServices = {
     // Bật/tắt trạng thái trạm (toggle)
     toggle: (stationId) => api.patch(`/api/stations/${stationId}/toggle`),
 
+    delete: (stationId) => api.delete(`/api/stations/${stationId}`),
     // =========================
     // 👥 Staff Management
     // =========================
@@ -161,6 +186,30 @@ const realApiServices = {
   // 🚗 Vehicles API Services
   // =========================
   vehicles: {
+    // ===== PUBLIC APIs (Không cần authentication) =====
+
+    // Lấy danh sách tất cả hãng xe
+    getBrands: () => {
+      console.log("🔍 Calling getBrands endpoint: /api/vehicles/brands");
+      return api.get("/api/vehicles/brands");
+    },
+
+    // Lấy danh sách models theo brand
+    getModelsByBrand: (brand) => {
+      console.log(
+        `🔍 Calling getModelsByBrand endpoint: /api/vehicles/brands/${brand}/models`
+      );
+      return api.get(`/api/vehicles/brands/${brand}/models`);
+    },
+
+    // Lấy danh sách tất cả models
+    getAllModels: () => {
+      console.log("🔍 Calling getAllModels endpoint: /api/vehicles/models");
+      return api.get("/api/vehicles/models");
+    },
+
+    // ===== DRIVER APIs (Role: DRIVER) =====
+
     // Lấy danh sách tất cả xe của driver hiện tại
     getMyVehicles: () => {
       console.log(
@@ -170,6 +219,7 @@ const realApiServices = {
     },
 
     // Tạo xe mới cho driver hiện tại
+    // ⚠️ CHỈ GỬI: licensePlate và model (không cần brand, batteryCapacityKwh, batteryType)
     createVehicle: (vehicleData) => {
       console.log("➕ Calling createVehicle endpoint: /api/vehicles");
       console.log("📝 Vehicle data to create:", vehicleData);
@@ -185,6 +235,7 @@ const realApiServices = {
     },
 
     // Cập nhật thông tin xe (partial update)
+    // ⚠️ CHỈ GỬI: licensePlate và/hoặc model
     updateVehicle: (vehicleId, vehicleData) => {
       console.log(
         `🔄 Calling updateVehicle endpoint: /api/vehicles/${vehicleId}`
@@ -201,6 +252,8 @@ const realApiServices = {
       return api.delete(`/api/vehicles/${vehicleId}`);
     },
 
+    // ===== ADMIN APIs (Role: ADMIN) =====
+
     // Admin endpoint: Lấy xe của một driver cụ thể
     getVehiclesByDriverId: (driverId) => {
       console.log(
@@ -209,6 +262,7 @@ const realApiServices = {
       return api.get(`/api/vehicles/driver/${driverId}`);
     },
   },
+  chargingSessions: {
   chargingSessions: {
     // Lịch sử sạc của driver hiện tại
     getMySessions: () => api.get("/api/charging-sessions/my-sessions"),
@@ -233,6 +287,7 @@ export const authAPI = apiServices.auth;
 export const usersAPI = apiServices.users;
 export const systemOverviewAPI = apiServices.systemOverview;
 export const plansAPI = apiServices.plans;
+export const subscriptionsAPI = apiServices.subscriptions;
 export const paymentsAPI = apiServices.payments;
 export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;

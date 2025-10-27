@@ -12,9 +12,9 @@ import {
   Modal,
   Form,
 } from "react-bootstrap";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import { BiEdit } from "react-icons/bi";
-import AdminPlanCard from "../../components/AdminPlanCard"; // Giả sử bạn có component này
+import PlanCard from "../../components/PlanCard"; // Sử dụng PlanCard thống nhất
 
 const UsersList = () => {
   const [users, setUsers] = useState([]);
@@ -27,14 +27,14 @@ const UsersList = () => {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
 
-  // SỬA 1: Cập nhật state của form plan
+  // SỬA 1: Cập nhật state của form plan theo API spec
   const [planFormData, setPlanFormData] = useState({
     name: "",
     price: "", // (Đây là monthlyFee)
-    features: "",
-    billingType: "MONTHLY",
-    pricePerKwh: "0", // Thêm trường mới
-    pricePerMinute: "0", // Thêm trường mới
+    benefits: "", // (Đây là description)
+    billingType: "MONTHLY_SUBSCRIPTION",
+    discountPercent: "", // Thêm field discount
+    freeChargingMinutes: "", // Phút sạc miễn phí
   });
 
   // Tách hàm fetchPlans ra
@@ -55,24 +55,27 @@ const UsersList = () => {
         plansData = response;
       }
 
-      // Transform to UI format
-      const transformedPlans = plansData.map((plan, index) => ({
-        id: plan.planId,
-        name: plan.name,
-        price: plan.monthlyFee || 0,
-        // SỬA 2: Sửa billingType cho khớp API
-        period: plan.billingType === "PAY_AS_YOU_GO" ? "lượt" : "tháng",
-        features: plan.benefits
-          ? plan.benefits.split(",").map((b) => b.trim())
-          : [
-              `${plan.pricePerKwh || 0}đ/kWh`,
-              `${plan.pricePerMinute || 0}đ/phút`,
-            ],
-        isPopular: index === 1,
-        billingType: plan.billingType,
-        pricePerKwh: plan.pricePerKwh,
-        pricePerMinute: plan.pricePerMinute,
-      }));
+      console.log("📋 Raw plans data from backend:", plansData);
+
+      // Transform to UI format with full information
+      const transformedPlans = plansData.map((plan, index) => {
+        console.log(`Plan ${index}:`, plan);
+        console.log(`  → benefits: "${plan.benefits}"`);
+
+        return {
+          id: plan.planId || plan.id,
+          name: plan.name,
+          monthlyFee: plan.monthlyFee || 0,
+          price: plan.monthlyFee || 0,
+          period: plan.billingType === "PAY_AS_YOU_GO" ? "lượt" : "tháng",
+          billingType: plan.billingType,
+          discountPercent: plan.discountPercent || 0,
+          freeChargingMinutes: plan.freeChargingMinutes || 0,
+          // Backend CHỈ HỖ TRỢ field "benefits", không có "description"
+          benefits: plan.benefits || "",
+          isPopular: index === 1,
+        };
+      });
 
       setPlans(transformedPlans);
     } catch (err) {
@@ -107,26 +110,30 @@ const UsersList = () => {
   // SỬA 3: Cập nhật logic mở modal (thêm/sửa)
   const handleShowPlanModal = (plan = null) => {
     if (plan) {
-      // Chế độ Edit
+      // Chế độ Edit - map đầy đủ từ backend
+      console.log("📝 Editing plan:", plan);
       setEditingPlan(plan);
-      setPlanFormData({
+      const formData = {
         name: plan.name,
-        price: plan.price.toString(), // (monthlyFee)
-        features: Array.isArray(plan.features) ? plan.features.join("\n") : "",
-        billingType: plan.billingType || "MONTHLY",
-        pricePerKwh: plan.pricePerKwh?.toString() || "0",
-        pricePerMinute: plan.pricePerMinute?.toString() || "0",
-      });
+        price: (plan.monthlyFee || plan.price || 0).toString(),
+        benefits: plan.benefits || "", // description từ backend
+        billingType: plan.billingType || "MONTHLY_SUBSCRIPTION",
+        discountPercent: (plan.discountPercent || 0).toString(),
+        freeChargingMinutes: (plan.freeChargingMinutes || 0).toString(),
+      };
+      console.log("📋 Form data set to:", formData);
+      setPlanFormData(formData);
     } else {
       // Chế độ Create (Reset form)
+      console.log("➕ Creating new plan");
       setEditingPlan(null);
       setPlanFormData({
         name: "",
-        price: "", // (monthlyFee)
-        features: "",
-        billingType: "MONTHLY",
-        pricePerKwh: "0",
-        pricePerMinute: "0",
+        price: "",
+        benefits: "",
+        billingType: "MONTHLY_SUBSCRIPTION",
+        discountPercent: "0",
+        freeChargingMinutes: "0",
       });
     }
     setShowPlanModal(true);
@@ -146,40 +153,78 @@ const UsersList = () => {
     }));
   };
 
-  // SỬA 5: Cập nhật handleSubmit (gửi 6 trường + gọi lại fetchPlans)
+  // SỬA 5: CHỈ GỬI FIELD BENEFITS (backend chỉ hỗ trợ benefits)
   const handlePlanSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Gói dữ liệu gửi đi cho khớp API (Đầy đủ 6 trường)
+      // Prepare data - Backend chỉ lưu vào field "benefits", KHÔNG phải "description"
       const planData = {
         name: planFormData.name,
         billingType: planFormData.billingType,
-        monthlyFee: parseFloat(planFormData.price) || 0, // 'price' trong form là monthlyFee
-        pricePerKwh: parseFloat(planFormData.pricePerKwh) || 0,
-        pricePerMinute: parseFloat(planFormData.pricePerMinute) || 0,
-        benefits: planFormData.features
-          .split("\n")
-          .filter((f) => f.trim())
-          .join(","),
+        monthlyFee: parseFloat(planFormData.price) || 0,
+        discountPercent: parseFloat(planFormData.discountPercent) || 0,
+        freeChargingMinutes: parseInt(planFormData.freeChargingMinutes) || 0,
+        benefits: planFormData.benefits || "", // CHỈ GỬI benefits
       };
 
       if (editingPlan) {
-        console.log("Updating plan:", editingPlan.id, planData);
-        // TODO: await plansAPI.update(editingPlan.id, planData);
-        alert("Chức năng cập nhật gói sẽ được bổ sung");
+        console.log("🔄 Updating plan:", editingPlan.id);
+        console.log("📤 Update data:", planData);
+        const response = await plansAPI.update(editingPlan.id, planData);
+        console.log("✅ Update response:", response);
+        console.log(
+          "✅ Updated result:",
+          response?.data?.result || response?.result
+        );
+        alert("Cập nhật gói dịch vụ thành công!");
       } else {
-        console.log("Creating plan:", planData);
-        await plansAPI.create(planData);
+        console.log("➕ Creating new plan");
+        console.log("📤 Create data:", planData);
+        const response = await plansAPI.create(planData);
+        console.log("✅ Create response:", response);
         alert("Tạo gói dịch vụ thành công!");
       }
 
-      // Tải lại danh sách plans sau khi thêm/sửa
-      fetchPlans();
+      // Đóng modal TRƯỚC
       handleClosePlanModal();
+
+      // Đợi 300ms để backend lưu xong
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Tải lại danh sách plans
+      console.log("🔄 Reloading plans...");
+      await fetchPlans();
+      console.log("✅ Plans reloaded");
     } catch (err) {
-      console.error("Error saving plan:", err);
-      alert("Có lỗi xảy ra khi lưu gói dịch vụ");
+      console.error("❌ Error saving plan:", err);
+      console.error("❌ Error response:", err.response?.data);
+      const errorMsg =
+        err.response?.data?.message || err.response?.data?.error || err.message;
+      alert(`Có lỗi xảy ra khi lưu gói dịch vụ:\n${errorMsg}`);
+    }
+  };
+
+  // DELETE plan handler
+  const handleDeletePlan = async (plan) => {
+    if (
+      !window.confirm(
+        `Bạn có chắc chắn muốn xóa gói "${plan.name}"?\n\nLưu ý: Không nên xóa gói đang có người đăng ký!`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      console.log("Deleting plan:", plan.id);
+      await plansAPI.delete(plan.id);
+      alert("Xóa gói dịch vụ thành công!");
+      fetchPlans(); // Reload danh sách
+    } catch (err) {
+      console.error("Error deleting plan:", err);
+      alert(
+        "Có lỗi xảy ra khi xóa gói dịch vụ. Có thể gói này đang có người đăng ký."
+      );
     }
   };
 
@@ -387,7 +432,58 @@ const UsersList = () => {
           ) : (
             plans.map((plan) => (
               <Col key={plan.id} xs={12} md={6} lg={4}>
-                <AdminPlanCard plan={plan} onEdit={handleShowPlanModal} />
+                <div
+                  className="position-relative h-100"
+                  style={{ isolation: "isolate", minHeight: "400px" }}
+                >
+                  <PlanCard plan={plan} mode="admin" />
+                  {/* Action buttons overlay cho admin */}
+                  <div
+                    className="position-absolute top-0 end-0 m-3 d-flex gap-2"
+                    style={{ zIndex: 10 }}
+                  >
+                    {/* Edit button */}
+                    <Button
+                      variant="light"
+                      size="sm"
+                      className="rounded-circle shadow-sm border border-secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShowPlanModal(plan);
+                      }}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        padding: "0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <BiEdit size={20} />
+                    </Button>
+                    {/* Delete button */}
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="rounded-circle shadow-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePlan(plan);
+                      }}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        padding: "0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <FaTrash size={16} />
+                    </Button>
+                  </div>
+                </div>
               </Col>
             ))
           )}
@@ -417,7 +513,6 @@ const UsersList = () => {
                     name="name"
                     value={planFormData.name}
                     onChange={handlePlanInputChange}
-                    placeholder="VD: Premium, VIP"
                     required
                   />
                 </Form.Group>
@@ -430,73 +525,70 @@ const UsersList = () => {
                     value={planFormData.billingType}
                     onChange={handlePlanInputChange}
                   >
-                    <option value="MONTHLY">Trả theo tháng</option>
-                    {/* Sửa giá trị này cho khớp API */}
-                    <option value="PAY_AS_YOU_GO">
-                      Trả theo lượt (Pay As You Go)
-                    </option>
+                    <option value="MONTHLY_SUBSCRIPTION">Theo tháng</option>
+                    <option value="PAY_AS_YOU_GO">Trả theo lượt</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
 
             <Row>
-              <Col md={4}>
+              <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Phí hàng tháng (VNĐ) *</Form.Label>
                   <Form.Control
                     type="number"
-                    name="price" // (sẽ được map sang monthlyFee)
+                    name="price"
                     value={planFormData.price}
                     onChange={handlePlanInputChange}
-                    placeholder="VD: 150000"
                     required
                     min="0"
                   />
                   <Form.Text>Nhập 0 nếu là gói "Trả theo lượt".</Form.Text>
                 </Form.Group>
               </Col>
-              <Col md={4}>
+              <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Giá mỗi kWh (VNĐ) *</Form.Label>
+                  <Form.Label>Giảm giá (%)</Form.Label>
                   <Form.Control
                     type="number"
-                    name="pricePerKwh"
-                    value={planFormData.pricePerKwh}
+                    name="discountPercent"
+                    value={planFormData.discountPercent}
                     onChange={handlePlanInputChange}
-                    required
                     min="0"
+                    max="100"
+                    step="0.1"
                   />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Giá mỗi phút (VNĐ) *</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="pricePerMinute"
-                    value={planFormData.pricePerMinute}
-                    onChange={handlePlanInputChange}
-                    required
-                    min="0"
-                  />
+                  <Form.Text>Phần trăm giảm giá (0-100)</Form.Text>
                 </Form.Group>
               </Col>
             </Row>
 
             <Form.Group className="mb-3">
-              <Form.Label>Quyền lợi/Mô tả (mỗi dòng một ý) *</Form.Label>
+              <Form.Label>Phút sạc miễn phí</Form.Label>
+              <Form.Control
+                type="number"
+                name="freeChargingMinutes"
+                value={planFormData.freeChargingMinutes}
+                onChange={handlePlanInputChange}
+                min="0"
+              />
+              <Form.Text>Số phút sạc miễn phí mỗi tháng</Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Mô tả và quyền lợi *</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={5}
-                name="features" // (sẽ được map sang benefits)
-                value={planFormData.features}
+                name="benefits"
+                value={planFormData.benefits}
                 onChange={handlePlanInputChange}
-                placeholder="VD:&#10;Ưu đãi 10% giá sạc&#10;Hỗ trợ 24/7&#10;Không giới hạn số lượt sạc"
                 required
               />
               <Form.Text className="text-muted">
-                Dữ liệu này sẽ được lưu vào trường "benefits".
+                Nhập mô tả và các quyền lợi của gói. Dữ liệu sẽ hiển thị nguyên
+                văn.
               </Form.Text>
             </Form.Group>
 
