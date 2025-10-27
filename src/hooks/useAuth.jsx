@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext, createContext } from "react";
 import { authAPI, usersAPI, staffAPI } from "../lib/apiServices.js";
 import { setAuthToken, getAuthToken } from "../lib/api";
-// import { setCurrentUser, getCurrentUser, clearAuth } from "../lib/auth.js";
 
 const AuthContext = createContext();
 

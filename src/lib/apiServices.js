@@ -263,11 +263,11 @@ const realApiServices = {
     },
   },
   chargingSessions: {
-  chargingSessions: {
     // Lịch sử sạc của driver hiện tại
     getMySessions: () => api.get("/api/charging-sessions/my-sessions"),
   },
 
+  // ✅ Đưa staff ra ngoài (ngang cấp với chargingSessions)
   staff: {
     getAllReports: () => api.get("/api/staff/incidents"),
     getAllStaffs: () => api.get("/api/stations/staff/all"),
@@ -276,7 +276,7 @@ const realApiServices = {
     getChargingPoint: () => api.get("/api/staff/my-station/charging-points"),
     submitReport: (reportData) => api.post("/api/staff/incidents", reportData),
   },
-};
+}
 
 // Export the appropriate API based on configuration
 export const apiServices = USE_MOCK_API ? mockApi : realApiServices;
