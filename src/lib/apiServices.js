@@ -146,8 +146,12 @@ const realApiServices = {
       api.get(`/api/stations/${stationId}/charging-points`),
     startCharging: (data) => api.post(`/api/charging-sessions/start`, data),
     //giả lập sạc
-    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}/active`),
-
+    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}`),
+    updateStatus: (power, stationId, chargingPointId, status) =>
+      api.put(`/api/stations/${stationId}/charging-points/${chargingPointId}`, {
+      chargingPower: power,
+      status: status,
+    }),
     //  Dừng sạc
     stopCharging: (sessionId) =>
       api.post(`/api/charging-sessions/${sessionId}/stop`),
@@ -211,10 +215,12 @@ const realApiServices = {
   },
 
   staff: {
+    getAllReports: () => api.get("/api/staff/incidents"),
     getAllStaffs: () => api.get("/api/stations/staff/all"),
     getStaffDashboard: () => api.get("/api/staff/dashboard"),
     getStaffProfile: () => api.get("/api/staff/profile"),
     getChargingPoint: () => api.get("/api/staff/my-station/charging-points"),
+    submitReport: (reportData) => api.post("/api/staff/incidents", reportData),
   },
 };
 

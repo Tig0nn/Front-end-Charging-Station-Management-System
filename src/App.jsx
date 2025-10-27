@@ -16,7 +16,6 @@ import StationOverview from "./Pages/staff/StationOverview.jsx";
 import VehicleInfoPage from "./Pages/driver/VehicleInfoPage";
 import PaymentPage from "./Pages/driver/PaymentPage";
 import AddStation from "./Pages/admin/AddStation";
-import StaffMaintenance from "./Pages/staff/StaffMaintenance";
 import StaffReports from "./Pages/staff/StaffReports";
 import StaffTransactions from "./Pages/staff/StaffTransactions";
 import { usersAPI } from "./lib/apiServices";
@@ -176,7 +175,6 @@ function App() {
 
               {/* Các route khác cho Staff */}
               <Route path="/transactions" element={<StaffTransactions />} />
-              <Route path="/maintenance" element={<StaffMaintenance />} />
               <Route path="/reports" element={<StaffReports />} />
 
               {/* 404 Page for Staff section */}

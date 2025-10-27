@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Badge, Spinner, Alert } from "react-bootstrap";
 import { chargingPointsAPI } from "../../lib/apiServices.js";
+import { Modal } from "react-bootstrap";
 
-// --- HELPER FUNCTIONS ---
+
 
 // Hàm định dạng công suất từ "POWER_22KW" thành "22kW"
 const formatPower = (powerString) => {
@@ -13,17 +14,17 @@ const formatPower = (powerString) => {
 
 // Hàm lấy thông tin trạng thái và màu sắc
 const getStatusInfo = (point) => {
-  // Logic mới dựa trên yêu cầu của bạn
+
   if (point.status === 'AVAILABLE' && !point.currentSessionId) {
     return { text: "Sẵn sàng", bg: "primary" };
   }
   if (point.status === 'AVAILABLE' && point.currentSessionId) {
     return { text: "Đang sạc", bg: "success" };
   }
-  if (point.status === 'CHARGING') { // Trạng thái CHARGING từ API cũng là đang sạc
+  if (point.status === 'IN_USE') { // Trạng thái CHARGING từ API cũng là đang sạc
     return { text: "Đang sạc", bg: "success" };
   }
-  if (point.status === 'FAULTED' || point.status === 'UNAVAILABLE') {
+  if (point.status === 'OFFLINE' || point.status === 'UNAVAILABLE') {
     return { text: "Lỗi", bg: "danger" };
   }
   if (point.status === 'MAINTENANCE') {
@@ -33,41 +34,86 @@ const getStatusInfo = (point) => {
   return { text: point.status, bg: "secondary" };
 };
 
+
 export default function StationOverview() {
   const [chargingPoints, setChargingPoints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPoint, setSelectedPoint] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const stationId = user?.stationId;
 
-  // ID trạm sạc mẫu. Trong thực tế, bạn có thể lấy từ profile của staff.
-  const idStation = "a09fc6f4-aba2-11f0-bfb5-a2aa8cd208e5"; 
+const handleUpdateStatus = async (newStatus) => {
+  try {
+    if (!selectedPoint) {
+      console.warn("⚠️ Không có trụ sạc nào được chọn để cập nhật!");
+      return;
+    }
 
+    const power = selectedPoint.chargingPower;
+    console.log("🔧 Bắt đầu cập nhật trạng thái trụ sạc...");
+    console.log("📍 Thông tin gửi đi:", {
+      stationId,
+      pointId: selectedPoint.pointId,
+      chargingPower: power,
+      newStatus,
+    });
+
+    // 🛰️ Gửi API cập nhật
+    const updateResponse = await chargingPointsAPI.updateStatus(
+      power,
+      stationId,
+      selectedPoint.pointId,
+      newStatus
+    );
+    console.log("✅ Phản hồi từ API updateStatus:", updateResponse.data);
+
+    // ✅ Sau khi cập nhật, gọi lại API lấy danh sách trụ sạc mới
+    console.log("🔄 Đang lấy danh sách trụ sạc mới sau khi cập nhật...");
+    const updatedPoints = await chargingPointsAPI.getChargersByStation(stationId);
+    console.log("📦 Dữ liệu mới từ server:", updatedPoints.data);
+
+    setChargingPoints(updatedPoints.data.result);
+    console.log("🎯 State chargingPoints đã được cập nhật!");
+
+    // ✅ Đóng modal
+    setShowModal(false);
+    console.log("💡 Modal đã đóng thành công!");
+  } catch (err) {
+    console.error("❌ Lỗi khi cập nhật trạng thái trụ sạc:", err);
+    alert("Không thể cập nhật trạng thái trụ sạc.");
+    setShowModal(false);
+  }
+};
+
+  const fetchChargingPoints = async () => {
+    if (!stationId) {
+      setError("Không xác định được ID của trạm sạc.");
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await chargingPointsAPI.getChargersByStation(stationId);
+      if (response.data && response.data.result) {
+        setChargingPoints(response.data.result);
+        console
+      } else {
+        setChargingPoints([]);
+      }
+    } catch (err) {
+      console.error("Error fetching charging points:", err);
+      setError("Không thể tải danh sách trụ sạc. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchChargingPoints = async () => {
-      if (!idStation) {
-        setError("Không xác định được ID của trạm sạc.");
-        setLoading(false);
-        return;
-      }
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await chargingPointsAPI.getChargersByStation(idStation);
-        if (response.data && response.data.result) {
-          setChargingPoints(response.data.result);
-          console
-        } else {
-          setChargingPoints([]);
-        }
-      } catch (err) {
-        console.error("Error fetching charging points:", err);
-        setError("Không thể tải danh sách trụ sạc. Vui lòng thử lại.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchChargingPoints();
   }, []);
+
 
   // --- TÍNH TOÁN SỐ LIỆU ĐỘNG ---
   const totalPoints = chargingPoints.length;
@@ -92,10 +138,36 @@ export default function StationOverview() {
 
   return (
     <Container className="py-4">
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Chỉnh sửa</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedPoint && (
+            <>
+              <div className="d-flex gap-2 mt-3">
+                <Button
+                  variant="warning"
+                  className="w-50"
+                  onClick={() => handleUpdateStatus("MAINTENANCE")}
+                >
+                  Bảo trì
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="w-50"
+                  onClick={() => handleUpdateStatus("OFFLINE")}
+                >
+                  Tạm dừng
+                </Button>
+              </div>
+            </>
+          )}
+        </Modal.Body>
+      </Modal>
+
       {/* Giả sử tên trạm và địa chỉ lấy từ điểm sạc đầu tiên */}
       <h4 className="mb-2">Trạm sạc: {chargingPoints[0]?.stationName || 'Đang tải...'}</h4>
-      {/* <p className="text-muted">72 Lê Thánh Tôn, Quận 1, TP.HCM</p> */}
-
       <Row className="mb-4">
         <Col md={3}>
           <Card className="text-center shadow-sm">
@@ -106,14 +178,12 @@ export default function StationOverview() {
             </Card.Body>
           </Card>
         </Col>
-        {/* Các thẻ tổng quan khác giữ nguyên vì API không cung cấp dữ liệu này */}
-        <Col md={3}><Card className="text-center shadow-sm"><Card.Body><h6 className="text-muted">Phiên sạc hôm nay</h6><h4>N/A</h4></Card.Body></Card></Col>
-        <Col md={3}><Card className="text-center shadow-sm"><Card.Body><h6 className="text-muted">Doanh thu hôm nay</h6><h4>N/A</h4></Card.Body></Card></Col>
-        <Col md={3}><Card className="text-center shadow-sm"><Card.Body><h6 className="text-muted">Thời gian TB</h6><h4>N/A</h4></Card.Body></Card></Col>
       </Row>
-
+      <Button variant="outline-primary" onClick={fetchChargingPoints}>
+        Tải lại dữ liệu
+      </Button>
       <Row xs={1} md={2} lg={3} className="g-3">
-        {chargingPoints.map((point, index) => {
+        {chargingPoints.map((point) => {
           const statusInfo = getStatusInfo(point);
           const isCharging = statusInfo.text === 'Đang sạc';
           const isUnavailable = !['Sẵn sàng', 'Đang sạc'].includes(statusInfo.text);
@@ -123,8 +193,7 @@ export default function StationOverview() {
               <Card className="h-100 shadow-sm">
                 <Card.Body>
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    {/* Tên trụ sạc theo index */}
-                    <h6 className="mb-0">Điểm sạc #{index + 1}</h6>
+                    <h6 className="mb-0">{point.name}</h6>
                     <Badge bg={statusInfo.bg} text={statusInfo.textColor || 'light'}>
                       {statusInfo.text}
                     </Badge>
@@ -132,7 +201,7 @@ export default function StationOverview() {
 
                   <div className="text-muted small mb-2">
                     {/* Công suất từ API */}
-                    ⚡ {formatPower(point.chargingPower)}
+                    Công suất: {formatPower(point.chargingPower)}
                   </div>
 
                   {isCharging && (
@@ -165,14 +234,20 @@ export default function StationOverview() {
                     >
                       {isCharging ? "Dừng sạc" : "Khởi động"}
                     </Button>
-                    <Button variant="outline-secondary" className="w-50">
-                      Chi tiết
-                    </Button>
+                    {statusInfo.text !== "Đang sạc" && (
+                      <Button
+                        variant="outline-secondary"
+                        className="w-50"
+                        onClick={() => {
+                          setSelectedPoint(point);
+                          setShowModal(true);
+                        }}
+                      >
+                        Chỉnh sửa
+                      </Button>
+                    )}
                   </div>
                 </Card.Body>
-                <Card.Footer className="text-muted small">
-                  ID: {point.pointId}
-                </Card.Footer>
               </Card>
             </Col>
           );
