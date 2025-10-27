@@ -1,48 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { Card, Button, Form, Row, Col, Spinner, Alert } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
-// Sử dụng hook thật thay vì mock
-import { useDriverProfile } from "../../hooks/useDriverProfile.js";
 import { useAuth } from "../../hooks/useAuth.jsx";
+import { usersAPI } from "../../lib/apiServices.js";
 
 const ProfileInfoPage = () => {
-  const { driverProfile, loading, error, updateProfile, setError } =
-    useDriverProfile();
-  const { updateUser } = useAuth();
+  const { user, updateUser } = useAuth();
+
+  // Local state
+  const [loading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [validated, setValidated] = useState(false);
+
   // Local form state
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "", // Vẫn giữ email trong form state để hiển thị
+    email: "",
     phone: "",
     dateOfBirth: "",
-    gender: "F", // SỬA 1: Đổi sang string "M" / "F", mặc định là "F" (Nữ)
+    gender: "F",
     address: "",
   });
 
-  const [successMessage, setSuccessMessage] = useState("");
-  const [validated, setValidated] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  // Cập nhật form data khi thông tin tài xế được tải
+  // Cập nhật form data từ useAuth.user
   useEffect(() => {
-    if (driverProfile) {
+    if (user) {
       setFormData({
-        firstName: driverProfile.firstName || "",
-        lastName: driverProfile.lastName || "",
-        email: driverProfile.email || "",
-        phone: driverProfile.phone || "",
-        dateOfBirth: driverProfile.dateOfBirth
-          ? driverProfile.dateOfBirth.split("T")[0]
-          : "",
-        // SỬA 2: Đảm bảo gender luôn là "M" hoặc "F"
-        gender: driverProfile.gender === "M" ? "M" : "F",
-        address: driverProfile.address || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split("T")[0] : "",
+        gender: user.gender === "M" ? "M" : "F",
+        address: user.address || "",
       });
-      updateUser(driverProfile);
     }
-  }, [driverProfile, updateUser]);
+  }, [user]);
 
   // Xử lý khi người dùng thay đổi giá trị trong form
   const handleChange = (e) => {
@@ -80,17 +77,15 @@ const ProfileInfoPage = () => {
   };
 
   const resetForm = () => {
-    if (driverProfile) {
+    if (user) {
       setFormData({
-        firstName: driverProfile.firstName || "",
-        lastName: driverProfile.lastName || "",
-        email: driverProfile.email || "",
-        phone: driverProfile.phone || "",
-        dateOfBirth: driverProfile.dateOfBirth
-          ? driverProfile.dateOfBirth.split("T")[0]
-          : "",
-        gender: driverProfile.gender === "M" ? "M" : "F", // Sửa cả ở đây
-        address: driverProfile.address || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split("T")[0] : "",
+        gender: user.gender === "M" ? "M" : "F",
+        address: user.address || "",
       });
     }
     setValidated(false);
@@ -156,24 +151,44 @@ const ProfileInfoPage = () => {
 
       console.log("📝 Sending update data:", updateData);
 
-      const result = await updateProfile(updateData);
+      // Gọi API update trực tiếp
+      setIsUpdating(true);
+      setError(null);
 
-      if (result.success) {
+      const response = await usersAPI.updateDriverInfo(updateData);
+
+      // Xử lý response
+      const responseData = response.data;
+      if (responseData && responseData.code === 1000) {
+        // Cập nhật user trong AuthContext
+        const updatedUser = responseData.result || {
+          ...user,
+          ...updateData,
+          fullName: `${updateData.firstName || user?.firstName || ""} ${
+            updateData.lastName || user?.lastName || ""
+          }`.trim(),
+        };
+        updateUser(updatedUser);
+
         setSuccessMessage("Thông tin tài xế đã được cập nhật thành công!");
-        setIsEditMode(false); // Tự động thoát edit mode
+        setIsEditMode(false);
         setTimeout(() => setSuccessMessage(""), 5000);
       } else {
-        throw new Error(result.error || "Cập nhật thất bại.");
+        throw new Error(responseData?.message || "Cập nhật thất bại");
       }
     } catch (err) {
       console.error("❌ Lỗi cập nhật thông tin:", err);
-      setError("Không thể cập nhật thông tin. Vui lòng thử lại.");
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Không thể cập nhật thông tin. Vui lòng thử lại.";
+      setError(errorMessage);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <div
         className="d-flex justify-content-center align-items-center"
@@ -186,8 +201,8 @@ const ProfileInfoPage = () => {
   }
 
   const fullNameDisplay =
-    driverProfile?.fullName && driverProfile.fullName !== "null null"
-      ? driverProfile.fullName
+    user?.fullName && user.fullName !== "null null"
+      ? user.fullName
       : `${formData.firstName} ${formData.lastName}`.trim() || "Chưa cập nhật";
 
   return (
@@ -404,7 +419,7 @@ const ProfileInfoPage = () => {
                 <Form.Label>Vai trò</Form.Label>
                 <Form.Control
                   type="text"
-                  value={driverProfile?.role || "DRIVER"}
+                  value={user?.role || "DRIVER"}
                   readOnly
                   className="bg-light"
                 />

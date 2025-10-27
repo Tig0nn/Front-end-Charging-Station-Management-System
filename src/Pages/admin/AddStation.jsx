@@ -14,9 +14,9 @@ const AddStation = () => {
     name: "",
     address: "",
     operatorName: "",
-    powerOutputKw: "22",
     numberOfChargingPoints: "",
-    staff: "",
+    powerOutput: "POWER_22KW", // Enum value
+    staff: "", // Staff ID để gán
   });
 
   //  Gọi API lấy danh sách staff khi component mount
@@ -47,20 +47,31 @@ const AddStation = () => {
   //  Submit form tạo station
   const handleSubmit = async (e) => {
     e.preventDefault();
-    //  Chuyển đổi các trường số về kiểu number
+
+    // Chuẩn bị payload theo API spec THỰC TẾ
     const payload = {
-      ...formData,
-      numberOfChargingPoints: Number(formData.numberOfChargingPoints),
-      powerOutputKw: Number(formData.powerOutputKw),
+      name: formData.name,
+      address: formData.address, // Backend sẽ tự convert sang latitude/longitude
+      numberOfChargingPoints: parseInt(formData.numberOfChargingPoints),
+      powerOutput: formData.powerOutput, // Enum: POWER_22KW, POWER_50KW, etc.
+      operatorName: formData.operatorName,
+      contactPhone: "0000000000", // Số điện thoại giả hợp lệ (10 chữ số)
+      latitude: 0, // Tọa độ mặc định (TP.HCM)
+      longitude: 0, // Tọa độ mặc định (TP.HCM)
+      staffId: formData.staff || "", // Empty string nếu không chọn staff
     };
+
     try {
-      console.log("Đang gửi dữ liệu:", payload);
-      await stationsAPI.create(payload);
+      console.log("📤 Đang gửi dữ liệu tạo station:", payload);
+      const response = await stationsAPI.create(payload);
+      console.log("✅ Response:", response);
       alert("Tạo trạm sạc mới thành công!");
       navigate("/admin/stations");
     } catch (err) {
-      console.error("Lỗi khi tạo trạm:", err);
-      alert("Không thể tạo trạm sạc. Vui lòng thử lại.");
+      console.error("❌ Lỗi khi tạo trạm:", err);
+      console.error("❌ Error response:", err.response?.data);
+      const errorMsg = err.response?.data?.message || err.message;
+      alert(`Không thể tạo trạm sạc: ${errorMsg}`);
     }
   };
   //  Xử lý thay đổi input
@@ -132,69 +143,72 @@ const AddStation = () => {
                 </Form.Group>
 
                 <Row>
-                  <Col md={4}>
+                  <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Công suất</Form.Label>
+                      <Form.Label>Công suất *</Form.Label>
                       <Form.Select
-                        name="powerOutputKw"
-                        value={formData.powerOutputKw}
+                        name="powerOutput"
+                        value={formData.powerOutput}
                         onChange={handleChange}
+                        required
                       >
-                        <option value="22">22kW</option>
-                        <option value="50">50kW</option>
-                        <option value="120">120kW</option>
-                        <option value="350">350kW</option>
+                        <option value="POWER_22KW">22kW</option>
+                        <option value="POWER_50KW">50kW</option>
+                        <option value="POWER_120KW">120kW</option>
+                        <option value="POWER_350KW">350kW</option>
                       </Form.Select>
                     </Form.Group>
                   </Col>
 
-                  <Col md={4}>
+                  <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Số điểm sạc</Form.Label>
+                      <Form.Label>Số điểm sạc *</Form.Label>
                       <Form.Control
                         type="number"
                         name="numberOfChargingPoints"
                         value={formData.numberOfChargingPoints}
                         onChange={handleChange}
+                        placeholder="Nhập số điểm sạc"
                         required
+                        min="1"
                       />
                     </Form.Group>
                   </Col>
-                  {/**   Dropdown để chọn nhân viên */}
-                  <Form.Group className="mb-3">
-                    <Form.Label>Gán nhân viên</Form.Label>
-                    {loadingStaff ? (
-                      <div>Đang tải danh sách nhân viên...</div>
-                    ) : (
-                      <>
-                        {/* Search input để lọc nhân viên */}
-                        <Form.Control
-                          type="text"
-                          placeholder="Tìm kiếm nhân viên..."
-                          value={searchText}
-                          onChange={(e) => setSearchText(e.target.value)}
-                          className="mb-2"
-                        />
-                        {/*   Dropdown để chọn nhân viên */}
-                        <Form.Select
-                          name="staff"
-                          value={formData.staff}
-                          onChange={handleChange}
-                          required
-                        >
-                          <option value="">
-                            -- Chọn nhân viên phụ trách --
-                          </option>
-                          {searchStaff.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.fullName}
-                            </option>
-                          ))}
-                        </Form.Select>
-                      </>
-                    )}
-                  </Form.Group>
                 </Row>
+
+                {/**   Dropdown để chọn nhân viên */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Gán nhân viên</Form.Label>
+                  {loadingStaff ? (
+                    <div>Đang tải danh sách nhân viên...</div>
+                  ) : (
+                    <>
+                      {/* Search input để lọc nhân viên */}
+                      <Form.Control
+                        type="text"
+                        placeholder="Tìm kiếm nhân viên..."
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        className="mb-2"
+                      />
+                      {/*   Dropdown để chọn nhân viên */}
+                      <Form.Select
+                        name="staff"
+                        value={formData.staff}
+                        onChange={handleChange}
+                      >
+                        <option value="">
+                          -- Chọn nhân viên phụ trách (không bắt buộc) --
+                        </option>
+                        {searchStaff.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.fullName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </>
+                  )}
+                </Form.Group>
 
                 <div className="d-flex gap-2">
                   <Button type="submit" variant="primary">

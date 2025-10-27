@@ -106,7 +106,7 @@ const StationsList = () => {
   //  Lọc danh sách staff khi searchText thay đổi
   useEffect(() => {
     const filtered = staffs.filter((s) => {
-      const name = (s.fullName || s.name || "");
+      const name = s.fullName || s.name || "";
       return name.includes(searchText);
     });
     setSearchStaff(filtered);
