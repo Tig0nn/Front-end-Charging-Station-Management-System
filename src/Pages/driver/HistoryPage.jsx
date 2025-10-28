@@ -13,7 +13,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { chargingSessionsAPI } from "../../lib/apiServices";
+import { chargingSessionsAPI, paymentsAPI } from "../../lib/apiServices";
 
 
 // Helpers
@@ -114,10 +114,10 @@ function useMySessions() {
 const TransactionHistory = () => {
   const { data: sessions, loading, error, reload } = useMySessions();
 
-   // Thêm state cho modal và session được chọn
+  // Thêm state cho modal và session được chọn
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-  
+
   if (loading) return <div>Đang tải...</div>;
 
   if (error) {
@@ -151,13 +151,17 @@ const TransactionHistory = () => {
 
   const handleProcessPayment = async (sessionId, method) => {
     console.log(`Đang xử lý thanh toán ${method} cho ${sessionId}`);
-    
-    // TẠM THỜI: Chỉ hiển thị thông báo
-    alert(`Đã chọn thanh toán ${method} cho phiên ${sessionId}. (Đây là demo)`);
-    
+
+    alert(`Đã chọn thanh toán ${method} cho phiên ${sessionId}.`);
+    try {
+      const res = await paymentsAPI.askForPayment(sessionId);
+      console.log("Kết quả yêu cầu thanh toán:", res);
+    } catch (e) {
+      console.error("Lỗi khi yêu cầu thanh toán:", e);
+    }
     // Đóng modal và tải lại dữ liệu để cập nhật trạng thái
     handleCloseModal();
-    reload(); 
+    reload();
   };
 
   const headers = [
@@ -223,13 +227,14 @@ const TransactionHistory = () => {
                 {s.paymentStatus || "nothing"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <button
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  onClick={() => handleOpenPaymentModal(s)}
-                >
-                  Thanh toán
-                </button>
-                
+                {(!s.isPaid && s.paymentStatus !== "PENDING") && (
+                  <button
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    onClick={() => handleOpenPaymentModal(s)}
+                  >
+                    Thanh toán
+                  </button>
+                )}
               </td>
             </tr>
           ))}
@@ -475,7 +480,7 @@ const ChargingHabits = () => {
   // Thống kê khác
   const avgMins = Math.round(
     sessions.reduce((sum, s) => sum + Number(s.durationMin || 0), 0) /
-      (sessions.length || 1)
+    (sessions.length || 1)
   );
 
   const hourBins = Array(12).fill(0);

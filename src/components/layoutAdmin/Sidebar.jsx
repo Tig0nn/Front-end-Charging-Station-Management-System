@@ -10,18 +10,23 @@ const NAVIGATION_ITEMS = [
   },
   {
     path: "/stations",
-    label: "Stations",
+    label: "Trạm sạc",
     icon: "bi-geo-alt",
   },
   {
     path: "/users",
-    label: "Users",
+    label: "Người dùng",
     icon: "bi-person",
   },
   {
     path: "/reports",
-    label: "Reports",
+    label: "Thống kê",
     icon: "bi-bar-chart",
+  },
+  {
+    path: "/incidents",
+    label: "Sự cố",
+    icon: "bi-exclamation-triangle",
   },
 ];
 

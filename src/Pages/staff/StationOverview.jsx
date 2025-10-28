@@ -21,7 +21,7 @@ const getStatusInfo = (point) => {
   if (point.status === 'AVAILABLE' && point.currentSessionId) {
     return { text: "Đang sạc", bg: "success" };
   }
-  if (point.status === 'IN_USE') { // Trạng thái CHARGING từ API cũng là đang sạc
+  if (point.status === 'IN_USE') {
     return { text: "Đang sạc", bg: "success" };
   }
   if (point.status === 'OFFLINE' || point.status === 'UNAVAILABLE') {
@@ -44,48 +44,48 @@ export default function StationOverview() {
   const user = JSON.parse(localStorage.getItem("user"));
   const stationId = user?.stationId;
 
-const handleUpdateStatus = async (newStatus) => {
-  try {
-    if (!selectedPoint) {
-      console.warn("⚠️ Không có trụ sạc nào được chọn để cập nhật!");
-      return;
+  const handleUpdateStatus = async (newStatus) => {
+    try {
+      if (!selectedPoint) {
+        console.warn("⚠️ Không có trụ sạc nào được chọn để cập nhật!");
+        return;
+      }
+
+      const power = selectedPoint.chargingPower;
+      console.log("🔧 Bắt đầu cập nhật trạng thái trụ sạc...");
+      console.log("📍 Thông tin gửi đi:", {
+        stationId,
+        pointId: selectedPoint.pointId,
+        chargingPower: power,
+        newStatus,
+      });
+
+      // 🛰️ Gửi API cập nhật
+      const updateResponse = await chargingPointsAPI.updateStatus(
+        power,
+        stationId,
+        selectedPoint.pointId,
+        newStatus
+      );
+      console.log("✅ Phản hồi từ API updateStatus:", updateResponse.data);
+
+      // ✅ Sau khi cập nhật, gọi lại API lấy danh sách trụ sạc mới
+      console.log("🔄 Đang lấy danh sách trụ sạc mới sau khi cập nhật...");
+      const updatedPoints = await chargingPointsAPI.getChargersByStation(stationId);
+      console.log("📦 Dữ liệu mới từ server:", updatedPoints.data);
+
+      setChargingPoints(updatedPoints.data.result);
+      console.log("🎯 State chargingPoints đã được cập nhật!");
+
+      // ✅ Đóng modal
+      setShowModal(false);
+      console.log("💡 Modal đã đóng thành công!");
+    } catch (err) {
+      console.error("❌ Lỗi khi cập nhật trạng thái trụ sạc:", err);
+      alert("Không thể cập nhật trạng thái trụ sạc.");
+      setShowModal(false);
     }
-
-    const power = selectedPoint.chargingPower;
-    console.log("🔧 Bắt đầu cập nhật trạng thái trụ sạc...");
-    console.log("📍 Thông tin gửi đi:", {
-      stationId,
-      pointId: selectedPoint.pointId,
-      chargingPower: power,
-      newStatus,
-    });
-
-    // 🛰️ Gửi API cập nhật
-    const updateResponse = await chargingPointsAPI.updateStatus(
-      power,
-      stationId,
-      selectedPoint.pointId,
-      newStatus
-    );
-    console.log("✅ Phản hồi từ API updateStatus:", updateResponse.data);
-
-    // ✅ Sau khi cập nhật, gọi lại API lấy danh sách trụ sạc mới
-    console.log("🔄 Đang lấy danh sách trụ sạc mới sau khi cập nhật...");
-    const updatedPoints = await chargingPointsAPI.getChargersByStation(stationId);
-    console.log("📦 Dữ liệu mới từ server:", updatedPoints.data);
-
-    setChargingPoints(updatedPoints.data.result);
-    console.log("🎯 State chargingPoints đã được cập nhật!");
-
-    // ✅ Đóng modal
-    setShowModal(false);
-    console.log("💡 Modal đã đóng thành công!");
-  } catch (err) {
-    console.error("❌ Lỗi khi cập nhật trạng thái trụ sạc:", err);
-    alert("Không thể cập nhật trạng thái trụ sạc.");
-    setShowModal(false);
-  }
-};
+  };
 
   const fetchChargingPoints = async () => {
     if (!stationId) {
@@ -160,6 +160,15 @@ const handleUpdateStatus = async (newStatus) => {
                 >
                   Tạm dừng
                 </Button>
+                {(selectedPoint?.status === "OFFLINE" || selectedPoint?.status === "MAINTENANCE") && (
+                  <Button
+                    variant="primary"
+                    className="w-50"
+                    onClick={() => handleUpdateStatus("AVAILABLE")}
+                  >
+                    Kích hoạt
+                  </Button>
+                )}
               </div>
             </>
           )}

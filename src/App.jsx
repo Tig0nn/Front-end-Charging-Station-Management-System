@@ -18,6 +18,8 @@ import PaymentPage from "./Pages/driver/PaymentPage";
 import AddStation from "./Pages/admin/AddStation";
 import StaffReports from "./Pages/staff/StaffReports";
 import StaffTransactions from "./Pages/staff/StaffTransactions";
+import StaffPaymentRequests from "./Pages/staff/StaffPaymentRequests";
+import AdminIncidents from "./Pages/admin/AdminIncidents";
 import { usersAPI } from "./lib/apiServices";
 import AddUserInfoPage from "./Pages/AddUserInfoPage";
 import { useEffect } from "react";
@@ -53,7 +55,6 @@ function RequireDriverInfo({ children }) {
 
       // Gọi API getDriverInfo để lấy thông tin mới nhất
       try {
-        console.log("Syncing driver info from API...");
         const response = await usersAPI.getDriverInfo();
         console.log("Driver info response:", response.data);
 
@@ -79,17 +80,12 @@ function RequireDriverInfo({ children }) {
     syncDriverInfo();
   }, [isAuthenticated, loc.pathname]);
 
-  // 1) Chưa đăng nhập → về login
+  //Chưa đăng nhập → về login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: loc }} replace />;
   }
 
-  // 2) Đang ở trang add-info → cho qua luôn
-  if (loc.pathname.startsWith("/driver/add-info")) {
-    return children;
-  }
-
-  // 3) Kiểm tra phone từ localStorage
+  //Kiểm tra phone từ localStorage
   let user = null;
   try {
     user = JSON.parse(localStorage.getItem("user") || "null");
@@ -101,23 +97,14 @@ function RequireDriverInfo({ children }) {
   const phone = user?.phone || user?.phoneNum || user?.phoneNumber;
   const hasPhone = phone && String(phone).trim() !== "";
 
-  console.log(
-    "Guard check - role:",
-    role,
-    "hasPhone:",
-    hasPhone,
-    "phone:",
-    phone
-  );
-
-  // 4) Nếu là DRIVER và không có phone → redirect về add-info
+  //Nếu là DRIVER và không có phone → redirect về add-info
   if (role === "DRIVER" && !hasPhone) {
-    console.log("❌ No phone found, redirecting to add-info");
+    console.log("No phone found, redirecting to add-info");
     return <Navigate to="/driver/add-info" replace />;
   }
 
-  // 5) Có phone hoặc không phải DRIVER → cho qua
-  console.log("✅ Allowing access to:", loc.pathname);
+  //Có phone hoặc không phải DRIVER → cho qua
+  console.log("Allowing access to:", loc.pathname);
   return children;
 }
 
@@ -153,6 +140,7 @@ function App() {
               {/* Reports Routes */}
               <Route path="/reports" element={<Reports />} />
               <Route path="/reports/*" element={<Reports />} />
+              <Route path="/incidents" element={<AdminIncidents />} />
 
               {/* Mock API Test Page */}
               <Route path="/mock-test" element={<MockApiTest />} />
@@ -174,6 +162,7 @@ function App() {
               <Route path="/overview" element={<StationOverview />} />
 
               {/* Các route khác cho Staff */}
+              <Route path="/sessions" element={<StaffPaymentRequests />} />
               <Route path="/transactions" element={<StaffTransactions />} />
               <Route path="/reports" element={<StaffReports />} />
 

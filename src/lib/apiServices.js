@@ -99,6 +99,8 @@ const realApiServices = {
       api.post("/api/payments/process", paymentData),
     // Get payment history
     getHistory: () => api.get("/api/payments/history"),
+    askForPayment: (sessionId) =>
+      api.post(`/api/cash-payments/request/${sessionId}`),
   },
 
   revenue: {
@@ -183,9 +185,6 @@ const realApiServices = {
       api.post(`/api/charging-sessions/${sessionId}/stop`),
   },
 
-  // =========================
-  // 🚗 Vehicles API Services
-  // =========================
   vehicles: {
     // ===== PUBLIC APIs (Không cần authentication) =====
 
@@ -209,9 +208,7 @@ const realApiServices = {
       return api.get("/api/vehicles/models");
     },
 
-    // ===== DRIVER APIs (Role: DRIVER) =====
 
-    // Lấy danh sách tất cả xe của driver hiện tại
     getMyVehicles: () => {
       console.log(
         "🔍 Calling getMyVehicles endpoint: /api/vehicles/my-vehicles"
@@ -219,8 +216,7 @@ const realApiServices = {
       return api.get("/api/vehicles/my-vehicles");
     },
 
-    // Tạo xe mới cho driver hiện tại
-    // ⚠️ CHỈ GỬI: licensePlate và model (không cần brand, batteryCapacityKwh, batteryType)
+
     createVehicle: (vehicleData) => {
       console.log("➕ Calling createVehicle endpoint: /api/vehicles");
       console.log("📝 Vehicle data to create:", vehicleData);
@@ -236,7 +232,6 @@ const realApiServices = {
     },
 
     // Cập nhật thông tin xe (partial update)
-    // ⚠️ CHỈ GỬI: licensePlate và/hoặc model
     updateVehicle: (vehicleId, vehicleData) => {
       console.log(
         `🔄 Calling updateVehicle endpoint: /api/vehicles/${vehicleId}`
@@ -253,7 +248,6 @@ const realApiServices = {
       return api.delete(`/api/vehicles/${vehicleId}`);
     },
 
-    // ===== ADMIN APIs (Role: ADMIN) =====
 
     // Admin endpoint: Lấy xe của một driver cụ thể
     getVehiclesByDriverId: (driverId) => {
@@ -268,7 +262,7 @@ const realApiServices = {
     getMySessions: () => api.get("/api/charging-sessions/my-sessions"),
   },
 
-  // ✅ Đưa staff ra ngoài (ngang cấp với chargingSessions)
+  // Đưa staff ra ngoài (ngang cấp với chargingSessions)
   staff: {
     getAllReports: () => api.get("/api/staff/incidents"),
     getAllStaffs: () => api.get("/api/stations/staff/all"),
@@ -276,6 +270,10 @@ const realApiServices = {
     getStaffProfile: () => api.get("/api/staff/profile"),
     getChargingPoint: () => api.get("/api/staff/my-station/charging-points"),
     submitReport: (reportData) => api.post("/api/staff/incidents", reportData),
+    // Pending cash payment requests for staff approval
+    approvePendingPaymentRequest: (paymentId) =>
+      api.put(`/api/cash-payments/staff/confirm/${paymentId}`),
+    getPendingPaymentRequests: () => api.get("/api/cash-payments/staff/pending"),
   },
 }
 
