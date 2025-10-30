@@ -54,6 +54,8 @@ const StaffTransactions = () => {
         // PUT confirm/{paymentId}
         res = await staffAPI.approvePendingPaymentRequest(paymentId);
         console.log("Payment confirmed by paymentId:", res.data);
+      } else {
+        alert("Không thể xác nhận thanh toán.");
       }
 
       setSubmitSuccess("Đã xác nhận thanh toán");
@@ -112,19 +114,19 @@ const StaffTransactions = () => {
               <Col md={4}>
                 <Form.Group className="mb-3" controlId="licensePlate">
                   <Form.Label>Biển số xe</Form.Label>
-                  <Form.Control type="text" value={licensePlate} readOnly />
+                  <Form.Control type="text" value={licensePlate} />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3" controlId="driverName">
                   <Form.Label>Tên người dùng</Form.Label>
-                  <Form.Control type="text" value={driverName} readOnly />
+                  <Form.Control type="text" value={driverName} />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3" controlId="sessionId">
                   <Form.Label>Session ID</Form.Label>
-                  <Form.Control type="text" value={sessionId} readOnly />
+                  <Form.Control type="text" value={sessionId} />
                 </Form.Group>
               </Col>
             </Row>

@@ -2,32 +2,30 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-// --- NỘI DUNG DÀNH RIÊNG CHO STAFF ---
 const NAVIGATION_ITEMS = [
   {
     path: "/overview",
-    label: "Tổng quan trạm",
-    icon: "bi-bar-chart-line",
+    label: "Quản lí trụ sạc",
+    icon: "bi-clipboard-fill",
   },
   {
     path: "/sessions",
-    label: "Quản lý phiên sạc",
+    label: "Quản lý yêu cầu",
     icon: "bi-ev-station",
     
   },
   {
     path: "/transactions",
-    label: "Giao dịch",
-    icon: "bi-wallet2",
+    label: "Xử lí giao dịch",
+    icon: "bi-card-checklist",
   },
   {
     path: "/reports",
     label: "Báo cáo sự cố",
-    icon: "bi-file-earmark-text",
+    icon: "bi-exclamation-triangle-fill",
   },
 ];
 
-// --- Đổi tên component thành SidebarStaff ---
 const SidebarStaff = () => {
   const isCollapsed = true; // Luôn collapsed, chỉ mở khi hover
   const [isHovered, setIsHovered] = useState(false);

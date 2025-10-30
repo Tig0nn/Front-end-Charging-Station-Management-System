@@ -21,7 +21,7 @@ const getStatusInfo = (point) => {
   if (point.status === 'AVAILABLE' && point.currentSessionId) {
     return { text: "Đang sạc", bg: "success" };
   }
-  if (point.status === 'IN_USE') {
+  if (point.status === 'CHARGING') {
     return { text: "Đang sạc", bg: "success" };
   }
   if (point.status === 'OFFLINE' || point.status === 'UNAVAILABLE') {
@@ -52,36 +52,21 @@ export default function StationOverview() {
       }
 
       const power = selectedPoint.chargingPower;
-      console.log("🔧 Bắt đầu cập nhật trạng thái trụ sạc...");
-      console.log("📍 Thông tin gửi đi:", {
-        stationId,
-        pointId: selectedPoint.pointId,
-        chargingPower: power,
-        newStatus,
-      });
-
-      // 🛰️ Gửi API cập nhật
       const updateResponse = await chargingPointsAPI.updateStatus(
         power,
         stationId,
         selectedPoint.pointId,
         newStatus
       );
-      console.log("✅ Phản hồi từ API updateStatus:", updateResponse.data);
-
-      // ✅ Sau khi cập nhật, gọi lại API lấy danh sách trụ sạc mới
-      console.log("🔄 Đang lấy danh sách trụ sạc mới sau khi cập nhật...");
+      console.log("Phản hồi từ API updateStatus:", updateResponse.data);
       const updatedPoints = await chargingPointsAPI.getChargersByStation(stationId);
-      console.log("📦 Dữ liệu mới từ server:", updatedPoints.data);
-
       setChargingPoints(updatedPoints.data.result);
-      console.log("🎯 State chargingPoints đã được cập nhật!");
 
-      // ✅ Đóng modal
+
+      //Đóng modal
       setShowModal(false);
-      console.log("💡 Modal đã đóng thành công!");
     } catch (err) {
-      console.error("❌ Lỗi khi cập nhật trạng thái trụ sạc:", err);
+      console.error("Lỗi khi cập nhật trạng thái trụ sạc:", err);
       alert("Không thể cập nhật trạng thái trụ sạc.");
       setShowModal(false);
     }
@@ -115,7 +100,6 @@ export default function StationOverview() {
   }, []);
 
 
-  // --- TÍNH TOÁN SỐ LIỆU ĐỘNG ---
   const totalPoints = chargingPoints.length;
   const activePoints = chargingPoints.filter(p => getStatusInfo(p).text === 'Sẵn sàng' || getStatusInfo(p).text === 'Đang sạc').length;
 
