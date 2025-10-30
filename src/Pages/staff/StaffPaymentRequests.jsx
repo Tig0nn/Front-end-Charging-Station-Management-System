@@ -92,6 +92,7 @@ const StaffPaymentRequests = () => {
                   <th>Mã yêu cầu</th>
                   <th>Tài xế</th>
                   <th>Biển số</th>
+                  <th>Cách thức</th>
                   <th>Trạm/Điểm sạc</th>
                   <th>Bắt đầu</th>
                   <th>Năng lượng</th>
@@ -109,6 +110,7 @@ const StaffPaymentRequests = () => {
                       {r.driverPhone ? <div className="text-muted small">{r.driverPhone}</div> : null}
                     </td>
                     <td>{r.licensePlate || "-"}</td>
+                    <td>"Booking"</td>
                     <td>
                       {r.stationName || "-"}
                       {r.chargingPointName ? <div className="text-muted small">{r.chargingPointName}</div> : null}

@@ -89,6 +89,24 @@ export default function MapPage() {
   const [activeCharger, setActiveCharger] = useState(null);
   const [activeStation, setActiveStation] = useState(null);
 
+  // Kiểm tra session đang hoạt động khi component mount
+  // Nếu có, chuyển hướng người dùng đến trang session
+
+  useEffect(() => {
+    const activeId = localStorage.getItem("currentSessionId");
+
+    if (activeId) {
+      console.log(
+        "MapPage: Phát hiện session đang hoạt động, đang chuyển hướng..."
+      );
+      alert(
+        "Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng bạn đến trang phiên sạc..."
+      );
+      // Dùng { replace: true } để người dùng không thể nhấn "Back" quay lại MapPage
+      navigate(`/driver/session/${activeId}`, { replace: true });
+    }
+  }, [navigate]);
+
   // Fetch stations from API
   useEffect(() => {
     fetchStations();
@@ -140,7 +158,7 @@ export default function MapPage() {
 
       setStations(mappedStations);
       setError(null);
-     
+
       console.log(`✅ Loaded ${mappedStations.length} stations`);
     } catch (err) {
       console.error("❌ Error fetching stations:", err);
@@ -186,15 +204,17 @@ export default function MapPage() {
 
     // --- THÊM LOGIC KIỂM TRA VÀO ĐÂY ---
     if (currentId) {
-      // 1. Báo cho người dùng 
-      alert("Bạn đang trong một phiên sạc. Đang điều hướng bạn đến phiên sạc...");
+      // 1. Báo cho người dùng
+      alert(
+        "Bạn đang trong một phiên sạc. Đang điều hướng bạn đến phiên sạc..."
+      );
 
       // 2. Điều hướng họ đến phiên sạc đó
       navigate(`/driver/session/${currentId}`);
 
-    // 3. Dừng hàm ngay lập tức để không mở modal
-    return; 
-  }
+      // 3. Dừng hàm ngay lập tức để không mở modal
+      return;
+    }
     //log station ra
     console.log("Opening modal for station:", station);
     setStationForCharging(station);
@@ -206,7 +226,7 @@ export default function MapPage() {
     setStationForCharging(null);
   };
 
-    const handleStartCharging = async (charger, vehicle, targetSoc) => {
+  const handleStartCharging = async (charger, vehicle, targetSoc) => {
     console.log("--- BẮT ĐẦU LUỒNG SẠC ---");
     console.log("1. Dữ liệu nhận được:", { charger, vehicle, targetSoc });
 
@@ -231,15 +251,21 @@ export default function MapPage() {
       console.log("4. API Response thành công:", response.data);
       console.log("5. Trích xuất sessionId:", sessionId);
       if (sessionId) {
-         console.log(`6. Thành công! Đang điều hướng đến /driver/session/${sessionId}`);
-         localStorage.setItem("activeSessionId", sessionId);      
+        console.log(
+          `6. Thành công! Đang điều hướng đến /driver/session/${sessionId}`
+        );
+       localStorage.setItem("currentSessionId", sessionId);
         navigate(`/driver/session/${sessionId}`);
       } else {
         throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
       }
     } catch (err) {
-       console.error(" LỖI khi bắt đầu phiên sạc:", err);
-      alert(`Không thể bắt đầu phiên sạc: ${err.response?.data?.message || err.message}`);
+      console.error(" LỖI khi bắt đầu phiên sạc:", err);
+      alert(
+        `Không thể bắt đầu phiên sạc: ${
+          err.response?.data?.message || err.message
+        }`
+      );
     }
   };
 
