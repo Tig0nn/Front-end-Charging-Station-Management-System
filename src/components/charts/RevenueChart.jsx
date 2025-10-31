@@ -30,6 +30,17 @@ const RevenueChart = () => {
   const [period, setPeriod] = useState("weekly");
   const [totalRevenue, setTotalRevenue] = useState(0);
 
+  const getISOWeekNumber = (date) => {
+    const target = new Date(date.valueOf());
+    const dayNum = (date.getDay() + 6) % 7; // Monday = 0
+    target.setDate(target.getDate() - dayNum + 3); // Thursday of this week
+    const firstThursday = target.valueOf();
+    target.setMonth(0, 1);
+    if (target.getDay() !== 4) {
+      target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
+    }
+    return 1 + Math.ceil((firstThursday - target) / 604800000);
+  };
   // Chart configuration
   const chartOptions = {
     responsive: true,
@@ -137,8 +148,11 @@ const RevenueChart = () => {
       );
 
       if (selectedPeriod === "weekly") {
-        // Get weekly data (current week)
-        const currentWeek = Math.ceil(new Date().getDate() / 7);
+        const currentWeek = getISOWeekNumber(new Date());
+        console.log(
+          `📅 Current ISO week: ${currentWeek}, year: ${currentYear}`
+        );
+
         response = await revenueAPI.getWeekly(currentYear, currentWeek);
       } else if (selectedPeriod === "monthly") {
         // Get monthly data (current month)
@@ -168,26 +182,52 @@ const RevenueChart = () => {
       let processedData = [];
 
       if (selectedPeriod === "weekly") {
-        // For weekly data - show days of week
-        labels = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+        // For weekly data - check if backend returns daily breakdown
+        console.log("🔍 Processing weekly data:", revenueData);
 
-        if (revenueData && revenueData.length > 0) {
-          // Sum all stations revenue for the week
+        // Check if data has day-by-day breakdown (dayOfWeek: 1-7, where 1=Monday, 7=Sunday)
+        const hasDailyData =
+          revenueData.length > 0 &&
+          (revenueData[0].dayOfWeek !== undefined ||
+            revenueData[0].date !== undefined);
+
+        if (hasDailyData) {
+          // Backend returns daily data with ISO week format
+          console.log("✅ Backend provided daily breakdown (ISO week format)");
+
+          const dayNames = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]; // Monday to Sunday
+          const dailyRevenue = new Array(7).fill(0);
+
+          if (revenueData[0].dayOfWeek !== undefined) {
+            // Format 1: [{dayOfWeek: 1, totalRevenue: 50000}, ...] where 1=Monday
+            revenueData.forEach((item) => {
+              if (item.dayOfWeek >= 1 && item.dayOfWeek <= 7) {
+                dailyRevenue[item.dayOfWeek - 1] = item.totalRevenue || 0;
+              }
+            });
+          } else if (revenueData[0].date !== undefined) {
+            // Format 2: [{date: "2025-10-29", totalRevenue: 50000}, ...]
+            revenueData.forEach((item) => {
+              const dateObj = new Date(item.date);
+              const dayOfWeek = (dateObj.getDay() + 6) % 7; // Convert to ISO: 0=Monday, 6=Sunday
+              dailyRevenue[dayOfWeek] = item.totalRevenue || 0;
+            });
+          }
+
+          labels = dayNames;
+          processedData = dailyRevenue;
+        } else {
+          // Backend returns only total weekly revenue - show as single bar
+          console.log("⚠️ Backend only provided total weekly revenue");
+
           const totalWeeklyRevenue = revenueData.reduce(
             (sum, station) => sum + (station.totalRevenue || 0),
             0
           );
 
-          // Create realistic daily distribution
-          const baseDaily = totalWeeklyRevenue / 7;
-          const variations = [0.8, 1.1, 1.0, 1.2, 1.3, 1.4, 0.9]; // Weekend lower, weekdays higher
-
-          processedData = variations.map((factor) =>
-            Math.floor(baseDaily * factor)
-          );
-        } else {
-          // No data case
-          processedData = [0, 0, 0, 0, 0, 0, 0];
+          const currentWeek = getISOWeekNumber(new Date());
+          labels = [`Tuần ${currentWeek}`];
+          processedData = [totalWeeklyRevenue];
         }
       } else if (selectedPeriod === "monthly") {
         // For monthly data - sum all stations for the month
@@ -272,6 +312,7 @@ const RevenueChart = () => {
   // Load data on component mount and period change
   useEffect(() => {
     loadRevenueData(period);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   return (

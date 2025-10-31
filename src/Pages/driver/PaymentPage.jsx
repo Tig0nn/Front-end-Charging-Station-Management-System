@@ -6,6 +6,7 @@ import { plansAPI, paymentsAPI, subscriptionsAPI } from "../../lib/apiServices";
 import PlanCard from "../../components/PlanCard";
 import PaymentMethodItem from "../../components/PaymentMethodItem";
 import UpgradeSummary from "../../components/UpgradeSummary";
+import ZaloPayGateway from "../../components/payment/ZaloPayGateway";
 
 export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -15,6 +16,7 @@ export default function PaymentPage() {
   const [availablePlans, setAvailablePlans] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [showZaloPayModal, setShowZaloPayModal] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -429,6 +431,30 @@ export default function PaymentPage() {
                 </button>
               </div>
             )}
+
+            {/* ZaloPay Payment Option */}
+            <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src="/zalopay/images/logo-zalopay.svg" 
+                    alt="ZaloPay" 
+                    style={{ height: "40px" }}
+                  />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Thanh toán qua ZaloPay</h4>
+                    <p className="text-sm text-gray-600">Hỗ trợ: Ví ZaloPay, Thẻ ATM, Visa, Mastercard</p>
+                  </div>
+                </div>
+                <button
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => setShowZaloPayModal(true)}
+                  disabled={!selectedPlan || selectedPlan.isCurrent}
+                >
+                  Thanh toán
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -443,6 +469,19 @@ export default function PaymentPage() {
           />
         )}
       </div>
+
+      {/* ZaloPay Gateway Modal */}
+      {selectedPlan && (
+        <ZaloPayGateway
+          show={showZaloPayModal}
+          onHide={() => setShowZaloPayModal(false)}
+          amount={selectedPlan.monthlyFee || selectedPlan.price}
+          onPaymentSuccess={() => {
+            setShowZaloPayModal(false);
+            handleSubscribe(selectedPlan);
+          }}
+        />
+      )}
     </div>
   );
 }

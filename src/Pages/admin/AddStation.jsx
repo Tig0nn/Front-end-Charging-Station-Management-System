@@ -14,9 +14,17 @@ const AddStation = () => {
     name: "",
     address: "",
     operatorName: "",
+    contactPhone: "", // Thêm trường số điện thoại
     numberOfChargingPoints: "",
     powerOutput: "POWER_22KW", // Enum value
     staff: "", // Staff ID để gán
+  });
+
+  const [geocoding, setGeocoding] = useState({
+    loading: false,
+    latitude: null,
+    longitude: null,
+    error: null,
   });
 
   //  Gọi API lấy danh sách staff khi component mount
@@ -44,21 +52,78 @@ const AddStation = () => {
     setSearchStaff(filtered);
   }, [searchText, staffs]);
 
+  // Hàm gọi Geocoding API để lấy latitude/longitude từ địa chỉ
+  const getCoordinatesFromAddress = async (address) => {
+    try {
+      setGeocoding({
+        loading: true,
+        latitude: null,
+        longitude: null,
+        error: null,
+      });
+
+      // Sử dụng Nominatim API (OpenStreetMap) - Free và không cần API key
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          address
+        )}&limit=1`
+      );
+
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setGeocoding({
+          loading: false,
+          latitude: parseFloat(lat),
+          longitude: parseFloat(lon),
+          error: null,
+        });
+        return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+      } else {
+        setGeocoding({
+          loading: false,
+          latitude: null,
+          longitude: null,
+          error: "Không tìm thấy tọa độ cho địa chỉ này",
+        });
+        return null;
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy tọa độ:", err);
+      setGeocoding({
+        loading: false,
+        latitude: null,
+        longitude: null,
+        error: "Lỗi khi lấy tọa độ",
+      });
+      return null;
+    }
+  };
+
   //  Submit form tạo station
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Lấy tọa độ từ địa chỉ
+    const coordinates = await getCoordinatesFromAddress(formData.address);
+
+    if (!coordinates) {
+      alert("Không thể lấy tọa độ từ địa chỉ. Vui lòng kiểm tra lại địa chỉ.");
+      return;
+    }
+
     // Chuẩn bị payload theo API spec THỰC TẾ
     const payload = {
       name: formData.name,
-      address: formData.address, // Backend sẽ tự convert sang latitude/longitude
+      address: formData.address,
       numberOfChargingPoints: parseInt(formData.numberOfChargingPoints),
-      powerOutput: formData.powerOutput, // Enum: POWER_22KW, POWER_50KW, etc.
+      powerOutput: formData.powerOutput,
       operatorName: formData.operatorName,
-      contactPhone: "0000000000", // Số điện thoại giả hợp lệ (10 chữ số)
-      latitude: 0, // Tọa độ mặc định (TP.HCM)
-      longitude: 0, // Tọa độ mặc định (TP.HCM)
-      staffId: formData.staff || "", // Empty string nếu không chọn staff
+      contactPhone: formData.contactPhone,
+      latitude: coordinates.latitude, // ✅ Tọa độ mới
+      longitude: coordinates.longitude, // ✅ Tọa độ mới
+      staffId: formData.staff || "",
     };
 
     try {
@@ -126,21 +191,62 @@ const AddStation = () => {
                         placeholder="Nhập địa chỉ"
                         required
                       />
+                      {/* Hiển thị trạng thái Geocoding */}
+                      {geocoding.loading && (
+                        <Form.Text className="text-info">
+                          🔍 Đang tìm kiếm tọa độ...
+                        </Form.Text>
+                      )}
+                      {geocoding.latitude && geocoding.longitude && (
+                        <Form.Text className="text-success">
+                          ✅ Tọa độ: {geocoding.latitude.toFixed(6)},{" "}
+                          {geocoding.longitude.toFixed(6)}
+                        </Form.Text>
+                      )}
+                      {geocoding.error && (
+                        <Form.Text className="text-danger">
+                          ⚠️ {geocoding.error}
+                        </Form.Text>
+                      )}
                     </Form.Group>
                   </Col>
                 </Row>
-                {/*   Chủ sở hữu */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Chủ sở hữu</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="operatorName"
-                    value={formData.operatorName}
-                    onChange={handleChange}
-                    placeholder="Nhập tên chủ sở hữu"
-                    required
-                  />
-                </Form.Group>
+                <Row>
+                  {/*   Chủ sở hữu */}
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Chủ sở hữu *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="operatorName"
+                        value={formData.operatorName}
+                        onChange={handleChange}
+                        placeholder="Nhập tên chủ sở hữu"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  {/*   Số điện thoại */}
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Số điện thoại *</Form.Label>
+                      <Form.Control
+                        type="tel"
+                        name="contactPhone"
+                        value={formData.contactPhone}
+                        onChange={handleChange}
+                        placeholder="Nhập số điện thoại (10 chữ số)"
+                        required
+                        pattern="[0-9]{10}"
+                        title="Vui lòng nhập đúng 10 chữ số"
+                      />
+                      <Form.Text className="text-muted">
+                        Ví dụ: 0901234567
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
                 <Row>
                   <Col md={6}>

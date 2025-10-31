@@ -4,7 +4,6 @@ import Login from "./Pages/Login";
 import Signup from "./Pages/SignUp";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
 import { Dashboard, NotFound, Reports, StationsList, UsersList } from "./Pages";
-import MockApiTest from "./Pages/MockApiTest";
 import EVChargingLanding from "./Pages/EVChargingLanding";
 import MainLayoutDriver from "./components/layoutDriver/MainLayoutDriver";
 import MapPage from "./Pages/driver/MapPage";
@@ -142,9 +141,6 @@ function App() {
               <Route path="/reports/*" element={<Reports />} />
               <Route path="/incidents" element={<AdminIncidents />} />
 
-              {/* Mock API Test Page */}
-              <Route path="/mock-test" element={<MockApiTest />} />
-
               {/* 404 Page */}
               <Route path="*" element={<NotFound />} />
             </Routes>
@@ -158,7 +154,7 @@ function App() {
           <MainLayoutStaff>
             <Routes>
               {/* Route mặc định sẽ là trang tổng quan */}
-              <Route path="/" element={<StationOverview />} />  
+              <Route path="/" element={<StationOverview />} />
               <Route path="/overview" element={<StationOverview />} />
 
               {/* Các route khác cho Staff */}
@@ -183,7 +179,10 @@ function App() {
                 <Route path="/" element={<MapPage />} />
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/session" element={<ChargingSessionPage />} />
-                <Route path="/session/:sessionId" element={<ChargingSessionPage />} />
+                <Route
+                  path="/session/:sessionId"
+                  element={<ChargingSessionPage />}
+                />
                 <Route path="/history/*" element={<HistoryPage />} />
 
                 {/* Các route con của trang hồ sơ */}

@@ -21,7 +21,6 @@ const AdminIncidents = () => {
   const [error, setError] = useState("");
 
   // Filter states
-  const [statusFilter, setStatusFilter] = useState("ALL");
   const [severityFilter, setSeverityFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -83,11 +82,6 @@ const AdminIncidents = () => {
   useEffect(() => {
     let filtered = [...incidents];
 
-    // Filter by status
-    if (statusFilter !== "ALL") {
-      filtered = filtered.filter((inc) => inc.status === statusFilter);
-    }
-
     // Filter by severity
     if (severityFilter !== "ALL") {
       filtered = filtered.filter((inc) => inc.severity === severityFilter);
@@ -106,7 +100,7 @@ const AdminIncidents = () => {
     }
 
     setFilteredIncidents(filtered);
-  }, [statusFilter, severityFilter, searchTerm, incidents]);
+  }, [severityFilter, searchTerm, incidents]);
 
   // Load data on mount
   useEffect(() => {
@@ -233,7 +227,7 @@ const AdminIncidents = () => {
 
       {/* Statistics Cards */}
       <Row className="mb-4">
-        <Col md={3}>
+        <Col md={6}>
           <Card className="border-0 shadow-sm">
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center">
@@ -248,37 +242,8 @@ const AdminIncidents = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <p className="text-muted mb-1 small">Đang mở</p>
-                  <h3 className="mb-0 text-danger">{stats.open}</h3>
-                </div>
-                <div className="bg-danger bg-opacity-10 p-3 rounded">
-                  <i className="bi bi-folder2-open text-danger fs-4"></i>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <p className="text-muted mb-1 small">Đã giải quyết</p>
-                  <h3 className="mb-0 text-success">{stats.resolved}</h3>
-                </div>
-                <div className="bg-success bg-opacity-10 p-3 rounded">
-                  <i className="bi bi-check-circle-fill text-success fs-4"></i>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
+
+        <Col md={6}>
           <Card className="border-0 shadow-sm">
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center">
@@ -299,21 +264,6 @@ const AdminIncidents = () => {
       <Card className="mb-4 border-0 shadow-sm">
         <Card.Body>
           <Row className="g-3">
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label className="small text-muted">Trạng thái</Form.Label>
-                <Form.Select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option value="ALL">Tất cả</option>
-                  <option value="OPEN">Đang mở</option>
-                  <option value="IN_PROGRESS">Đang xử lý</option>
-                  <option value="RESOLVED">Đã giải quyết</option>
-                  <option value="CLOSED">Đã đóng</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
             <Col md={3}>
               <Form.Group>
                 <Form.Label className="small text-muted">Mức độ</Form.Label>

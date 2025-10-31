@@ -43,13 +43,13 @@ api.interceptors.response.use(
       }
       // COMMENTED OUT: Auto redirect to login on 401
       // This allows testing pages without authentication
-      // try {
-      //   if (window.location.pathname !== "/login") {
-      //     window.location.assign("/login");
-      //   }
-      // } catch (error) {
-      //   console.error("Error redirecting to login:", error);
-      // }
+      try {
+        if (window.location.pathname !== "/login") {
+          window.location.assign("/login");
+        }
+      } catch (error) {
+        console.error("Error redirecting to login:", error);
+      }
     }
     return Promise.reject(err);
   }

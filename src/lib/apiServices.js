@@ -1,12 +1,8 @@
 // Unified API Services - Single file for all API calls
-import { mockApi } from "./mockApi.js";
 import { api } from "./api.js";
 
-// Environment configuration
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === "true" || false;
-
-// Real API services
-const realApiServices = {
+// API services
+const apiServices = {
   auth: {
     login: (credentials) => api.post("/api/auth/login", credentials),
     getProfile: () => api.get("/api/users/driver/myInfo"),
@@ -104,7 +100,7 @@ const realApiServices = {
   },
 
   revenue: {
-    // Lấy doanh thu theo tuần
+    // Lấy doanh thu theo tuần (ISO week format: week 1-53)
     getWeekly: (year, week) =>
       api.get(`/api/revenue/weekly?year=${year}&week=${week}`),
 
@@ -122,7 +118,7 @@ const realApiServices = {
   stations: {
     // Lấy tổng quan tất cả trạm
     getOverview: () => api.get("/api/stations"),
-    //Lấy trạm chi tiết 
+    //Lấy trạm chi tiết
     getAllDetails: () => api.get("/api/stations/detail"),
 
     // Lấy danh sách chi tiết + filter theo status
@@ -173,7 +169,8 @@ const realApiServices = {
       api.get(`/api/stations/${stationId}/charging-points`),
     startCharging: (data) => api.post(`/api/charging-sessions/start`, data),
     //giả lập sạc
-    simulateCharging: (sessionId) => api.get(`/api/charging-sessions/${sessionId}`),
+    simulateCharging: (sessionId) =>
+      api.get(`/api/charging-sessions/${sessionId}`),
     // Cập nhật trạng thái trụ sạc
     updateStatus: (power, stationId, chargingPointId, status) =>
       api.put(`/api/stations/${stationId}/charging-points/${chargingPointId}`, {
@@ -208,14 +205,12 @@ const realApiServices = {
       return api.get("/api/vehicles/models");
     },
 
-
     getMyVehicles: () => {
       console.log(
         "🔍 Calling getMyVehicles endpoint: /api/vehicles/my-vehicles"
       );
       return api.get("/api/vehicles/my-vehicles");
     },
-
 
     createVehicle: (vehicleData) => {
       console.log("➕ Calling createVehicle endpoint: /api/vehicles");
@@ -248,7 +243,6 @@ const realApiServices = {
       return api.delete(`/api/vehicles/${vehicleId}`);
     },
 
-
     // Admin endpoint: Lấy xe của một driver cụ thể
     getVehiclesByDriverId: (driverId) => {
       console.log(
@@ -262,6 +256,28 @@ const realApiServices = {
     getMySessions: () => api.get("/api/charging-sessions/my-sessions"),
   },
 
+  // ZaloPay payment integration
+  zalopay: {
+    // Create ZaloPay payment order for charging session
+    createPayment: (sessionId) => 
+      api.post(`/api/payment/zalopay/create/${sessionId}`),
+    
+    // ZaloPay callback endpoint (called by ZaloPay server)
+    callback: (callbackData) => 
+      api.post("/api/payment/zalopay-callback", callbackData),
+    
+    // Test ZaloPay callback
+    testCallback: () => 
+      api.get("/api/payment/zalopay-callback/test"),
+  },
+
+  // Cash payment
+  cashPayment: {
+    // Driver requests to pay in cash (sent to staff for confirmation)
+    requestCashPayment: (sessionId) =>
+      api.post("/api/payment/cash/request", { sessionId }),
+  },
+
   // Đưa staff ra ngoài (ngang cấp với chargingSessions)
   staff: {
     getAllReports: () => api.get("/api/staff/incidents"),
@@ -273,12 +289,10 @@ const realApiServices = {
     // Pending cash payment requests for staff approval
     approvePendingPaymentRequest: (paymentId) =>
       api.put(`/api/cash-payments/staff/confirm/${paymentId}`),
-    getPendingPaymentRequests: () => api.get("/api/cash-payments/staff/pending"),
+    getPendingPaymentRequests: () =>
+      api.get("/api/cash-payments/staff/pending"),
   },
-}
-
-// Export the appropriate API based on configuration
-export const apiServices = USE_MOCK_API ? mockApi : realApiServices;
+};
 
 // Individual exports for easier imports
 export const staffAPI = apiServices.staff;
@@ -292,10 +306,12 @@ export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;
 export const vehiclesAPI = apiServices.vehicles;
 export const chargingPointsAPI = apiServices.chargingPoints;
-export const chargingSessionsAPI = apiServices.chargingSessions; // <-- add export
+export const chargingSessionsAPI = apiServices.chargingSessions;
+export const zalopayAPI = apiServices.zalopay;
+export const cashPaymentAPI = apiServices.cashPayment;
 
-// Helper function to check if using mock API
-export const isMockMode = () => USE_MOCK_API;
+// Export default
+export default apiServices;
 
-// Console log to show which mode is active
-console.log(`🔧 API Mode: ${USE_MOCK_API ? "🎭 Mock API" : "🌐 Real API"}`);
+// Console log to show API is ready
+console.log("🌐 Real API Services loaded");

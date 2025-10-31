@@ -1,4 +1,5 @@
-
+import React, { useState } from "react";
+import ZaloPayGateway from "../payment/ZaloPayGateway";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -8,6 +9,7 @@ const formatCurrency = (value) =>
 // Link logo (bạn có thể đổi thành file logo import từ local)
 const vnpayLogoUrl =
   "https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png";
+const zalopayLogoUrl = "/zalopay/images/logo-zalopay.svg";
 
 export default function PopUpPayment({
   isOpen,
@@ -15,6 +17,7 @@ export default function PopUpPayment({
   session,
   onProcessPayment,
 }) {
+  const [showZaloPayModal, setShowZaloPayModal] = useState(false);
   // Nếu không "mở" hoặc không có "session", component sẽ không hiển thị gì
   if (!isOpen || !session) return null;
 
@@ -64,14 +67,22 @@ export default function PopUpPayment({
           </button>
 
           <button
-            onClick={() => onProcessPayment(session.sessionId, "vnpay")}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-all"
+            onClick={() => setShowZaloPayModal(true)}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-50 transition-all"
           >
-            <img src={vnpayLogoUrl} alt="VNPay" className="h-6" />
-            Thanh toán qua VNPay
+            <img src={zalopayLogoUrl} alt="ZaloPay" className="h-6" />
+            Thanh toán qua ZaloPay
           </button>
         </div>
       </div>
+
+      {/* ZaloPay Gateway Modal */}
+      <ZaloPayGateway
+        show={showZaloPayModal}
+        onHide={() => setShowZaloPayModal(false)}
+        sessionId={session?.sessionId}
+        amount={session?.costTotal}
+      />
     </div>
   );
-}   
+}

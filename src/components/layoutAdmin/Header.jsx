@@ -66,37 +66,43 @@ const Header = () => {
 
           <Navbar.Toggle aria-controls="navbar-nav" className="d-lg-none" />
 
-          <Navbar.Collapse className="justify-content-end" id="navbar-nav">
-            <Nav className="d-flex align-items-center gap-3">
-              {/* User Info and Logout */}
-              <div className="d-flex align-items-center gap-3">
-                {/* User Profile Card */}
-                <div
-                  className="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-2 d-none d-md-flex"
-                  style={{ marginTop: "5px" }}
+          {/* Right Side Navigation - Always Visible */}
+          <div className="ms-auto d-flex align-items-center gap-3">
+            {/* User Profile Card */}
+            <div
+              className="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-2"
+              style={{ marginTop: "5px" }}
+            >
+              {/* User Info */}
+              <div
+                className="d-flex flex-column"
+                style={{ lineHeight: "1.2" }}
+              >
+                <span
+                  className="text-muted text-capitalize"
+                  style={{ fontSize: "12px" }}
                 >
-                  {/* User Info */}
-                  <div
-                    className="d-flex flex-column"
-                    style={{ lineHeight: "1.2" }}
-                  >
-                    <span
-                      className="text-muted text-capitalize"
-                      style={{ fontSize: "12px" }}
-                    >
-                      ADMIN
-                    </span>
-                  </div>
-                </div>
-
-                {/* Logout Button */}
-                <button className="logout-button" onClick={handleLogout}>
-                  <i className="bi bi-box-arrow-right"></i>
-                  <span>Đăng xuất</span>
-                </button>
+                  ADMIN
+                </span>
               </div>
-            </Nav>
-          </Navbar.Collapse>
+            </div>
+
+            {/* Logout Button */}
+            <Button 
+              variant="outline-danger" 
+              className="d-flex align-items-center gap-2 rounded-pill px-3 py-2"
+              onClick={handleLogout}
+              style={{ 
+                marginTop: "5px",
+                border: "1.5px solid #d9534f",
+                fontWeight: 600,
+                whiteSpace: "nowrap"
+              }}
+            >
+              <i className="bi bi-box-arrow-right"></i>
+              <span>Đăng xuất</span>
+            </Button>
+          </div>
         </Container>
 
         {/* Bottom Border Line */}
