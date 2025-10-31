@@ -90,7 +90,7 @@ export default function EVChargingLanding() {
               <div className="w-15 h-15 flex items-center justify-center">
                 <img src="src/assets/image/logo.png" className="w-15 h-15" />
               </div>
-              <span className="text-xl font-bold text-white">Juudensha</span>
+              <span className="text-xl font-bold text-white">T-Green</span>
             </div>
             <div className="hidden md:flex space-x-8">
               <a
@@ -163,13 +163,13 @@ export default function EVChargingLanding() {
 
             <h1 className="text-10xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               <span className="bg-gradient-to-r from-[#79ffdb] via-[#56d1f7] to-[#31ffa9] bg-clip-text text-transparent animate-pulse">
-                Juudensha
+                T-GREEN
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-3xl mx-auto leading-relaxed">
               Bạn có xe điện? Chúng tôi có trạm sạc! Hãy tin tưởng vào
-              Juudensha.
+              T-GREEN.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -373,10 +373,10 @@ export default function EVChargingLanding() {
             {/* Cột bên phải cho văn bản */}
             <div className="md:w-1/2 w-full text-lg text-white/80">
               <h3 className="text-3xl font-bold text-white mb-4">
-                Sứ mệnh của Juudensha
+                Sứ mệnh của T-Green
               </h3>
               <p className="mb-4">
-                Juudensha được thành lập với sứ mệnh thúc đẩy cuộc cách mạng xe
+                T-Green được thành lập với sứ mệnh thúc đẩy cuộc cách mạng xe
                 điện tại Việt Nam. Chúng tôi xây dựng một mạng lưới trạm sạc
                 thông minh, tiện lợi và đáng tin cậy, giúp mọi người dễ dàng
                 tiếp cận năng lượng sạch.
@@ -399,7 +399,7 @@ export default function EVChargingLanding() {
                 <div className="">
                   <img src="src/assets/image/logo.png" className="w-6 h-6" />
                 </div>
-                <span className="text-xl font-bold text-white">Juudensha</span>
+                <span className="text-xl font-bold text-white">T-Green</span>
               </div>
               <p className="text-white/70">
                 Hệ thống trạm sạc xe điện thông minh, tiện lợi và đáng tin cậy.
@@ -462,7 +462,7 @@ export default function EVChargingLanding() {
           </div>
 
           <div className="border-t border-white/10 mt-8 pt-8 text-center text-white/70">
-            <p>&copy; 2025 Juudensha - Một sản phẩm đến từ SWP391</p>
+            <p>&copy; 2025 T-Green - Một sản phẩm đến từ SWP391</p>
             <p>Mọi thông tin chỉ là minh họa.</p>
           </div>
         </div>

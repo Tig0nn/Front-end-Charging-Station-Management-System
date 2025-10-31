@@ -36,8 +36,7 @@ export default function ChargingSessionPage() {
     return match ? `${match[0]} KW` : powerString;
   };
 
-  // (Xử lý F5 hoặc vào trang /driver/session/ trống)
-
+  
   useEffect(() => {
     // 1. Nếu URL đã CÓ sessionId, hook này không cần làm gì
     if (sessionId) {
@@ -179,7 +178,7 @@ export default function ChargingSessionPage() {
     }
   };
 
-  // -------------------- LOGIC RENDER MỚI --------------------
+  
 
   // 1. MÀN HÌNH HƯỚNG DẪN (NẾU KHÔNG CÓ ID HOẶC BỊ LỖI)
   if (!sessionId || error) {

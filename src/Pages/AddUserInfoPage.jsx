@@ -85,46 +85,29 @@ export default function AddUserInfoPage() {
     }
   };
 
-  const baseInput =
-    "!w-full !rounded-[10px] !border !border-[#333] !bg-[#253340] !text-white !px-4 !py-3 !text-[15px] " +
-    "!transition-all !duration-200 !ease-out hover:!bg-[#2a3a46] " +
-    "focus:!bg-[#1E2A36] focus:!outline-none focus:!ring-2 focus:!ring-[#2bf0b5] focus:!border-transparent " +
-    // Ẩn placeholder, chỉ hiện khi focus
-    "placeholder:!text-transparent focus:placeholder:!text-[#6bfbdc] " +
-    // Phát quang khi focus
-    "focus:!shadow-[0_0_10px_rgba(0,255,198,0.35),0_0_20px_rgba(0,255,198,0.25)]";
 
   return (
-    <div className="background">
-      <div className="!min-h-screen !w-full !flex !items-center !justify-center !px-4 !py-8">
-        <form
-          onSubmit={handleSubmitForm}
-          className="!w-full !max-w-[420px] !bg-[#2C3E50] !rounded-[14px] !shadow-[0_10px_25px_rgba(0,0,0,0.4)] !p-6 sm:!p-8
-                     motion-safe:!animate-[fade-in-up_0.35s_ease-out]" // form xuất hiện mượt
-        >
-          <div className="!mb-4">
-            <h1 className="!text-center !font-bold !text-[25px] !text-[#00ffc6]">
-              Vui lòng nhập thông tin
-            </h1>
-          </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-green-50 signup-page">
+      <div className="w-[500px] bg-white rounded-xl shadow p-8">
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-semibold text-gray-800">Vui lòng nhập thông tin</h1>
+        </div>
 
+        <form onSubmit={handleSubmitForm} className="space-y-5">
           {/* Họ và tên */}
-          <div className="!mb-5">
-            <label className="!block !text-[#eaeaea] !font-semibold !mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Họ và tên
             </label>
-            <div className="!flex !w-full !gap-2">
+            <div className="flex gap-2">
               <input
                 name="last_name"
                 type="text"
                 placeholder="Họ"
                 onChange={handleChangeValue}
                 onFocus={handleFocus}
-                className={`${baseInput} !flex-[1.7] ${
-                  errors.last_name
-                    ? "!border-red-500 !ring-2 !ring-red-500"
-                    : ""
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.last_name ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
+                  }`}
               />
               <input
                 name="first_name"
@@ -132,81 +115,68 @@ export default function AddUserInfoPage() {
                 placeholder="Tên"
                 onChange={handleChangeValue}
                 onFocus={handleFocus}
-                className={`${baseInput} !flex-1 ${
-                  errors.first_name
-                    ? "!border-red-500 !ring-2 !ring-red-500"
-                    : ""
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.first_name ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
+                  }`}
               />
             </div>
             {(errors.last_name || errors.first_name) && (
-              <div className="!mt-1 !text-red-500 !text-sm">
+              <div className="text-red-500 text-sm mt-1">
                 {errors.last_name || errors.first_name}
               </div>
             )}
           </div>
 
           {/* Giới tính */}
-          <div className="!mb-5">
-            <label className="!block !text-[#eaeaea] !font-semibold !mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Giới tính
             </label>
-            <div className="!flex !items-center !gap-6">
-              <label className="!inline-flex !items-center !gap-2 !text-white">
+            <div className="flex items-center gap-6 text-gray-700">
+              <label className="!flex !items-center !gap-2 !text-sm">
                 <input
-                  className="!w-5 !h-5 !accent-[#2bf0b5] !cursor-pointer !transition-all !duration-150 !ease-out
-                             focus-visible:!outline-none focus-visible:!ring-2 focus-visible:!ring-[#2bf0b5]"
                   type="radio"
                   name="gender"
                   value="0"
                   onChange={handleChangeValue}
-                  onFocus={handleFocus}
+                  className="w-4 h-4 appearance-none border border-gray-400 rounded-full checked:bg-[#2bf0b5] checked:border-[#2bf0b5] transition-all duration-150 mr-2"
                 />
                 Nam
               </label>
-              <label className="!inline-flex !items-center !gap-2 !text-white">
+              <label className="!flex !items-center !gap-2 !text-sm">
                 <input
-                  className="!w-5 !h-5 !accent-[#2bf0b5] !cursor-pointer !transition-all !duration-150 !ease-out
-                             focus-visible:!outline-none focus-visible:!ring-2 focus-visible:!ring-[#2bf0b5]"
                   type="radio"
                   name="gender"
                   value="1"
                   onChange={handleChangeValue}
-                  onFocus={handleFocus}
+                  className="w-4 h-4 appearance-none border border-gray-400 rounded-full checked:bg-[#2bf0b5] checked:border-[#2bf0b5] transition-all duration-150 mr-2"
                 />
                 Nữ
               </label>
             </div>
             {errors.gender && (
-              <div className="!mt-1 !text-red-500 !text-sm">
-                {errors.gender}
-              </div>
+              <div className="text-red-500 text-sm mt-1">{errors.gender}</div>
             )}
           </div>
 
           {/* Ngày sinh */}
-          <div className="!mb-5">
-            <label className="!block !text-[#eaeaea] !font-semibold !mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Ngày tháng năm sinh
             </label>
             <input
               name="dob"
               type="date"
-              lang="vi"
               onChange={handleChangeValue}
               onFocus={handleFocus}
-              className={`${baseInput} ${
-                errors.dob ? "!border-red-500 !ring-2 !ring-red-500" : ""
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg text-gray-700 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.dob ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
+                }`}
             />
-            {errors.dob && (
-              <div className="!mt-1 !text-red-500 !text-sm">{errors.dob}</div>
-            )}
+            {errors.dob && <div className="text-red-500 text-sm mt-1">{errors.dob}</div>}
           </div>
 
           {/* SĐT */}
-          <div className="!mb-4">
-            <label className="!block !text-[#eaeaea] !font-semibold !mb-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Số điện thoại
             </label>
             <input
@@ -215,53 +185,53 @@ export default function AddUserInfoPage() {
               placeholder="+84-XXX-XXX-XXX"
               onChange={handleChangeValue}
               onFocus={handleFocus}
-              className={`${baseInput} ${
-                errors.phoneNum ? "!border-red-500 !ring-2 !ring-red-500" : ""
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.phoneNum ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
+                }`}
             />
             {errors.phoneNum && (
-              <div className="!mt-1 !text-red-500 !text-sm">
-                {errors.phoneNum}
-              </div>
+              <div className="text-red-500 text-sm mt-1">{errors.phoneNum}</div>
             )}
           </div>
-
-          {/* Cam kết */}
-          <label className="!flex !items-center !gap-2 !text-white !text-sm !mb-4">
+          <div className="flex items-center gap-2">
             <input
+              id="agree-checkbox"
               type="checkbox"
-              className="!w-4 !h-4 !accent-[#2bf0b5] !cursor-pointer"
               checked={agree}
               onChange={(e) => setAgree(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-400"
             />
-            Tôi xin cam đoan mọi thông tin trên đều chuẩn xác.
-          </label>
+            <label
+              htmlFor="agree-checkbox"
+              className="text-sm text-gray-700 select-none"
+            >
+              Tôi xin cam đoan mọi thông tin trên đều chuẩn xác.
+            </label>
+          </div>
+
 
           {/* Nút gửi */}
           <button
             type="submit"
             disabled={!agree || isSubmitting}
-            className="!w-full !rounded-[10px] !py-3 !font-semibold !text-black !bg-gradient-to-r !from-[#2bf0b5] !to-[#00ffc6]
-                       !transition-all !duration-200 !ease-out hover:!translate-y-0.5 active:!translate-y-[1px]
-                       hover:!shadow-[0_0_8px_#00ffc6,0_0_16px_#00ffc6,0_0_24px_#00ffc6]
-                       focus-visible:!outline-none focus-visible:!ring-2 focus-visible:!ring-[#2bf0b5]
-                       disabled:!opacity-70 disabled:!cursor-not-allowed"
+            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${!agree || isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#2bf0b5] hover:bg-[#00ffc6] cursor-pointer"
+              }`}
           >
             {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
           </button>
 
+          {/* Nút đăng xuất */}
           <button
             type="button"
             onClick={handleLogout}
-            className="!mt-3 !w-full !rounded-[10px] !py-3 !font-semibold !text-white !bg-gradient-to-r !from-[#e82a2a] !to-[#f00707]
-                       !transition-all !duration-200 !ease-out hover:!translate-y-0.5 active:!translate-y-[1px]
-                       hover:!shadow-[0_0_8px_#f00707,0_0_16px_#f00707,0_0_24px_#f00707]
-                       focus-visible:!outline-none focus-visible:!ring-2 focus-visible:!ring-[#f00707]"
+            className="mt-3 w-full py-2.5 text-white font-semibold rounded-lg bg-gradient-to-r from-[#e82a2a] to-[#f00707] hover:opacity-90 transition"
           >
             Đăng xuất
           </button>
         </form>
       </div>
     </div>
+
   );
 }

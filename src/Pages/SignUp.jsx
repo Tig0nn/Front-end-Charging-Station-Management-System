@@ -1,11 +1,9 @@
 //**Phần code này do Nguyễn Vũ Trường Huy thực hiện
 //Khai báo, import thư viện
 import React, { useState } from "react";
-import "./SignUp.css";
-import "./BackGround.css";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
 import { usersAPI } from "../lib/apiServices";
 import logo from "../assets/image/logo.png";
 
@@ -32,7 +30,7 @@ export default function Signup() {
     });
   };
   //tạo navigate
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   /*Khi người dùng focus (nhấp chuột) vào một ô input đang hiện lỗi, xóa lỗi
   đó đi*/
@@ -68,8 +66,8 @@ export default function Signup() {
     if (!password.trim()) {
       //check password có trống không
       newErrors.password = "Vui lòng điền mật khẩu.";
-    } else if (password.trim().length < 5 || password.trim().length > 20) {
-      newErrors.password = "Mật khẩu phải từ 5 đến 20 kí tự.";
+    } else if (password.trim().length < 6 || password.trim().length > 20) {
+      newErrors.password = "Mật khẩu phải từ 6 đến 20 kí tự.";
     }
 
     if (!confirmed_password.trim()) {
@@ -131,139 +129,147 @@ export default function Signup() {
           ) {
             setErrors({ form: "Email đã được sử dụng" });
           } else {
-            setErrors({ form: errorMessage });
+            setErrors({ form: "Có lỗi đã xảy ra." });
           }
         } else {
-          setErrors({ form: errorMessage });
+          setErrors({ form: "Có lỗi đã xảy ra." });
         }
       } finally {
         setIsSubmitting(false);
       }
     }
     //Check thông tin trên console
-    console.log(email, password, confirmed_password); 
+    console.log(email, password, confirmed_password);
   };
   return (
-    <div className="signup-page">
-      <div className="background">
-        <Link to="/">
-          <img className="logo" src={logo} alt="Logo" />
-        </Link>
-        <div className="container">
-          <Form className="form-container" onSubmit={handleSubmit}>
-            <div className="title">
-              <h1>Đăng ký</h1>
-            </div>
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                style={{
-                  borderColor: errors.email ? "red" : "",
-                  outline: errors.email ? "none" : "",
-                  boxShadow: errors.email ? "0 0 6px rgba(255, 0, 0, 1)" : "",
-                }}
-                name="email"
-                onFocus={handleFocus}
-                onChange={handleChangeValue}
-                className="placeholdertxt"
-                type="text"
-                placeholder="example123@gmail.com"
-              />
-              {/* Hiển thị lỗi */}
-              {errors.email && (
-                <div style={{ color: "red", marginTop: "2px" }}>
-                  {errors.email}
-                </div>
-              )}
-            </Form.Group>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-green-50 signup-page">
+      <div className="w-[400px] bg-white rounded-xl shadow p-8">
 
-            <Form.Group className="mb-3" controlId="formBasicPassword">
-              <Form.Label>Mật khẩu</Form.Label>
-              <Form.Control
-                style={{
-                  borderColor: errors.password ? "red" : "",
-                  outline: errors.password ? "none" : "",
-                  boxShadow: errors.password
-                    ? "0 0 6px rgba(255, 0, 0, 1)"
-                    : "",
-                }}
-                onFocus={handleFocus}
-                onChange={handleChangeValue}
-                name="password"
-                className="placeholdertxt"
-                type="password"
-                placeholder="Mật khẩu từ 5 - 20 kí tự."
-              />
-              {/* Hiển thị lỗi */}
-              {errors.password && (
-                <div style={{ color: "red", marginTop: "2px" }}>
-                  {errors.password}
-                </div>
-              )}
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="formBasicConfirmedPassword">
-              <Form.Label>Xác nhận mật khẩu</Form.Label>
-              <Form.Control
-                style={{
-                  borderColor: errors.confirmed_password ? "red" : "",
-                  outline: errors.confirmed_password ? "none" : "",
-                  boxShadow: errors.confirmed_password
-                    ? "0 0 6px rgba(255, 0, 0, 1)"
-                    : "",
-                }}
-                onFocus={handleFocus}
-                onChange={handleChangeValue}
-                name="confirmed_password"
-                className="placeholdertxt"
-                type="password"
-              />
-              {/* Hiển thị lỗi */}
-              {errors.confirmed_password && (
-                <div style={{ color: "red", marginTop: "2px" }}>
-                  {errors.confirmed_password}
-                </div>
-              )}
-            </Form.Group>
-
-              <Form.Check
-                type="checkbox"
-                id="agree-checkbox"
-                label="Tôi đồng ý với các điều khoản và dịch vụ."
-                checked={agree}
-                onChange={handleAgree}
-              />
+        <div className="flex justify-center mb-6">
+          <Link to="/">
+            <img src={logo} alt="Logo" className="h-16 object-contain" />
+          </Link>
+        </div>
 
 
-            {errors.form&& (
-              <div
-                style={{ color: "red", marginTop: "10px", textAlign: "center" }}
-              >
-                {errors.form}
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-semibold text-gray-800">Đăng ký</h1>
+        </div>
+
+        <form className="space-y-5" onSubmit={handleSubmit}>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              name="email"
+              type="text"
+              placeholder="example123@gmail.com"
+              onFocus={handleFocus}
+              onChange={handleChangeValue}
+              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.email
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : "border-gray-300"
+                }`}
+            />
+            {errors.email && (
+              <div className="text-red-500 text-sm mt-1">{errors.email}</div>
+            )}
+          </div>
+
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mật khẩu
+            </label>
+            <input
+              name="password"
+              type="password"
+              placeholder="Mật khẩu từ 5 - 20 kí tự."
+              onFocus={handleFocus}
+              onChange={handleChangeValue}
+              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.password
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : "border-gray-300"
+                }`}
+            />
+            {errors.password && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.password}
               </div>
             )}
+          </div>
 
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={!agree || isSubmitting}
-              className="w-100"
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Xác nhận mật khẩu
+            </label>
+            <input
+              name="confirmed_password"
+              type="password"
+              placeholder="Nhập lại mật khẩu"
+              onFocus={handleFocus}
+              onChange={handleChangeValue}
+              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.confirmed_password
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : "border-gray-300"
+                }`}
+            />
+            {errors.confirmed_password && (
+              <div className="text-red-500 text-sm mt-1">
+                {errors.confirmed_password}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="agree-checkbox"
+              type="checkbox"
+              checked={agree}
+              onChange={handleAgree}
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-400"
+            />
+            <label
+              htmlFor="agree-checkbox"
+              className="text-sm text-gray-700 select-none"
             >
-              {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
-            </Button>
+              Tôi đồng ý với các điều khoản và dịch vụ.
+            </label>
+          </div>
 
 
-            <div className="login">
-              <label>Đã có tài khoản? </label>{" "}
-              <Link
-                to="/login"
-                className="text-[#68ffc2] ml-1 font-semibold hover:underline"
-              >
-                Đăng nhập
-              </Link>
+          {errors.form && (
+            <div className="text-center text-red-500 text-sm mt-2">
+              {errors.form}
             </div>
-          </Form>
-        </div>
+          )}
+
+
+          <button
+            type="submit"
+            disabled={!agree || isSubmitting}
+            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${!agree || isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#2bf0b5] hover:bg-[#00ffc6]  cursor-pointer"
+              }`}
+          >
+            {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
+          </button>
+
+
+          <div className="text-center mt-4 text-sm">
+            <span className="text-gray-600">Đã có tài khoản?</span>
+            <Link
+              to="/login"
+              className="!text-[#2bf0b5] !font-semibold ml-1 !no-underline"
+            >
+              Đăng nhập
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   );
