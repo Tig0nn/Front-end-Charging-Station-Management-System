@@ -90,10 +90,7 @@ const Header = () => {
               style={{ marginTop: "5px" }}
             >
               {/* User Info */}
-              <div
-                className="d-flex flex-column"
-                style={{ lineHeight: "1.2" }}
-              >
+              <div className="d-flex flex-column" style={{ lineHeight: "1.2" }}>
                 <span
                   className="text-dark fw-medium"
                   style={{ fontSize: "14px" }}
@@ -110,15 +107,15 @@ const Header = () => {
             </div>
 
             {/* Logout Button */}
-            <Button 
-              variant="outline-danger" 
+            <Button
+              variant="outline-danger"
               className="d-flex align-items-center gap-2 rounded-pill px-3 py-2"
               onClick={handleLogout}
-              style={{ 
+              style={{
                 marginTop: "5px",
                 border: "1.5px solid #d9534f",
                 fontWeight: 600,
-                whiteSpace: "nowrap"
+                whiteSpace: "nowrap",
               }}
             >
               <i className="bi bi-box-arrow-right"></i>

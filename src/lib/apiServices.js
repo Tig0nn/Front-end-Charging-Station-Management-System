@@ -190,6 +190,9 @@ const apiServices = {
       console.log("🔍 Calling getBrands endpoint: /api/vehicles/brands");
       return api.get("/api/vehicles/brands");
     },
+    lookUp:(plate)=>{
+      return api.get(`/api/staff/vehicles/lookup/${plate}`);
+    },
 
     // Lấy danh sách models theo brand
     getModelsByBrand: (brand) => {

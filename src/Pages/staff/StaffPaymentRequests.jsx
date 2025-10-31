@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Container, Card, Table, Button, Badge } from "react-bootstrap";
 import { staffAPI } from "../../lib/apiServices";
 
-const fmt = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+const fmt = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+});
 const formatCurrency = (n) => fmt.format(Number(n || 0));
 const formatDateTime = (iso) => {
   try {
@@ -34,7 +37,11 @@ const StaffPaymentRequests = () => {
       const list = res?.data?.result || res?.data || [];
       setItems(Array.isArray(list) ? list : []);
     } catch (e) {
-      setError(e?.response?.data?.message || e?.message || "Không thể tải yêu cầu thanh toán");
+      setError(
+        e?.response?.data?.message ||
+          e?.message ||
+          "Không thể tải yêu cầu thanh toán"
+      );
       setItems([]);
     } finally {
       setLoading(false);
@@ -72,19 +79,26 @@ const StaffPaymentRequests = () => {
       <Card className="shadow-sm">
         <Card.Body className="p-4">
           <div className="d-flex align-items-center justify-content-between mb-3">
-            <Card.Title as="h5" className="mb-0">Yêu cầu thanh toán</Card.Title>
+            <Card.Title as="h5" className="mb-0">
+              Yêu cầu thanh toán
+            </Card.Title>
             <div>
               <Button variant="outline-secondary" size="sm" onClick={load}>
-                <i className="bi bi-arrow-repeat me-1" />Tải lại
+                <i className="bi bi-arrow-repeat me-1" />
+                Tải lại
               </Button>
             </div>
           </div>
           {loading ? (
             <div>Đang tải...</div>
           ) : error ? (
-            <div className="alert alert-danger" role="alert">{error}</div>
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info" role="alert">Hiện không có yêu cầu thanh toán nào.</div>
+            <div className="alert alert-info" role="alert">
+              Hiện không có yêu cầu thanh toán nào.
+            </div>
           ) : (
             <Table responsive hover className="align-middle">
               <thead className="table-light">
@@ -92,6 +106,7 @@ const StaffPaymentRequests = () => {
                   <th>Mã yêu cầu</th>
                   <th>Tài xế</th>
                   <th>Biển số</th>
+                  <th>Cách thức</th>
                   <th>Trạm/Điểm sạc</th>
                   <th>Bắt đầu</th>
                   <th>Năng lượng</th>
@@ -106,21 +121,34 @@ const StaffPaymentRequests = () => {
                     <td>{r.requestId || r.id}</td>
                     <td>
                       {r.driverName || "-"}
-                      {r.driverPhone ? <div className="text-muted small">{r.driverPhone}</div> : null}
+                      {r.driverPhone ? (
+                        <div className="text-muted small">{r.driverPhone}</div>
+                      ) : null}
                     </td>
                     <td>{r.licensePlate || "-"}</td>
+                    <td>"Booking"</td>
                     <td>
                       {r.stationName || "-"}
-                      {r.chargingPointName ? <div className="text-muted small">{r.chargingPointName}</div> : null}
+                      {r.chargingPointName ? (
+                        <div className="text-muted small">
+                          {r.chargingPointName}
+                        </div>
+                      ) : null}
                     </td>
                     <td>{formatDateTime(r.sessionStartTime)}</td>
-                    <td>{(Number(r.energyKwh || 0)).toFixed(1)} kWh</td>
+                    <td>{Number(r.energyKwh || 0).toFixed(1)} kWh</td>
                     <td>{formatCurrency(r.amount)}</td>
                     <td>
-                      <Badge bg="warning" text="dark">{r.status || "PENDING"}</Badge>
+                      <Badge bg="warning" text="dark">
+                        {r.status || "PENDING"}
+                      </Badge>
                     </td>
                     <td className="text-end">
-                      <Button variant="dark" size="sm" onClick={() => approveAndGo(r)}>
+                      <Button
+                        variant="dark"
+                        size="sm"
+                        onClick={() => approveAndGo(r)}
+                      >
                         Duyệt yêu cầu
                       </Button>
                     </td>

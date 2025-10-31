@@ -13,8 +13,6 @@ import {
   ButtonGroup,
 } from "react-bootstrap";
 
-
-
 // Hàm để lấy màu badge dựa trên mức độ nghiêm trọng
 const getSeverityBadge = (severity) => {
   switch (severity) {
@@ -23,7 +21,11 @@ const getSeverityBadge = (severity) => {
     case "HIGH":
       return <Badge bg="danger">Cao</Badge>;
     case "MEDIUM":
-      return <Badge bg="warning" text="dark">Trung bình</Badge>;
+      return (
+        <Badge bg="warning" text="dark">
+          Trung bình
+        </Badge>
+      );
     case "LOW":
       return <Badge bg="info">Thấp</Badge>;
     default:
@@ -47,13 +49,11 @@ const StaffReports = () => {
 
         // Hiển thị lỗi rõ ràng
         if (err?.response?.status === 401) {
-          setError(
-            "Không thể tải được các báo cáo. Vui lòng thử lại sau."
-          );
+          setError("Không thể tải được các báo cáo. Vui lòng thử lại sau.");
         }
         setReports([]);
       }
-    }
+    };
     fetchReports();
   }, []);
   const user = JSON.parse(localStorage.getItem("user")); // Lấy object user ra
@@ -62,7 +62,7 @@ const StaffReports = () => {
     stationId: stationId,
     chargingPointId: "",
     description: "",
-    severity: ""
+    severity: "",
   });
   const [charging_point, setChargingPoint] = useState([]);
   const handleChangeValue = (e) => {
@@ -77,7 +77,7 @@ const StaffReports = () => {
       console.log(localStorage.getItem("authToken"));
       console.log("Submitting report:", report);
       const response = await staffAPI.submitReport(report);
-      // Check response 
+      // Check response
       if (response.data?.message === "Báo cáo sự cố thành công") {
         alert("Đã gửi báo cáo!");
       } else {
@@ -91,7 +91,7 @@ const StaffReports = () => {
         stationId: stationId,
         chargingPointId: "",
         description: "",
-        severity: ""
+        severity: "",
       });
 
       // Reset luôn các input/select trong giao diện
@@ -112,10 +112,8 @@ const StaffReports = () => {
     fetchChargingPoint();
   }, []);
 
-
   return (
     <Container fluid className="p-4">
-
       {/* Form Báo cáo sự cố */}
       <Card className="shadow-sm mb-4">
         <Card.Body className="p-4">
@@ -126,7 +124,11 @@ const StaffReports = () => {
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label>Mức độ nghiêm trọng</Form.Label>
-              <Form.Select onChange={handleChangeValue} name="severity" required>
+              <Form.Select
+                onChange={handleChangeValue}
+                name="severity"
+                required
+              >
                 <option value="">Mức độ nghiêm trọng</option>
                 <option value="LOW">Thấp</option>
                 <option value="MEDIUM">Trung bình</option>
@@ -134,9 +136,13 @@ const StaffReports = () => {
                 <option value="CRITICAL">Nghiêm trọng</option>
               </Form.Select>
             </Form.Group>
-            <Form.Group className="mb-3" >
+            <Form.Group className="mb-3">
               <Form.Label>Cổng sạc</Form.Label>
-              <Form.Select onChange={handleChangeValue} name="chargingPointId" required>
+              <Form.Select
+                onChange={handleChangeValue}
+                name="chargingPointId"
+                required
+              >
                 <option value="">Chọn cổng sạc</option>
                 {charging_point.map((p) => (
                   <option key={p.pointId} value={p.pointId}>
@@ -145,7 +151,7 @@ const StaffReports = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-            <Form.Group className="mb-4" >
+            <Form.Group className="mb-4">
               <Form.Label>Mô tả chi tiết</Form.Label>
               <Form.Control
                 onChange={handleChangeValue}
@@ -168,7 +174,9 @@ const StaffReports = () => {
       {/* Danh sách Sự cố gần đây */}
       <Card className="shadow-sm">
         <Card.Body className="p-4">
-          <Card.Title as="h5" className="mb-3">Báo cáo đã gửi</Card.Title>
+          <Card.Title as="h5" className="mb-3">
+            Báo cáo đã gửi
+          </Card.Title>
           {/* Kiểm tra lỗi */}
           {error ? (
             <p className="text-danger mb-0">{error}</p>
@@ -176,27 +184,35 @@ const StaffReports = () => {
             <p className="text-muted mb-0">Không có báo cáo.</p>
           ) : (
             <ListGroup variant="flush">
-              {reports
-                .map((incident) => (
-                  <ListGroup.Item
-                    key={incident.incidentId}
-                    className="d-flex justify-content-between align-items-start px-0 py-3"
-                  >
-                    <div>
-                      <div className="fw-bold">
-                        <span className={`text-${incident.severity === 'Cao' ? 'danger' : 'warning'} me-2`}>●</span>
-                        {incident.stationName} -
-                        Trụ sạc: {incident.chargingPointName}
-                      </div>
-                      <p className="mb-1 ms-4">{incident.description}</p>
-                      <small className="text-muted ms-4">
-                        {moment.utc(incident.reportedAt).utcOffset(7).format("HH:mm - DD/MM/YYYY")} -
-                        Báo cáo bởi: {incident.reporterName}
-                      </small>
+              {reports.map((incident) => (
+                <ListGroup.Item
+                  key={incident.incidentId}
+                  className="d-flex justify-content-between align-items-start px-0 py-3"
+                >
+                  <div>
+                    <div className="fw-bold">
+                      <span
+                        className={`text-${
+                          incident.severity === "Cao" ? "danger" : "warning"
+                        } me-2`}
+                      >
+                        ●
+                      </span>
+                      {incident.stationName} - Trụ sạc:{" "}
+                      {incident.chargingPointName}
                     </div>
-                    {getSeverityBadge(incident.severity)}
-                  </ListGroup.Item>
-                ))}
+                    <p className="mb-1 ms-4">{incident.description}</p>
+                    <small className="text-muted ms-4">
+                      {moment
+                        .utc(incident.reportedAt)
+                        .utcOffset(7)
+                        .format("HH:mm - DD/MM/YYYY")}{" "}
+                      - Báo cáo bởi: {incident.reporterName}
+                    </small>
+                  </div>
+                  {getSeverityBadge(incident.severity)}
+                </ListGroup.Item>
+              ))}
             </ListGroup>
           )}
         </Card.Body>

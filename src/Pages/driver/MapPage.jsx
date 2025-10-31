@@ -32,6 +32,24 @@ export default function MapPage() {
   const [activeCharger, setActiveCharger] = useState(null);
   const [activeStation, setActiveStation] = useState(null);
 
+  // Kiểm tra session đang hoạt động khi component mount
+  // Nếu có, chuyển hướng người dùng đến trang session
+
+  useEffect(() => {
+    const activeId = localStorage.getItem("currentSessionId");
+
+    if (activeId) {
+      console.log(
+        "MapPage: Phát hiện session đang hoạt động, đang chuyển hướng..."
+      );
+      alert(
+        "Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng bạn đến trang phiên sạc..."
+      );
+      // Dùng { replace: true } để người dùng không thể nhấn "Back" quay lại MapPage
+      navigate(`/driver/session/${activeId}`, { replace: true });
+    }
+  }, [navigate]);
+
   // Fetch stations from API
   useEffect(() => {
     fetchStations();

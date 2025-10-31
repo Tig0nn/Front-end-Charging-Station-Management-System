@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { staffAPI } from "../../lib/apiServices";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-} from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 
 // Bảng giao dịch gần đây sẽ dùng state recentTransactionsState, không dùng mock
 
@@ -54,10 +47,11 @@ const StaffTransactions = () => {
         // PUT confirm/{paymentId}
         res = await staffAPI.approvePendingPaymentRequest(paymentId);
         console.log("Payment confirmed by paymentId:", res.data);
+      } else {
+        alert("Không thể xác nhận thanh toán.");
       }
 
       setSubmitSuccess("Đã xác nhận thanh toán");
-
 
       // reset field
       setChargingPoint("");
@@ -67,7 +61,11 @@ const StaffTransactions = () => {
       setSessionId("");
       setRequestId("");
     } catch (err) {
-      setSubmitError(err?.response?.data?.message || err?.message || "Không thể xác nhận thanh toán");
+      setSubmitError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Không thể xác nhận thanh toán"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -112,31 +110,41 @@ const StaffTransactions = () => {
               <Col md={4}>
                 <Form.Group className="mb-3" controlId="licensePlate">
                   <Form.Label>Biển số xe</Form.Label>
-                  <Form.Control type="text" value={licensePlate} readOnly />
+                  <Form.Control type="text" value={licensePlate} />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3" controlId="driverName">
                   <Form.Label>Tên người dùng</Form.Label>
-                  <Form.Control type="text" value={driverName} readOnly />
+                  <Form.Control type="text" value={driverName} />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3" controlId="sessionId">
                   <Form.Label>Session ID</Form.Label>
-                  <Form.Control type="text" value={sessionId} readOnly />
+                  <Form.Control type="text" value={sessionId} />
                 </Form.Group>
               </Col>
             </Row>
 
             {submitError ? (
-              <div className="alert alert-danger" role="alert">{submitError}</div>
+              <div className="alert alert-danger" role="alert">
+                {submitError}
+              </div>
             ) : null}
             {submitSuccess ? (
-              <div className="alert alert-success" role="alert">{submitSuccess}</div>
+              <div className="alert alert-success" role="alert">
+                {submitSuccess}
+              </div>
             ) : null}
 
-            <Button variant="dark" type="submit" className="w-100 py-2" onClick={handleSubmit} disabled={submitting || !requestId}>
+            <Button
+              variant="dark"
+              type="submit"
+              className="w-100 py-2"
+              onClick={handleSubmit}
+              disabled={submitting || !requestId}
+            >
               Xác nhận thanh toán
             </Button>
           </Form>

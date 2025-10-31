@@ -481,6 +481,7 @@ const ChargingHabits = () => {
   const avgMins = Math.round(
     sessions.reduce((sum, s) => sum + Number(s.durationMin || 0), 0) /
     (sessions.length || 1)
+
   );
 
   const hourBins = Array(12).fill(0);
