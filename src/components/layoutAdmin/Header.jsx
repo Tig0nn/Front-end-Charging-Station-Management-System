@@ -34,7 +34,7 @@ const Header = () => {
         <Navbar.Brand className="d-flex align-items-center gap-2">
           <img
             src="/src/assets/image/logo.png" // Đường dẫn đến file ảnh của bạn
-            alt="BankDash Logo" // Luôn thêm alt text cho khả năng tiếp cận
+            alt="Logo" // Luôn thêm alt text cho khả năng tiếp cận
             className="rounded" // Giữ lại bo tròn nếu muốn
             style={{
               width: "36px",

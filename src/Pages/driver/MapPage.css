@@ -48,14 +48,18 @@
 }
 /* --- Kết thúc lớp icon --- */
 
-/* Map Page Container - Layout mới */
+/* Map Page Container - Layout mới (Thu nhỏ) */
 .map-page-container {
-  height: calc(100vh - 60px); /* Giả sử bạn có header 60px */
+  height: 80vh; /* Thu nhỏ xuống 70% viewport height */
+  max-height: 600px; /* Giới hạn chiều cao tối đa */
   width: 100%;
+  margin: 0 auto; /* Căn giữa */
   overflow: hidden;
   position: relative; /* Quan trọng cho layout mới */
   background: #f3f4f6; /* Màu nền cho map */
   font-family: "Inter", sans-serif; /* Áp dụng font mới */
+  border-radius: 16px; /* Bo tròn góc */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Thêm shadow */
 }
 
 /* Map Container - Nằm full màn hình bên dưới */
