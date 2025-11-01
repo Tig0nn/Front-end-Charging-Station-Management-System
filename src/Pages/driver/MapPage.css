@@ -48,43 +48,116 @@
 }
 /* --- Kết thúc lớp icon --- */
 
-/* Map Page Container - Layout mới (Thu nhỏ) */
+/* Map Page Container - Layout 2 cột (Map bên trái, Sidebar bên phải) */
 .map-page-container {
   height: 80vh; /* Thu nhỏ xuống 70% viewport height */
   max-height: 600px; /* Giới hạn chiều cao tối đa */
   width: 100%;
   margin: 0 auto; /* Căn giữa */
-  overflow: hidden;
-  position: relative; /* Quan trọng cho layout mới */
-  background: #f3f4f6; /* Màu nền cho map */
+  display: flex; /* Layout 2 cột */
+  gap: 20px; /* Khoảng cách giữa map và sidebar */
   font-family: "Inter", sans-serif; /* Áp dụng font mới */
-  border-radius: 16px; /* Bo tròn góc */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Thêm shadow */
 }
 
-/* Map Container - Nằm full màn hình bên dưới */
+/* Map Container - Bên trái (65% width) với khung */
 .map-container {
+  flex: 0 0 65%; /* Chiếm 65% width */
   height: 100%;
-  width: 100%;
-  position: relative; /* Để các control nổi lên trên */
+  position: relative;
+  background: white; /* Nền trắng */
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Shadow nhẹ hơn */
+  border: 1px solid #e5e7eb; /* Khung xám nhạt */
+  display: flex;
+  flex-direction: column;
 }
 
-/* Sidebar - Nổi lên trên */
-.map-sidebar {
+/* Header cho Map */
+.map-header {
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.map-header h2 {
+  color: #111827;
+}
+
+/* Thanh tìm kiếm trong Map Header */
+.map-search-container {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.map-search-icon {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  bottom: 12px;
-  width: 400px;
-  z-index: 1000; /* Nằm trên map */
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
 
-  background: rgba(255, 255, 255, 0.9); /* Giảm độ mờ đục */
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+.map-search-input {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #f9fafb;
+  color: #111827;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
 
+.map-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.map-search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.map-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  z-index: 1;
+}
+
+.map-search-clear:hover {
+  color: #ef4444;
+}
+
+/* Sidebar - Bên phải (35% width) */
+.map-sidebar {
+  flex: 0 0 calc(35% - 20px); /* Chiếm 35% width, trừ gap */
+  height: 100%;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -389,9 +462,9 @@
 /* Map Controls */
 .map-controls {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
-  z-index: 900; /* Dưới sidebar */
+  bottom: 16px;
+  left: 16px;
+  z-index: 900;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -579,49 +652,36 @@
   transform: translateY(-2px);
 }
 
-/* Responsive (Đơn giản) */
-@media (max-width: 1024px) {
-  .map-sidebar {
-    width: 360px;
-  }
-}
+/* Responsive - Mobile: Stack vertically */
 @media (max-width: 768px) {
   .map-page-container {
     flex-direction: column;
-    padding: 0;
-    gap: 0;
-    height: 100vh; /* Full màn hình trên mobile */
+    height: auto;
+    max-height: none;
+    gap: 16px;
   }
 
-  /* Trên mobile, sidebar chiếm nửa trên */
-  .map-sidebar {
-    position: relative;
-    width: 100%;
-    height: 50%;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    border-radius: 0 0 24px 24px;
-    background: rgba(255, 255, 255, 0.98); /* Rõ nét hơn */
-    backdrop-filter: blur(10px);
-  }
-
-  /* Map chiếm nửa dưới */
+  /* Map và Sidebar stack theo chiều dọc */
   .map-container {
-    height: 50%;
+    flex: 0 0 400px; /* Fixed height trên mobile */
     width: 100%;
-    border-radius: 0;
+  }
+
+  .map-sidebar {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: 50vh;
   }
 
   .map-controls {
     bottom: 16px;
-    right: 16px;
-  }
-  .route-info-panel {
-    top: auto;
-    bottom: 16px;
     left: 16px;
-    transform: none;
-    width: calc(100% - 120px); /* Tránh nút control */
+  }
+
+  .route-info-panel {
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
   }
 }

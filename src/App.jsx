@@ -19,6 +19,8 @@ import AddStation from "./Pages/admin/AddStation";
 import StaffReports from "./Pages/staff/StaffReports";
 import StaffTransactions from "./Pages/staff/StaffTransactions";
 import StaffPaymentRequests from "./Pages/staff/StaffPaymentRequests";
+import ProfileLayout from "./Pages/driver/ProfileLayout";
+import NotificationPage from "./Pages/driver/NotificationPage";
 import AdminIncidents from "./Pages/admin/AdminIncidents";
 import { usersAPI } from "./lib/apiServices";
 import AddUserInfoPage from "./Pages/AddUserInfoPage";
@@ -155,13 +157,16 @@ function App() {
           // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
           <MainLayoutStaff>
             <Routes>
-              {/* Route mặc định sẽ là trang tổng quan */}
+              {/* Route mặc định sẽ là trang trạm sạc */}
               <Route path="/" element={<StationOverview />} />
-              <Route path="/overview" element={<StationOverview />} />
+              <Route path="/station" element={<StationOverview />} />
 
               {/* Các route khác cho Staff */}
-              <Route path="/sessions" element={<StaffPaymentRequests />} />
               <Route path="/transactions" element={<StaffTransactions />} />
+              <Route
+                path="/payment-requests"
+                element={<StaffPaymentRequests />}
+              />
               <Route path="/reports" element={<StaffReports />} />
 
               {/* 404 Page for Staff section */}
@@ -187,10 +192,14 @@ function App() {
                 />
                 <Route path="/history/*" element={<HistoryPage />} />
 
-                {/* Các route con của trang hồ sơ */}
-                <Route path="/profile/info" element={<ProfileInfoPage />} />
-                <Route path="/profile/vehicle" element={<VehicleInfoPage />} />
-                <Route path="/profile/payment" element={<PaymentPage />} />
+                {/* Profile Routes with nested routes */}
+                <Route path="/profile/*" element={<ProfileLayout />}>
+                  <Route index element={<Navigate to="info" replace />} />
+                  <Route path="info" element={<ProfileInfoPage />} />
+                  <Route path="vehicle" element={<VehicleInfoPage />} />
+                  <Route path="payment" element={<PaymentPage />} />
+                  <Route path="notification" element={<NotificationPage />} />
+                </Route>
 
                 {/* 404 Page for Driver section */}
                 <Route path="*" element={<NotFound />} />

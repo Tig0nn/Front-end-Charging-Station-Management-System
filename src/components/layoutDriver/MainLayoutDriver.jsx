@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Button, Card } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router";
 import Header from "./Header";
+import { usersAPI } from "../../lib/apiServices";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const MainLayoutDriver = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState("Tài xế");
 
   // Weather data - Từ API thật
   const [weather, setWeather] = useState({
@@ -98,15 +99,41 @@ const MainLayoutDriver = ({ children }) => {
   };
 
   useEffect(() => {
-    // Lấy tên user từ localStorage - object "user"
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const name =
-      user.fullName ||
-      user.firstName ||
-      user.lastName ||
-      user.username ||
-      "Tài xế";
-    setUserName(name);
+    // Fetch driver info từ API
+    const fetchDriverInfo = async () => {
+      try {
+        console.log("📞 MainLayoutDriver: Fetching driver info...");
+        const response = await usersAPI.getDriverInfo();
+        const driverData =
+          response.data?.result || response.result || response.data;
+
+        const name =
+          driverData.fullName ||
+          driverData.firstName ||
+          driverData.lastName ||
+          driverData.username ||
+          "Tài xế";
+
+        console.log("👤 MainLayoutDriver: Driver name:", name);
+        setUserName(name);
+      } catch (error) {
+        console.error(
+          "❌ MainLayoutDriver: Error fetching driver info:",
+          error
+        );
+        // Fallback: Lấy từ localStorage nếu API lỗi
+        const cachedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const name =
+          cachedUser.fullName ||
+          cachedUser.firstName ||
+          cachedUser.lastName ||
+          cachedUser.username ||
+          "Tài xế";
+        setUserName(name);
+      }
+    };
+
+    fetchDriverInfo();
 
     // Fetch weather data từ API thật
     getUserLocationAndWeather();
@@ -166,7 +193,7 @@ const MainLayoutDriver = ({ children }) => {
                 className="border-0"
                 style={{
                   background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                   borderRadius: "16px",
                   boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
                   color: "white",
@@ -184,7 +211,7 @@ const MainLayoutDriver = ({ children }) => {
                           color: "#ffffff",
                         }}
                       >
-                        Xin chào, {userName}! 👋
+                        Xin chào, {userName}!
                       </h1>
                       <p
                         className="mb-0"

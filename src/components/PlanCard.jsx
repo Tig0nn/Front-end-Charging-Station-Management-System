@@ -110,12 +110,35 @@ const PlanCard = ({
         </div>
       </div>
 
-      {/* Mô tả và quyền lợi - hiển thị nguyên text */}
+      {/* Quyền lợi - hiển thị dạng bullet list */}
       {plan.benefits && (
-        <div className="mb-6 flex-grow bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-            {plan.benefits}
-          </p>
+        <div className="mb-6 flex-grow">
+          <ul className="space-y-3">
+            {plan.benefits
+              .split(".")
+              .filter((benefit) => benefit.trim()) // Loại bỏ các phần tử rỗng
+              .map((benefit, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-green-500 mt-0.5 flex-shrink-0">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                  <span className="text-sm text-gray-700 leading-relaxed flex-1">
+                    {benefit.trim()}
+                  </span>
+                </li>
+              ))}
+          </ul>
         </div>
       )}
 

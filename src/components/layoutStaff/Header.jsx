@@ -1,11 +1,36 @@
-import { Navbar, Container, Button, Badge } from "react-bootstrap";
-import { useNavigate } from "react-router";
+import React, { useEffect, useState } from "react";
+import { Navbar, Container, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.jsx";
+import { staffAPI } from "../../lib/apiServices";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Header = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const [staffName, setStaffName] = useState("Nhân viên");
+
+  useEffect(() => {
+    fetchStaffProfile();
+  }, []);
+
+  const fetchStaffProfile = async () => {
+    try {
+      const response = await staffAPI.getStaffProfile();
+      const profileData =
+        response.data?.result || response.result || response.data || {};
+
+      setStaffName(profileData.fullName || "Nhân viên");
+    } catch (error) {
+      console.error("Error fetching staff profile:", error);
+      // Fallback to localStorage
+      const storedUser = localStorage.getItem("user");
+      if (storedUser && storedUser !== "null") {
+        const user = JSON.parse(storedUser);
+        setStaffName(user.fullName || user.firstName || "Nhân viên");
+      }
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -23,14 +48,14 @@ const Header = () => {
         {/* Logo and Brand */}
         <Navbar.Brand className="d-flex align-items-center gap-2">
           <img
-            src="/src/assets/image/logo.png" // Đường dẫn đến file ảnh của bạn
-            alt="Logo" // Luôn thêm alt text cho khả năng tiếp cận
-            className="rounded" // Giữ lại bo tròn nếu muốn
+            src="/src/assets/image/logo.png"
+            alt="Logo"
+            className="rounded"
             style={{
               width: "36px",
               height: "36px",
-              objectFit: "cover", // Tương đương với backgroundSize: "cover"
-              marginTop: "5px", // Có thể cần điều chỉnh lại margin-top nếu cần
+              objectFit: "cover",
+              marginTop: "5px",
             }}
           />
           <span
@@ -47,8 +72,22 @@ const Header = () => {
           </span>
         </Navbar.Brand>
 
-        {/* Right Side - User Info, Battery & Logout */}
+        {/* Right Side - User Info & Logout */}
         <div className="d-flex align-items-center gap-3">
+          {/* User Name */}
+          <div className="d-flex flex-column align-items-end">
+            <span
+              style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                color: "#111827",
+              }}
+            >
+              {staffName} <span className="text-muted">(Nhân viên)</span>
+            </span>
+          </div>
+
+          {/* Logout Button */}
           <Button
             variant="link"
             className="text-decoration-none text-dark d-flex align-items-center gap-2"

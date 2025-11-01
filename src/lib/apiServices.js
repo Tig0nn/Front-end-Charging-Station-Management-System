@@ -128,7 +128,7 @@ const apiServices = {
     // Lấy tổng quan tất cả trạm
     getOverview: () => api.get("/api/stations"),
     //Lấy trạm chi tiết
-    getAllDetails: () => api.get("/api/stations/detail"),
+    getAllDetails: () => api.get("/api/stations/list-detail"),
 
     // Lấy danh sách chi tiết + filter theo status
     getAll: (page = 1, limit = 10) =>
