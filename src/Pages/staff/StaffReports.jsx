@@ -127,7 +127,7 @@ const StaffReports = () => {
             <Form.Group className="mb-3">
               <Form.Label>Mức độ nghiêm trọng</Form.Label>
               <Form.Select onChange={handleChangeValue} name="severity" required>
-                <option value="">Mức độ nghiêm trọng</option>
+                <option value="">Chọn mức độ nghiêm trọng</option>
                 <option value="LOW">Thấp</option>
                 <option value="MEDIUM">Trung bình</option>
                 <option value="HIGH">Cao</option>
@@ -153,7 +153,7 @@ const StaffReports = () => {
                 name="description"
                 as="textarea"
                 rows={4}
-                placeholder="Mô tả chi tiết về sự cố..."
+                placeholder="Vui lòng mô tả chi tiết về sự cố"
                 required
               />
             </Form.Group>
@@ -184,7 +184,10 @@ const StaffReports = () => {
                   >
                     <div>
                       <div className="fw-bold">
-                        <span className={`text-${incident.severity === 'Cao' ? 'danger' : 'warning'} me-2`}>●</span>
+                        <span className={`text-${incident.severity === 'HIGH' ? 'danger' 
+                          : incident.severity === 'MEDIUM' ? 'warning'
+                          : incident.severity === 'LOW' ? 'info' 
+                          : 'dark'} me-2`}>●</span>
                         {incident.stationName} -
                         Trụ sạc: {incident.chargingPointName}
                       </div>

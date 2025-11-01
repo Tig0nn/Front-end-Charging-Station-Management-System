@@ -186,7 +186,7 @@ export default function Signup() {
             <input
               name="password"
               type="password"
-              placeholder="Mật khẩu từ 5 - 20 kí tự."
+              placeholder="Mật khẩu từ 6 - 20 kí tự."
               onFocus={handleFocus}
               onChange={handleChangeValue}
               className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.password

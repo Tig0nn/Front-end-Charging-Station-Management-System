@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Container, Card, Table, Button, Badge } from "react-bootstrap";
 import { staffAPI } from "../../lib/apiServices";
+import { Modal } from "react-bootstrap";
 
-const fmt = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
-const formatCurrency = (n) => fmt.format(Number(n || 0));
+
+
+
+
+
+const formatCurrency = (value) => {
+  const rounded = Math.round((value || 0) / 100) * 100; // làm tròn đến 100
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0, // bỏ phần lẻ
+  }).format(rounded);
+};
 const formatDateTime = (iso) => {
   try {
     const d = new Date(iso);
@@ -13,17 +24,26 @@ const formatDateTime = (iso) => {
     const yyyy = d.getFullYear();
     const hh = String(d.getHours()).padStart(2, "0");
     const mi = String(d.getMinutes()).padStart(2, "0");
-    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+    return {
+      date: `${dd}/${mm}/${yyyy}`,
+      time: `${hh}:${mi}`
+    };
   } catch {
     return iso;
   }
 };
 
 const StaffPaymentRequests = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [items, setItems] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedReq, setSelectedReq] = useState(null);
+
+
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState("");
 
   const load = async () => {
     try {
@@ -45,39 +65,40 @@ const StaffPaymentRequests = () => {
     load();
   }, []);
 
-  const approveAndGo = (req) => {
-    // Điều hướng sang trang giao dịch để xác nhận, kèm dữ liệu yêu cầu
-    navigate("/staff/transactions", {
-      state: {
-        fromPaymentRequest: true,
-        paymentId: req?.paymentId,
-        requestId: req?.requestId || req?.id,
-        sessionId: req?.sessionId,
-        amount: req?.amount,
-        stationName: req?.stationName,
-        chargingPointName: req?.chargingPointName,
-        driverName: req?.driverName,
-        driverPhone: req?.driverPhone,
-        licensePlate: req?.licensePlate,
-        energyKwh: req?.energyKwh,
-        startTime: req?.sessionStartTime,
-        endTime: req?.sessionEndTime,
-      },
-      replace: false,
-    });
+  const approveAndOpenModal = (req) => {
+    setSelectedReq(req);
+    setSubmitError("");
+    setSubmitSuccess("");
+    setShowModal(true);
   };
+
+  const handleSubmit = async () => {
+    if (!selectedReq?.paymentId) return;
+    try {
+      setSubmitting(true);
+      setSubmitError("");
+      setSubmitSuccess("");
+
+      await staffAPI.approvePendingPaymentRequest(selectedReq.paymentId);
+      setSubmitSuccess("Đã xác nhận thanh toán!");
+
+      // Load lại danh sách để xóa yêu cầu đã xử lý
+      await load();
+    } catch (err) {
+      setSubmitError(err?.response?.data?.message || "Lỗi khi xác nhận thanh toán");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
 
   return (
     <Container fluid className="p-4">
+
       <Card className="shadow-sm">
         <Card.Body className="p-4">
           <div className="d-flex align-items-center justify-content-between mb-3">
-            <Card.Title as="h5" className="mb-0">Yêu cầu thanh toán</Card.Title>
-            <div>
-              <Button variant="outline-secondary" size="sm" onClick={load}>
-                <i className="bi bi-arrow-repeat me-1" />Tải lại
-              </Button>
-            </div>
+            <Card.Title as="h5" className="mb-0">Yêu cầu thanh toán tiền mặt</Card.Title>
           </div>
           {loading ? (
             <div>Đang tải...</div>
@@ -89,21 +110,18 @@ const StaffPaymentRequests = () => {
             <Table responsive hover className="align-middle">
               <thead className="table-light">
                 <tr>
-                  <th>Mã yêu cầu</th>
                   <th>Tài xế</th>
                   <th>Biển số</th>
-                  <th>Trạm/Điểm sạc</th>
-                  <th>Bắt đầu</th>
-                  <th>Năng lượng</th>
+                  <th>Trạm/Trụ sạc</th>
+                  <th>Thời gian</th>
+                  <th>Lượng điện đã sạc</th>
                   <th>Số tiền</th>
-                  <th>Trạng thái</th>
-                  <th></th>
+                  <th>Duyệt</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((r) => (
                   <tr key={r.requestId || r.id}>
-                    <td>{r.requestId || r.id}</td>
                     <td>
                       {r.driverName || "-"}
                       {r.driverPhone ? <div className="text-muted small">{r.driverPhone}</div> : null}
@@ -113,14 +131,11 @@ const StaffPaymentRequests = () => {
                       {r.stationName || "-"}
                       {r.chargingPointName ? <div className="text-muted small">{r.chargingPointName}</div> : null}
                     </td>
-                    <td>{formatDateTime(r.sessionStartTime)}</td>
-                    <td>{(Number(r.energyKwh || 0)).toFixed(1)} kWh</td>
+                    <td>{formatDateTime(r.sessionStartTime).date}<br /><div className="text-muted small">{formatDateTime(r.sessionStartTime).time}</div></td>
+                    <td>{(Number(r.energyKwh || 0)).toFixed(1)} kW</td>
                     <td>{formatCurrency(r.amount)}</td>
                     <td>
-                      <Badge bg="warning" text="dark">{r.status || "PENDING"}</Badge>
-                    </td>
-                    <td className="text-end">
-                      <Button variant="dark" size="sm" onClick={() => approveAndGo(r)}>
+                      <Button variant="dark" size="sm" onClick={() => approveAndOpenModal(r)}>
                         Duyệt yêu cầu
                       </Button>
                     </td>
@@ -131,6 +146,43 @@ const StaffPaymentRequests = () => {
           )}
         </Card.Body>
       </Card>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Xác nhận thanh toán</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedReq && (
+            <>
+              <div className="d-flex justify-content">
+                <div className="mr-60">
+                  <p><strong>Tài xế:</strong> {selectedReq.driverName}</p>
+                  <p><strong>Biển số:</strong> {selectedReq.licensePlate}</p>
+                  <p><strong>Số điện thoại:</strong> {selectedReq.driverPhone}</p>
+                </div>
+                <div>
+                  <p><strong>Trạm sạc:</strong> {selectedReq.stationName}</p>
+                  <p><strong>Trụ sạc:</strong> {selectedReq.chargingPointName}</p>
+                  <p><strong>Lượng điện đã sạc:</strong> {(Number(selectedReq.energyKwh || 0)).toFixed(1)} kW</p>
+                </div>
+              </div>
+              <div className="text-xl font-bold mt-5">
+                <p><strong>Số tiền:</strong> {formatCurrency(selectedReq.amount)}</p>
+              </div>
+
+              {submitError && <div className="alert alert-danger">{submitError}</div>}
+              {submitSuccess && <div className="alert alert-success">{submitSuccess}</div>}
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Đóng
+          </Button>
+          <Button variant="dark" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? "Đang xử lý..." : "Xác nhận"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

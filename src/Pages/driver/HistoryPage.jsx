@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import { Routes, Route, Navigate, NavLink } from "react-router-dom";
 import PopUpPayment from "../../components/layoutDriver/PopUpPayment";
 import {
   BarChart,
@@ -15,12 +16,15 @@ import {
 } from "recharts";
 import { chargingSessionsAPI, paymentsAPI } from "../../lib/apiServices";
 
-
 // Helpers
-const formatCurrency = (value) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-    Number(value || 0)
-  );
+const formatCurrency = (value) => {
+  const rounded = Math.round((value || 0) / 100) * 100; // làm tròn đến 100
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0, // bỏ phần lẻ
+  }).format(rounded);
+};
 
 const formatDateTime = (iso) => {
   const d = new Date(iso);
@@ -29,7 +33,10 @@ const formatDateTime = (iso) => {
   const yyyy = d.getFullYear();
   const hh = String(d.getHours()).padStart(2, "0");
   const mi = String(d.getMinutes()).padStart(2, "0");
-  return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+  return {
+    date: `${dd}/${mm}/${yyyy}`,
+    time: `${hh}:${mi}`
+  };
 };
 
 const formatDuration = (mins) => {
@@ -37,7 +44,7 @@ const formatDuration = (mins) => {
   if (m < 60) return `${m} phút`;
   const h = Math.floor(m / 60);
   const r = m % 60;
-  return `${h}h ${r}m`;
+  return `${h} giờ ${r} phút`;
 };
 
 // Chuẩn hóa thông báo lỗi từ axios
@@ -168,10 +175,9 @@ const TransactionHistory = () => {
     "Ngày",
     "Trạm sạc",
     "Thời gian",
-    "Năng lượng",
+    "Lượng điện đã sạc",
     "Chi phí",
     "Trạng thái",
-    "Trạng Thái Thanh Toán",
     "Thanh Toán",
   ];
 
@@ -208,7 +214,7 @@ const TransactionHistory = () => {
           {sessions.map((s) => (
             <tr key={s.sessionId} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                {formatDateTime(s.startTime)}
+                {formatDateTime(s.startTime).date} <br /><div className="text-muted small">{formatDateTime(s.startTime).time}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                 {s.stationName}
@@ -217,23 +223,30 @@ const TransactionHistory = () => {
                 {formatDuration(s.durationMin)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                {Number(s.energyKwh || 0).toFixed(1)} kWh
+                {Number(s.energyKwh || 0).toFixed(1)} kW
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                 {formatCurrency(s.costTotal)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">{s.status || ""}</td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {s.paymentStatus || "nothing"}
+                {s.status === "COMPLETED" ? (
+                  <span className="text-green-600 font-medium">Đã hoàn thành</span>
+                ) : (
+                  <span className="text-red-600 font-medium">Chưa hoàn thành</span>
+                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {(!s.isPaid && s.paymentStatus !== "PENDING") && (
+                {(s.paymentStatus === "UNPAID" && s.status === "COMPLETED") ? (
                   <button
                     className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                     onClick={() => handleOpenPaymentModal(s)}
                   >
                     Thanh toán
                   </button>
+                ) : s.paymentStatus === "PENDING" ? (
+                  <span className="text-yellow-600 font-medium">Đang xử lý</span>
+                ) : (
+                  <span className="text-green-600 font-medium">Đã thanh toán</span>
                 )}
               </td>
             </tr>
@@ -246,7 +259,7 @@ const TransactionHistory = () => {
         session={selectedSession}
         onProcessPayment={handleProcessPayment} // Truyền hàm xử lý vào
       />
-    </div>
+    </div >
   );
 };
 
@@ -545,12 +558,85 @@ const ChargingHabits = () => {
 
 // ROUTES (giữ nguyên)
 export default function HistoryPage() {
+  const { data: sessions } = useMySessions();
+
+  // Tính toán 4 chỉ số
+  const totalCost = sessions.reduce((sum, s) => sum + (s.costTotal || 0), 0);
+  const totalEnergy = sessions.reduce((sum, s) => sum + (s.energyKwh || 0), 0);
+  const totalSessions = sessions.length;
+  const avgCostPerKw = totalEnergy ? Math.round(totalCost / totalEnergy) : 0
+  const tabs = [
+    { path: "transactions", label: "Giao dịch" },
+    { path: "analysis", label: "Phân tích" },
+    { path: "habits", label: "Thói quen" },
+  ];
+  useEffect(() =>async () => {
+    try{
+      let response = await chargingSessionsAPI.getMySessions();
+      console.log("Fetched charging sessions:", response.data);
+    }catch(err){
+      console.error("Lỗi tính toán chỉ số tổng hợp:", err);
+    }
+  }, []);
   return (
-    <Routes>
-      <Route index element={<Navigate to="transactions" replace />} />
-      <Route path="transactions" element={<TransactionHistory />} />
-      <Route path="analysis" element={<CostAnalysis />} />
-      <Route path="habits" element={<ChargingHabits />} />
-    </Routes>
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
+          <span className="text-green-500 text-2xl"><i class="bi bi-cash-stack"></i></span>
+          <div>
+            <div className="text-sm text-gray-500">Tổng chi phí</div>
+            <div className="text-lg font-bold">{formatCurrency(totalCost)}</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
+          <span className="text-yellow-600 text-2xl"><i class="bi bi-lightning-fill"></i></span>
+          <div>
+            <div className="text-sm text-gray-500">Tổng lượng điện đã sạc</div>
+            <div className="text-lg font-bold">{totalEnergy.toFixed(1)} kW</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
+          <span className="text-blue-600 text-2xl"><i class="bi bi-clock-fill"></i></span>
+          <div>
+            <div className="text-sm text-gray-500">Số phiên sạc</div>
+            <div className="text-lg font-bold">{totalSessions}</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
+          <span className="text-purple-600 text-2xl"><i class="bi bi-cash-coin"></i></span>
+          <div>
+            <div className="text-sm text-gray-500">Chi phí trung bình trên kW</div>
+            <div className="text-lg font-bold">{formatCurrency(avgCostPerKw)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Thanh Header Tabs */}
+      <div className="flex gap-3 mb-4">
+        {tabs.map((tab) => (
+          <NavLink
+            key={`/driver/history/${tab.path}`}
+            to={`/driver/history/${tab.path}`}
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium transition !no-underline ${isActive
+                ? "bg-gray-900 !text-white shadow"
+                : "bg-gray-200 !text-gray-700 hover:bg-gray-300"
+              }`
+            }
+          >
+            {tab.label}
+          </NavLink>
+        ))}
+      </div>
+      <Routes>
+        <Route index element={<Navigate to="transactions" replace />} />
+        <Route path="transactions" element={<TransactionHistory />} />
+        <Route path="analysis" element={<CostAnalysis />} />
+        <Route path="habits" element={<ChargingHabits />} />
+      </Routes>
+    </div>
   );
 }
