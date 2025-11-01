@@ -2,6 +2,7 @@ import "./App.css";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./Pages/Login";
 import Signup from "./Pages/SignUp";
+import GoogleCallback from "./Pages/GoogleCallback";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
 import { Dashboard, NotFound, Reports, StationsList, UsersList } from "./Pages";
 import EVChargingLanding from "./Pages/EVChargingLanding";
@@ -114,6 +115,7 @@ function App() {
       <Route path="/" element={<EVChargingLanding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
       {/* Trang bổ sung thông tin: để ngoài guard */}
       <Route path="/driver/add-info" element={<AddUserInfoPage />} />

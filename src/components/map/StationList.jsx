@@ -8,7 +8,6 @@ const StationList = ({
   searchQuery,
   selectedStation,
   userLocation,
-  onSearchChange,
   onStationClick,
   onShowDirections,
   onStartCharging,
@@ -27,18 +26,6 @@ const StationList = ({
         <span className="station-count-badge">
           {filteredStations.length} trạm
         </span>
-      </div>
-
-      {/* Search Bar */}
-      <div className="sidebar-search-container">
-        <MagnifyingGlassIcon className="search-icon" />
-        <input
-          type="text"
-          placeholder="Tìm trạm sạc (ví dụ: Vincom...)"
-          className="sidebar-search-input"
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
       </div>
 
       {/* Station List */}

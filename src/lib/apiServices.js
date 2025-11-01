@@ -5,8 +5,12 @@ import { api } from "./api.js";
 const apiServices = {
   auth: {
     login: (credentials) => api.post("/api/auth/login", credentials),
-    getProfile: () => api.get("/api/users/driver/myInfo"),
     logout: () => api.post("/api/auth/logout"),
+    introspect: (token) => api.post("/api/auth/introspect", { token }),
+
+    // Google OAuth endpoints
+    googleLogin: (credential) => api.post("/api/auth/google", { credential }),
+    googleCallback: () => api.get("/api/auth/google/callback"),
   },
 
   users: {
@@ -39,6 +43,11 @@ const apiServices = {
 
   systemOverview: {
     getOverview: () => api.get("/api/overview"),
+  },
+
+  dashboard: {
+    // Get current plan for user
+    getCurrentPlan: () => api.get("/api/dashboard/current-plan"),
   },
 
   plans: {
@@ -190,7 +199,7 @@ const apiServices = {
       console.log("🔍 Calling getBrands endpoint: /api/vehicles/brands");
       return api.get("/api/vehicles/brands");
     },
-    lookUp:(plate)=>{
+    lookUp: (plate) => {
       return api.get(`/api/staff/vehicles/lookup/${plate}`);
     },
 
@@ -262,16 +271,15 @@ const apiServices = {
   // ZaloPay payment integration
   zalopay: {
     // Create ZaloPay payment order for charging session
-    createPayment: (sessionId) => 
+    createPayment: (sessionId) =>
       api.post(`/api/payment/zalopay/create/${sessionId}`),
-    
+
     // ZaloPay callback endpoint (called by ZaloPay server)
-    callback: (callbackData) => 
+    callback: (callbackData) =>
       api.post("/api/payment/zalopay-callback", callbackData),
-    
+
     // Test ZaloPay callback
-    testCallback: () => 
-      api.get("/api/payment/zalopay-callback/test"),
+    testCallback: () => api.get("/api/payment/zalopay-callback/test"),
   },
 
   // Cash payment
@@ -302,6 +310,7 @@ export const staffAPI = apiServices.staff;
 export const authAPI = apiServices.auth;
 export const usersAPI = apiServices.users;
 export const systemOverviewAPI = apiServices.systemOverview;
+export const dashboardAPI = apiServices.dashboard;
 export const plansAPI = apiServices.plans;
 export const subscriptionsAPI = apiServices.subscriptions;
 export const paymentsAPI = apiServices.payments;

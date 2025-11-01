@@ -124,12 +124,6 @@ const MapView = ({
                     <strong>Địa chỉ:</strong> {station.address}
                   </p>
                   <p>
-                    <strong>Tổng số sạc:</strong> {station.totalChargers || 0}
-                  </p>
-                  <p>
-                    <strong>Còn trống:</strong> {station.availableChargers || 0}
-                  </p>
-                  <p>
                     <strong>Hotline:</strong> {station.hotline || "N/A"}
                   </p>
                   <p>

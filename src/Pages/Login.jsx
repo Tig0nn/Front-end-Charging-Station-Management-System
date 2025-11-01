@@ -2,6 +2,7 @@ import "tailwindcss";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.jsx";
+import GoogleLoginButton from "../components/GoogleLoginButton.jsx";
 import "./BackGround.css";
 import "./Login.css";
 import { Form, Button, Alert } from "react-bootstrap";
@@ -42,7 +43,7 @@ function Login() {
   };
 
   //Lấy thông tin đăng nhập trong component Login lần đầu render
- useEffect(() => {
+  useEffect(() => {
     // Chỉ đọc email/pass đã lưu
     const savedEmail = localStorage.getItem("savedEmail");
     const savedPassword = localStorage.getItem("savedPassword");
@@ -69,6 +70,11 @@ function Login() {
     try {
       setIsSubmitting(true);
       setLoginErr(""); // Xóa lỗi cũ nếu có
+
+      // Debug: Log credentials being sent
+      console.log("🔵 Attempting login with:", { email, password: "***" });
+      console.log("🔵 API Base URL:", import.meta.env.VITE_API_BASE_URL);
+
       const result = await login({ email, password });
       console.log("Login result:", result);
       if (result.success) {
@@ -135,40 +141,15 @@ function Login() {
         onChange={(e) => setRemember(e.target.checked)}
         style={{ color: "#eaeaea" }}
       />
-      <div className="flex flex-col justify-center items-center gap-6 mt-3">
-        <p className="text-white text-sm mb-2">
-          _______________Hoặc_______________
-        </p>
-        <Button
-          type="button"
-          variant="outline-light"
-          className="w-full d-flex align-items-center justify-content-center gap-2"
-          style={{
-            backgroundColor: "#2C3E50",
-            borderColor: "transparent",
-            padding: "10px",
-            borderRadius: "10px",
-            transition: "all 0.3s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "white";
-            e.target.style.color = "black";
-            e.target.style.borderColor = "#2C3E50";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "#2C3E50";
-            e.target.style.color = "white";
-            e.target.style.borderColor = "transparent";
-          }}
-        >
-          <img
-            src="src/assets/image/anhGG.png"
-            alt="Google"
-            className="w-8 h-8 pointer-events-none"
-            style={{ width: "32px", height: "32px" }}
-          />
-          <span style={{ fontSize: "14px", fontWeight: 500 }}>Google</span>
-        </Button>
+      <div className="flex flex-col justify-center items-center gap-4 mt-4">
+        <div className="w-full flex items-center justify-center">
+          <div className="flex-1 border-t border-gray-500"></div>
+          <span className="px-3 text-white text-sm">Hoặc</span>
+          <div className="flex-1 border-t border-gray-500"></div>
+        </div>
+
+        {/* Google Login Button */}
+        <GoogleLoginButton />
       </div>
     </div>
   );
