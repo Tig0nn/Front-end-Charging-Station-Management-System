@@ -269,30 +269,55 @@ export default function MapPage() {
 
   return (
     <div className="map-page-container">
-      {/* Station List Sidebar */}
-      <StationList
-        stations={stations}
-        error={error}
-        searchQuery={searchQuery}
-        selectedStation={selectedStation}
-        userLocation={userLocation}
-        onSearchChange={setSearchQuery}
-        onStationClick={handleStationClick}
-        onShowDirections={handleShowDirections}
-        onStartCharging={handleOpenChargerModal}
-        onRetry={fetchStations}
-        calculateDistance={calculateDistance}
-      />
-
-      {/* Map Container */}
+      {/* Map Container - Bên trái */}
       <div className="map-container">
+        {/* Header cho Map với thanh tìm kiếm */}
+        <div className="map-header">
+          <div className="d-flex align-items-center justify-content-between gap-3">
+            {/* Tiêu đề */}
+            <div className="d-flex align-items-center gap-2">
+              <i
+                className="bi bi-geo-alt"
+                style={{ fontSize: "20px", color: "#10b981" }}
+              ></i>
+              <h2
+                className="mb-0"
+                style={{ fontSize: "18px", fontWeight: "600" }}
+              >
+                Bản đồ trạm sạc
+              </h2>
+            </div>
+
+            {/* Thanh tìm kiếm */}
+            <div className="map-search-container">
+              <i className="bi bi-search map-search-icon"></i>
+              <input
+                type="text"
+                placeholder="Tìm kiếm trạm sạc..."
+                className="map-search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  className="map-search-clear"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Xóa tìm kiếm"
+                >
+                  <i className="bi bi-x-circle-fill"></i>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <MapView
           mapCenter={mapCenter}
           userLocation={userLocation}
           stations={stations}
           showRoute={showRoute}
           routeDestination={routeDestination}
-          selectedStation={selectedStation} // 🔥 Thêm dòng này
+          selectedStation={selectedStation}
           onStationClick={handleStationClick}
           onShowDirections={handleShowDirections}
           onRouteFound={setRouteInfo}
@@ -309,6 +334,21 @@ export default function MapPage() {
         {/* Route Info Panel */}
         {showRoute && <RouteInfoPanel routeInfo={routeInfo} />}
       </div>
+
+      {/* Station List Sidebar - Bên phải */}
+      <StationList
+        stations={stations}
+        error={error}
+        searchQuery={searchQuery}
+        selectedStation={selectedStation}
+        userLocation={userLocation}
+        onSearchChange={setSearchQuery}
+        onStationClick={handleStationClick}
+        onShowDirections={handleShowDirections}
+        onStartCharging={handleOpenChargerModal}
+        onRetry={fetchStations}
+        calculateDistance={calculateDistance}
+      />
 
       {/* Charger Selection Modal */}
       {showChargerModal && stationForCharging && (
