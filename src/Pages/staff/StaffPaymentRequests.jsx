@@ -137,7 +137,6 @@ const StaffPaymentRequests = () => {
                       ) : null}
                     </td>
                     <td>{r.licensePlate || "-"}</td>
-                    <td>"Booking"</td>
                     <td>
                       {r.stationName || "-"}
                       {r.chargingPointName ? (
