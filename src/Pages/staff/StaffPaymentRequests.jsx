@@ -54,7 +54,11 @@ const StaffPaymentRequests = () => {
       const list = res?.data?.result || res?.data || [];
       setItems(Array.isArray(list) ? list : []);
     } catch (e) {
-      setError(e?.response?.data?.message || e?.message || "Không thể tải yêu cầu thanh toán");
+      setError(
+        e?.response?.data?.message ||
+          e?.message ||
+          "Không thể tải yêu cầu thanh toán"
+      );
       setItems([]);
     } finally {
       setLoading(false);
@@ -103,9 +107,13 @@ const StaffPaymentRequests = () => {
           {loading ? (
             <div>Đang tải...</div>
           ) : error ? (
-            <div className="alert alert-danger" role="alert">{error}</div>
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info" role="alert">Hiện không có yêu cầu thanh toán nào.</div>
+            <div className="alert alert-info" role="alert">
+              Hiện không có yêu cầu thanh toán nào.
+            </div>
           ) : (
             <Table responsive hover className="align-middle">
               <thead className="table-light">
@@ -124,12 +132,19 @@ const StaffPaymentRequests = () => {
                   <tr key={r.requestId || r.id}>
                     <td>
                       {r.driverName || "-"}
-                      {r.driverPhone ? <div className="text-muted small">{r.driverPhone}</div> : null}
+                      {r.driverPhone ? (
+                        <div className="text-muted small">{r.driverPhone}</div>
+                      ) : null}
                     </td>
                     <td>{r.licensePlate || "-"}</td>
+                    <td>"Booking"</td>
                     <td>
                       {r.stationName || "-"}
-                      {r.chargingPointName ? <div className="text-muted small">{r.chargingPointName}</div> : null}
+                      {r.chargingPointName ? (
+                        <div className="text-muted small">
+                          {r.chargingPointName}
+                        </div>
+                      ) : null}
                     </td>
                     <td>{formatDateTime(r.sessionStartTime).date}<br /><div className="text-muted small">{formatDateTime(r.sessionStartTime).time}</div></td>
                     <td>{(Number(r.energyKwh || 0)).toFixed(1)} kW</td>

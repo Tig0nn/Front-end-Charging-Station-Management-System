@@ -1,6 +1,6 @@
 // src/pages/PaymentPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import { plansAPI, paymentsAPI, subscriptionsAPI } from "../../lib/apiServices";
+import { plansAPI, paymentsAPI, dashboardAPI } from "../../lib/apiServices";
 
 // Import các component con
 import PlanCard from "../../components/PlanCard";
@@ -112,68 +112,63 @@ export default function PaymentPage() {
           console.log("ℹ️ User might not have payment methods set up yet");
         }
 
-        // Try to load current subscription
+        // Load current plan from dashboard API
         try {
-          const subscriptionResponse = await subscriptionsAPI.getActive();
+          const currentPlanResponse = await dashboardAPI.getCurrentPlan();
           console.log(
-            "📋 Current active subscription response:",
-            subscriptionResponse
+            "📋 Current plan RAW response:",
+            JSON.stringify(currentPlanResponse, null, 2)
           );
 
-          // Extract subscription data from response
-          // Response structure: { code: 1000, result: {...} }
-          let subscriptionData = null;
-          if (subscriptionResponse?.data?.result) {
-            subscriptionData = subscriptionResponse.data.result;
-          } else if (subscriptionResponse?.result) {
-            subscriptionData = subscriptionResponse.result;
+          // Extract plan data from response
+          // Response structure: { code: 0, result: {...} }
+          let planData = null;
+          let responseCode = null;
+
+          if (currentPlanResponse?.data?.result) {
+            planData = currentPlanResponse.data.result;
+            responseCode = currentPlanResponse.data.code;
+          } else if (currentPlanResponse?.result) {
+            planData = currentPlanResponse.result;
+            responseCode = currentPlanResponse.code;
           }
 
-          // Check if code is 1000 (success) and has result
-          if (
-            subscriptionData &&
-            (subscriptionResponse?.data?.code === 1000 ||
-              subscriptionResponse?.code === 1000)
-          ) {
-            // Store the subscription data with the correct structure
-            setCurrentSubscription({
-              subscriptionId: subscriptionData.id,
-              driverId: subscriptionData.driverId,
-              planId: subscriptionData.planId,
-              planName: subscriptionData.planName,
-              startDate: subscriptionData.startDate,
-              endDate: subscriptionData.endDate,
-              status: subscriptionData.status,
-              autoRenew: subscriptionData.autoRenew,
-              monthlyFee: subscriptionData.monthlyFee,
-              discountPercent: subscriptionData.discountPercent,
-              freeChargingMinutes: subscriptionData.freeChargingMinutes,
-              remainingFreeMinutes: subscriptionData.remainingFreeMinutes,
-            });
-            console.log(
-              "✅ Active subscription loaded successfully:",
-              subscriptionData
-            );
+          console.log("📊 Extracted data:", {
+            responseCode,
+            planData,
+            hasResult: !!planData,
+          });
+
+          // Check if code is 0 (success) and has result
+          if (planData && responseCode === 0) {
+            // Store the current plan data
+            const currentPlan = {
+              planId: planData.planId,
+              planName: planData.name,
+              monthlyFee: planData.monthlyFee || 0,
+              billingType: planData.billingType,
+              pricePerKwh: planData.pricePerKwh,
+              pricePerMinute: planData.pricePerMinute,
+              benefits: planData.benefits,
+            };
+            setCurrentSubscription(currentPlan);
+            console.log("✅ Current plan loaded successfully:", currentPlan);
           } else {
-            console.log("ℹ️ No active subscription data in response");
+            console.log("ℹ️ No current plan - Response code:", responseCode);
             setCurrentSubscription(null);
           }
         } catch (error) {
-          // Handle code 1006 (No active subscription found) or other errors
+          // Handle errors
           const errorCode =
             error.response?.data?.code || error.response?.status;
-          if (errorCode === 1006 || errorCode === 404) {
+          if (errorCode === 404) {
             console.log(
-              "ℹ️ No active subscription (code 1006) - User hasn't subscribed yet"
-            );
-          } else if (error.response?.status === 400) {
-            console.log(
-              "ℹ️ No active subscription (400) - User may be on free plan"
+              "ℹ️ No current plan found - User may not have subscribed yet"
             );
           } else {
-            console.log("ℹ️ No active subscription found:", error.message);
+            console.log("ℹ️ Error loading current plan:", error.message);
           }
-          // Not having a subscription is okay - user might be on free plan
+          // Not having a plan is okay - user might be on default free plan
           setCurrentSubscription(null);
         }
       } catch (error) {
@@ -253,43 +248,38 @@ export default function PaymentPage() {
       );
       console.log("✅ Backend subscription response:", subscriptionData);
 
-      // Reload active subscription to get the latest data
+      // Reload current plan to get the latest data
       try {
-        const subscriptionResponse = await subscriptionsAPI.getActive();
-        let subscriptionData = null;
-        if (subscriptionResponse?.data?.result) {
-          subscriptionData = subscriptionResponse.data.result;
-        } else if (subscriptionResponse?.result) {
-          subscriptionData = subscriptionResponse.result;
+        const currentPlanResponse = await dashboardAPI.getCurrentPlan();
+        let planData = null;
+        if (currentPlanResponse?.data?.result) {
+          planData = currentPlanResponse.data.result;
+        } else if (currentPlanResponse?.result) {
+          planData = currentPlanResponse.result;
         }
 
         if (
-          subscriptionData &&
-          (subscriptionResponse?.data?.code === 1000 ||
-            subscriptionResponse?.code === 1000)
+          planData &&
+          (currentPlanResponse?.data?.code === 0 ||
+            currentPlanResponse?.code === 0)
         ) {
           setCurrentSubscription({
-            subscriptionId: subscriptionData.id,
-            driverId: subscriptionData.driverId,
-            planId: subscriptionData.planId,
-            planName: subscriptionData.planName,
-            startDate: subscriptionData.startDate,
-            endDate: subscriptionData.endDate,
-            status: subscriptionData.status,
-            autoRenew: subscriptionData.autoRenew,
-            monthlyFee: subscriptionData.monthlyFee,
-            discountPercent: subscriptionData.discountPercent,
-            freeChargingMinutes: subscriptionData.freeChargingMinutes,
-            remainingFreeMinutes: subscriptionData.remainingFreeMinutes,
+            planId: planData.planId,
+            planName: planData.name,
+            monthlyFee: planData.monthlyFee || 0,
+            billingType: planData.billingType,
+            pricePerKwh: planData.pricePerKwh,
+            pricePerMinute: planData.pricePerMinute,
+            benefits: planData.benefits,
           });
-          console.log("✅ Subscription reloaded after subscribe");
+          console.log("✅ Current plan reloaded after subscribe");
         }
       } catch (error) {
         console.warn(
-          "⚠️ Could not reload subscription after subscribe:",
+          "⚠️ Could not reload current plan after subscribe:",
           error
         );
-        // Fallback to basic subscription data
+        // Fallback to basic plan data
         setCurrentSubscription({ planId: plan.id, planName: plan.name });
       }
 
@@ -361,6 +351,69 @@ export default function PaymentPage() {
             Nâng cấp gói dịch vụ
           </h1>
         </div>
+
+        {/* Current Plan Banner */}
+        {currentSubscription && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-green-500 text-white rounded-full p-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    Gói hiện tại: {currentSubscription.planName}
+                  </h3>
+                  <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                    <span>
+                      💰 {currentSubscription.monthlyFee?.toLocaleString()}
+                      đ/tháng
+                    </span>
+                    {currentSubscription.billingType && (
+                      <span>📋 {currentSubscription.billingType}</span>
+                    )}
+                    {currentSubscription.pricePerKwh > 0 && (
+                      <span>
+                        ⚡ {currentSubscription.pricePerKwh?.toLocaleString()}
+                        đ/kWh
+                      </span>
+                    )}
+                    {currentSubscription.pricePerMinute > 0 && (
+                      <span>
+                        ⏱️{" "}
+                        {currentSubscription.pricePerMinute?.toLocaleString()}
+                        đ/phút
+                      </span>
+                    )}
+                  </div>
+                  {currentSubscription.benefits && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {currentSubscription.benefits}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="inline-block px-4 py-2 bg-green-500 text-white rounded-full font-semibold">
+                  Đang kích hoạt
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Error banner */}
         {error && availablePlans.length > 0 && (
@@ -436,14 +489,18 @@ export default function PaymentPage() {
             <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img 
-                    src="/zalopay/images/logo-zalopay.svg" 
-                    alt="ZaloPay" 
+                  <img
+                    src="/zalopay/images/logo-zalopay.svg"
+                    alt="ZaloPay"
                     style={{ height: "40px" }}
                   />
                   <div>
-                    <h4 className="font-semibold text-gray-900">Thanh toán qua ZaloPay</h4>
-                    <p className="text-sm text-gray-600">Hỗ trợ: Ví ZaloPay, Thẻ ATM, Visa, Mastercard</p>
+                    <h4 className="font-semibold text-gray-900">
+                      Thanh toán qua ZaloPay
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      Hỗ trợ: Ví ZaloPay, Thẻ ATM, Visa, Mastercard
+                    </p>
                   </div>
                 </div>
                 <button

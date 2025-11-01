@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+// --- GHI CHÚ: THAY ĐỔI 1 ---
+// Thêm 'useRef' và 'useCallback' để quản lý polling (setInterval)
+// và xử lý state một cách chính xác, ổn định.
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Spinner } from "react-bootstrap";
 import { chargingPointsAPI, vehiclesAPI } from "../../lib/apiServices.js";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate,useLocation } from "react-router-dom";
 
 import {
   StopCircleIcon,
@@ -11,9 +14,9 @@ import {
 
 export default function ChargingSessionPage() {
   const { sessionId } = useParams();
-  
-
+  const location = useLocation();
   const navigate = useNavigate();
+
   const [isStopping, setIsStopping] = useState(false);
 
   const [session, setSession] = useState(null);
@@ -21,18 +24,28 @@ export default function ChargingSessionPage() {
   const [error, setError] = useState(null);
 
   // --- State cho danh sách xe ---
-  const [myVehicles, setMyVehicles] = useState([]); // Đổi thành mảng
+  const [myVehicles, setMyVehicles] = useState([]);
   const [loadingVehicle, setLoadingVehicle] = useState(false);
+
+  // --- GHI CHÚ: THAY ĐỔI 2.1 ---
+  // Sử dụng 'useRef' thay vì 'const' bên trong useEffect.
+  // Điều này đảm bảo 'timerRef' tồn tại vĩnh viễn qua các lần render,
+  // cho phép chúng ta dừng (clearInterval) nó một cách đáng tin cậy.
+  const timerRef = useRef(null);
 
   const formatTime = (sec) => {
     const totalSeconds = sec || 0;
     const m = Math.floor(totalSeconds / 60);
     const s = Math.floor(totalSeconds % 60);
+    // --- GHI CHÚ: SỬA LỖI CÚ PHÁP ---
+    // Đã thêm lại dấu backtick (`)
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
   const formatPower = (powerString) => {
     if (!powerString) return "N/A";
     const match = powerString.match(/\d+/); // lấy ra số trong chuỗi
+    // --- GHI CHÚ: SỬA LỖI CÚ PHÁP ---
+    // Đã thêm lại dấu backtick (`)
     return match ? `${match[0]} KW` : powerString;
   };
 
@@ -43,104 +56,147 @@ export default function ChargingSessionPage() {
       return;
     }
 
-    // 2. Nếu URL KHÔNG có sessionId
-    const activeId = localStorage.getItem("currentSessionId");
+  const activeId = localStorage.getItem("currentSessionId");
+  console.log("useEffect: localStorage currentSessionId raw =", activeId, "type=", typeof activeId);
 
-    if (activeId) {
-      // 3. Nếu tìm thấy, lập tức CHUYỂN HƯỚNG
-      console.log("Phát hiện session trong localStorage, đang chuyển hướng...");
-      navigate(`/driver/session/${activeId}`, { replace: true });
-    } else {
-      // 4. Nếu CẢ HAI đều không có (không URL, không localStorage)
-      //    thì mới tắt loading để hiển thị trang "Không có phiên sạc"
-      setLoading(false);
-    }
-  }, [sessionId, navigate]);
+  // guard: nếu activeId là 'null' hoặc 'undefined' string, coi như không có
+  if (!activeId || activeId === "null" || activeId === "undefined") {
+    console.log("useEffect: không có session hợp lệ trong localStorage");
+    setLoading(false);
+    return;
+  }
 
-  //   ---  TẢI THÔNG TIN SESSION SẠC VỚI POLLING ---
-  useEffect(() => {
-    // Hook này chỉ chạy nếu CÓ sessionId (sau khi Hook 2 đã xử lý)
-    if (!sessionId) {
-      return;
-    }
+  const targetPath = `/driver/session/${activeId}`;
+  if (location.pathname === targetPath) {
+    console.log("useEffect: đã ở đúng đường dẫn target, không redirect");
+    return;
+  }
 
-    const timerRef = { current: null };
+  console.log("useEffect: redirect tới", targetPath);
+  navigate(targetPath, { replace: true });
+}, [location.pathname, sessionId, navigate]);
+  // --- GHI CHÚ: THAY ĐỔI 2.2 (BLOCK 2) ---
+  // 1. Bọc hàm 'fetchSession' bằng 'useCallback' để ổn định tham chiếu,
+  //    giúp 'useEffect' không bị chạy lại một cách không cần thiết.
+  // 2. Xóa bỏ hoàn toàn logic `localStorage.setItem` khỏi đây.
+  //    Việc 'setItem' giờ đã được chuyển về 'MapPage.js'.
+  const fetchSession = useCallback(async () => {
+    // Nếu không có ID, hoặc timer đã bị dừng (do hoàn tất) thì không làm gì cả
+    if (!sessionId) return; 
 
-    const fetchSession = async () => {
-      try {
-        const res = await chargingPointsAPI.simulateCharging(sessionId);
-        if (res.data.result) {
-          const sessionData = res.data.result;
-          console.log("Dữ liệu phiên sạc tải về:", sessionData);
-          setSession(sessionData);
-          setError(null);
+    try {
+      const res = await chargingPointsAPI.simulateCharging(sessionId);
+      if (res.data.result) {
+        const sessionData = res.data.result;
+        console.log("Dữ liệu phiên sạc tải về:", sessionData);
+        setSession(sessionData);
+        setError(null);
 
-          // ===  CHỈ SET KHI API GỌI THÀNH CÔNG ===
-          if (localStorage.getItem("currentSessionId") !== sessionId) {
-            console.log("Phiên sạc hợp lệ, set localStorage:", sessionId);
-            localStorage.setItem("currentSessionId", sessionId);
+        const status = sessionData.status;
+
+        // Nếu hoàn tất, xóa key và dừng timer
+        if (status === "COMPLETED" || status === "STOPPED") {
+          console.log("Phiên sạc kết thúc, xóa localStorage và dừng polling.");
+          // File này chỉ removeItem khi thực sự hoàn tất
+          localStorage.removeItem("currentSessionId");
+          
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
           }
+        } 
+        
+      } else {
+        throw new Error("API không trả về dữ liệu hợp lệ.");
+      }
+    } catch (err) {
+      console.error("Lỗi tải session sạc:", err);
+      setError(err);
 
-          // === LOGIC XÓA LOCALSTORAGE KHI HOÀN TẤT ===
-          const status = sessionData.status;
-          if (status === "COMPLETED" || status === "STOPPED") {
-            console.log(
-              "Phiên sạc kết thúc, xóa localStorage và dừng polling."
-            );
-            localStorage.removeItem("currentSessionId");
-
-            // Dừng polling
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-          }
-        } else {
-          throw new Error("API không trả về dữ liệu hợp lệ.");
-        }
-      } catch (err) {
-        console.error("Lỗi tải session sạc (ID có thể không hợp lệ):", err);
-        setError(err);
-        setSession(null);
-
-        // ===  XÓA KEY HỎNG NẾU GỌI API LỖI ===
-        localStorage.removeItem("currentSessionId");
-
-        // Dừng polling nếu bị lỗi (ví dụ: 404 Not Found)
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-      } finally {
+      // <-- IMPORTANT: KHÔNG xóa localStorage ở đây.
+      // Chỉ xóa khi API trả về status hoàn tất (COMPLETED/STOPPED) ở đoạn trên.
+      // Nếu muốn xử lý trường hợp 404/invalid, có thể kiểm tra err.response.status,
+      // nhưng theo yêu cầu ta giữ key trên localStorage cho tới khi session kết thúc.
+      
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    } finally {
+      // Chỉ tắt loading lần đầu
+      if (loading) {
         setLoading(false);
       }
-    };
-
-    // Tải lần đầu
-    fetchSession();
-
-    // Bật polling
-    // Chỉ bật polling NẾU chưa có lỗi và chưa hoàn thành
-    if (!error && !session) { // Kiểm tra !session để đảm bảo logic hoàn thành ở trên đã chạy
-      timerRef.current = setInterval(fetchSession, 2000); // mỗi 2 giây
     }
-    
-    // Logic trong fetchSession sẽ tự hủy timer khi hoàn tất.
-    // Nếu fetchSession lần đầu bị lỗi, nó cũng sẽ tự hủy timer.
+  }, [sessionId, loading]); // Phụ thuộc vào sessionId và loading (để tắt)
 
-    // Dọn dẹp KHI component unmount
+
+  // --- GHI CHÚ: THAY ĐỔI 2.3 (BLOCK 3) ---
+  // Đây là 'useEffect' chính để quản lý polling VÀ xử lý lỗi "ĐỔI TAB".
+  useEffect(() => {
+    if (!sessionId) return;
+
+    // --- Xử lý khi người dùng quay lại tab ---
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        
+        // Lấy status từ state *hiện tại*
+        const currentStatus = session?.status;
+        
+        // === [ TỐI ƯU HÓA THEO YÊU CẦU CỦA BẠN ] ===
+        // Chỉ gọi API nếu phiên sạc CHƯA KẾT THÚC
+        if (currentStatus !== "COMPLETED" && currentStatus !== "STOPPED") {
+          console.log("Quay lại tab, phiên đang chạy, làm mới...");
+          fetchSession(); // Lấy dữ liệu mới ngay lập tức
+          
+          // KIỂM TRA VÀ KHỞI ĐỘNG LẠI TIMER NẾU NÓ ĐÃ TẮT
+          // (Phòng trường hợp timer bị dừng do lỗi mạng tạm thời)
+          if (!timerRef.current) {
+            console.log("Polling đã TẮT, khởi động lại...");
+            timerRef.current = setInterval(fetchSession, 2000);
+          }
+        } else {
+          console.log("Quay lại tab, phiên đã kết thúc. Không gọi API.");
+        }
+      }
+    };
+    // Đăng ký "cảm biến"
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // --- Tải lần đầu và Bật polling ---
+    fetchSession(); // Tải lần đầu
+    
+    // Bật polling NẾU timer chưa chạy
+    if (!timerRef.current) {
+      console.log("Bật polling...");
+      timerRef.current = setInterval(fetchSession, 2000);
+      // Hàm fetchSession sẽ tự xử lý việc dừng timer nếu sạc đã xong
+    }
+
+    // Dọn dẹp "cảm biến" khi hook chạy lại
     return () => {
-      
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [sessionId, fetchSession, session?.status]); // Phụ thuộc vào session.status
+
+
+  // --- GHI CHÚ: THAY ĐỔI 2.4 (BLOCK 4) ---
+  // Thêm 'useEffect' này để dọn dẹp timer KHI RỜI KHỎI TRANG (unmount).
+  // Mảng rỗng '[]' đảm bảo nó CHỈ chạy 1 lần duy nhất khi component bị hủy.
+  useEffect(() => {
+    return () => {
       console.log("Component unmount, dọn dẹp timer.");
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [sessionId]); // Phụ thuộc vào sessionId
-
+  }, []); // <-- Mảng rỗng là mấu chốt
 
 
   //   ---  TẢI THÔNG TIN XE ---
+  // --- GHI CHÚ: BLOCK NÀY GIỮ NGUYÊN ---
+  // Logic này đúng: Tải thông tin xe cho màn hình "Không có phiên sạc".
   useEffect(() => {
     // CẬP NHẬT ĐIỀU KIỆN: Tải xe nếu không có session HOẶC nếu có lỗi
     if (!sessionId || error) {
@@ -389,23 +445,13 @@ export default function ChargingSessionPage() {
               <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
                 <div
                   className="bg-green-600 h-full"
-                  style={{
-                    // Sửa: Dùng currentSocPercent
+                  style={{  
                     width: `${session.currentSocPercent || 0}%`,
                     transition: "width 0.3s",
                   }}
                 ></div>
               </div>
             </div>
-
-            {/* BỎ các trường thiếu: plugType, voltage, batteryCapacity */}
-            {/* <div className="grid grid-cols-2 gap-4 text-sm text-gray-700"> */}
-            {/* <p>🔌 Loại cổng sạc: {session.plugType || "N/A"}</p> */}
-            {/* <p>⚙️ Điện áp: {session.voltage || "N/A"}</p> */}
-            {/* <p>🔋 Dung lượng pin: {session.batteryCapacity || "N/A"}</p> */}
-            {/* Bạn có thể giữ lại tên trạm nếu muốn */}
-            {/* <p>📍 Trạm: {session.stationName || "N/A"}</p> */}
-            {/* </div> */}
 
             <div className="flex justify-between items-center border-t pt-4 text-gray-700">
               <div>
@@ -438,7 +484,7 @@ export default function ChargingSessionPage() {
                 Dự kiến hoàn thành
               </h3>
               <div className="text-green-600 text-3xl font-bold mb-1">
-                {/* Cập nhật xử lý null */}
+              
                 {session.estimatedTimeRemainingMinutes !== null
                   ? `${session.estimatedTimeRemainingMinutes} phút`
                   : "Đang tính..."}

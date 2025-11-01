@@ -7,8 +7,6 @@ const formatCurrency = (value) =>
   );
 
 // Link logo (bạn có thể đổi thành file logo import từ local)
-const vnpayLogoUrl =
-  "https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png";
 const zalopayLogoUrl = "/zalopay/images/logo-zalopay.svg";
 
 export default function PopUpPayment({

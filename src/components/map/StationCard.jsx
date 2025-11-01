@@ -80,17 +80,6 @@ const StationCard = ({
         </p>
       )}
 
-      <div className="station-info">
-        <span className="info-item">
-          <BoltIcon className="icon-sm" />
-          {station.totalChargers || 0} sạc
-        </span>
-        <span className="info-item">
-          <CircleStackIcon className="icon-sm" />
-          {station.availableChargers || 0} trống
-        </span>
-      </div>
-
       <div className="station-card-actions">
         <button
           className="action-button-secondary"
