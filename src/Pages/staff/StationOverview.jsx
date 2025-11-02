@@ -13,6 +13,12 @@ import {
 } from "react-bootstrap";
 // Giả sử bạn có file này
 import { vehiclesAPI, chargingPointsAPI } from "../../lib/apiServices.js";
+import StationHeader from "../../components/layoutStaff/StationHeader";
+import PillNavigation from "../../components/layoutStaff/SidebarStaff";
+// Import các component cho các tab khác
+import StaffPaymentRequests from "./StaffPaymentRequests";
+import StaffTransactions from "./StaffTransactions";
+import StaffReports from "./StaffReports";
 
 // Hàm định dạng công suất từ "POWER_22KW" thành "22kW"
 const formatPower = (powerString) => {
@@ -24,21 +30,21 @@ const formatPower = (powerString) => {
 // Hàm lấy thông tin trạng thái và màu sắc
 const getStatusInfo = (point) => {
   if (point.status === "AVAILABLE" && !point.currentSessionId) {
-    return { text: "Sẵn sàng", bg: "primary" };
+    return { text: "Sẵn sàng", customColor: "#4ade80" };
   }
   if (point.status === "AVAILABLE" && point.currentSessionId) {
-    return { text: "Đang sạc", bg: "success" };
+    return { text: "Đang sạc", customColor: "#22c55e" };
   }
   if (point.status === "CHARGING") {
-    return { text: "Đang sạc", bg: "success" };
+    return { text: "Đang sạc", customColor: "#22c55e" };
   }
   if (point.status === "OUT_OF_SERVICE" || point.status === "UNAVAILABLE") {
-    return { text: "Lỗi", bg: "danger" };
+    return { text: "Lỗi", customColor: "#f97316" };
   }
   if (point.status === "MAINTENANCE") {
-    return { text: "Bảo trì", bg: "warning", textColor: "dark" };
+    return { text: "Bảo trì", customColor: "#f59e0b", textColor: "dark" };
   }
-  return { text: point.status, bg: "secondary" };
+  return { text: point.status, customColor: "#6b7280" };
 };
 
 // --- 💡 THÊM HÀM HELPER ĐỊNH DẠNG TIỀN ---
@@ -59,6 +65,11 @@ export default function StationOverview() {
   const [showModal, setShowModal] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
   const stationId = user?.stationId;
+  // --- 💡 THÊM STATE CHO TAB NAVIGATION ---
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // --- 💡 THÊM STATE ĐỂ TRIGGER REFRESH CHO CHILD COMPONENTS ---
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [showStartModal, setShowStartModal] = useState(false);
   const [pointToStart, setPointToStart] = useState(null);
@@ -195,10 +206,21 @@ export default function StationOverview() {
     setDesiredSOC(100);
     setShowStartModal(true);
   };
-
   const handleCloseStartModal = () => {
     setShowStartModal(false);
     setPointToStart(null);
+  };
+
+  // --- 💡 HÀM LÀM MỚI - Refresh toàn bộ component dựa trên tab hiện tại
+  const handleRefresh = () => {
+    console.log(`Làm mới tab: ${activeTab}`);
+    if (activeTab === "overview") {
+      // Refresh danh sách trụ sạc
+      fetchChargingPoints(true);
+    } else {
+      // Refresh các component con bằng cách thay đổi key
+      setRefreshKey((prev) => prev + 1);
+    }
   };
 
   // Bắt đầu phiên sạc mới
@@ -252,7 +274,7 @@ export default function StationOverview() {
         throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
       }
     } catch (err) {
-      console.error("❌ LỖI khi bắt đầu phiên sạc:", err);
+      console.error(" LỖI khi bắt đầu phiên sạc:", err);
       alert(err.message || "Đã xảy ra lỗi không mong muốn.");
     } finally {
       setLoading(false); // Luôn tắt loading
@@ -361,139 +383,216 @@ export default function StationOverview() {
             disabled={loading}
           >
             {loading ? "Đang xử lý..." : "Bắt đầu"}
-          </Button>
+          </Button>{" "}
         </Modal.Footer>
       </Modal>
 
-      {/* Tên trạm */}
-      <h4 className="mb-2">
-        Trạm sạc: {chargingPoints[0]?.stationName || "Đang tải..."}
-      </h4>
-      <Row className="mb-4">
-        <Col md={3}>
-          <Card className="text-center shadow-sm">
-            <Card.Body>
-              <h6 className="text-muted">Điểm sạc hoạt động</h6>
-              <h4>
-                {activePoints}/{totalPoints}
-              </h4>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-      <Button
-        variant="outline-primary"
-        onClick={() => fetchChargingPoints(true)} // Bấm nút này sẽ hiện spinner
-        disabled={loading}
-        className="mb-3"
-      >
-        {loading ? "Đang tải..." : "Tải lại dữ liệu"}
-      </Button>
-      <Row xs={1} md={2} lg={3} className="g-3">
-        {chargingPoints.map((point) => {
-          const statusInfo = getStatusInfo(point);
-          const isCharging = statusInfo.text === "Đang sạc";
-          const isUnavailable = !["Sẵn sàng", "Đang sạc"].includes(
-            statusInfo.text
-          );
+      {/* Station Header Component với nút Làm mới */}
+      <div className="d-flex justify-content-between align-items-start mb-3">
+        <div className="flex-grow-1">
+          <StationHeader
+            stationName={chargingPoints[0]?.stationName}
+            activePoints={activePoints}
+            totalPoints={totalPoints}
+            sessionsToday={23}
+            revenue={2450000}
+            avgChargeTime={52}
+          />{" "}
+        </div>{" "}
+        <Button
+          onClick={handleRefresh}
+          disabled={loading}
+          className="ms-3 mt-1 border-0"
+          style={{
+            minWidth: "120px",
+            backgroundColor: "#2bf0b5",
+            color: "white",
+            transition: "all 0.3s",
+          }}
+          onMouseEnter={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = "#00ffc6";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#2bf0b5";
+          }}
+        >
+          {loading ? "Đang tải..." : "Làm mới"}
+        </Button>
+      </div>
 
-          // --- 💡 LẤY DỮ LIỆU TỪ `currentSessionInfo` MÀ TA ĐÃ GỘP ---
-          const sessionInfo = point.currentSessionInfo;
+      {/* Pill Navigation - dưới header, trên danh sách */}
+      <div className="mb-4">
+        <PillNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
 
-          return (
-            <Col key={point.pointId}>
-              <Card className="h-100 shadow-sm">
-                <Card.Body>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h6 className="mb-0">{point.name}</h6>
-                    <Badge
-                      bg={statusInfo.bg}
-                      text={statusInfo.textColor || "light"}
-                    >
-                      {statusInfo.text}
-                    </Badge>
-                  </div>
+      {/* Render nội dung theo tab - Tab Overview */}
+      {activeTab === "overview" && (
+        <>
+          <Row xs={1} md={2} lg={3} className="g-3">
+            {chargingPoints.map((point) => {
+              const statusInfo = getStatusInfo(point);
+              const isCharging = statusInfo.text === "Đang sạc";
+              const isUnavailable = !["Sẵn sàng", "Đang sạc"].includes(
+                statusInfo.text
+              );
 
-                  <div className="text-muted small mb-2">
-                    Công suất: {formatPower(point.chargingPower)}
-                  </div>
+              // --- 💡 LẤY DỮ LIỆU TỪ `currentSessionInfo` MÀ TA ĐÃ GỘP ---
+              const sessionInfo = point.currentSessionInfo;
 
-                  {/* --- 💡 KHỐI JSX ĐÃ ĐƯỢC CẬP NHẬT --- */}
-                  {isCharging && point.currentSessionId && (
-                    <div className="bg-success bg-opacity-10 p-2 rounded mb-3">
-                      <div className="fw-bold">Đang phục vụ khách</div>
-
-                      {/* Hiển thị Pin và Tiền nếu có */}
-                      <div className="small text-dark mt-2">
-                        <Row>
-                          <Col xs={6}>
-                            <strong>Pin:</strong> {sessionInfo?.soc ?? "..."}%
-                          </Col>
-                          <Col xs={6}>
-                            <strong>Phí:</strong>{" "}
-                            {formatCurrency(sessionInfo?.totalCost)}
-                          </Col>
-                        </Row>
+              return (
+                <Col key={point.pointId}>
+                  <Card className="h-100 shadow-sm">
+                    <Card.Body>
+                      {" "}
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h6 className="mb-0">{point.name}</h6>
+                        <Badge
+                          style={{
+                            backgroundColor: statusInfo.customColor,
+                            color:
+                              statusInfo.textColor === "dark" ? "#000" : "#fff",
+                            border: "none",
+                          }}
+                        >
+                          {statusInfo.text}
+                        </Badge>
                       </div>
-
-                      <div className="small text-muted mt-2">
-                        Session: {point.currentSessionId.substring(0, 8)}...
+                      <div className="text-muted small mb-2">
+                        Công suất: {formatPower(point.chargingPower)}
                       </div>
-                    </div>
-                  )}
-                  {/* ------------------------------------ */}
+                      {/* --- 💡 KHỐI JSX ĐÃ ĐƯỢC CẬP NHẬT --- */}
+                      {isCharging && point.currentSessionId && (
+                        <div className="bg-success bg-opacity-10 p-2 rounded mb-3">
+                          <div className="fw-bold">Đang phục vụ khách</div>
 
-                  {statusInfo.text === "Lỗi" && (
-                    <div className="text-center text-danger py-3">
-                      Trụ đang gặp lỗi
-                    </div>
-                  )}
+                          {/* Hiển thị Pin và Tiền nếu có */}
+                          <div className="small text-dark mt-2">
+                            <Row>
+                              <Col xs={6}>
+                                <strong>Pin:</strong>{" "}
+                                {sessionInfo?.soc ?? "..."}%
+                              </Col>
+                              <Col xs={6}>
+                                <strong>Phí:</strong>{" "}
+                                {formatCurrency(sessionInfo?.totalCost)}
+                              </Col>
+                            </Row>
+                          </div>
 
-                  {statusInfo.text === "Bảo trì" && (
-                    <div className="text-center text-warning py-3">
-                      Đang bảo trì
-                    </div>
-                  )}
+                          <div className="small text-muted mt-2">
+                            Session: {point.currentSessionId.substring(0, 8)}...
+                          </div>
+                        </div>
+                      )}
+                      {/* ------------------------------------ */}
+                      {statusInfo.text === "Lỗi" && (
+                        <div className="text-center text-danger py-3">
+                          Trụ đang gặp lỗi
+                        </div>
+                      )}
+                      {statusInfo.text === "Bảo trì" && (
+                        <div className="text-center text-warning py-3">
+                          Đang bảo trì
+                        </div>
+                      )}{" "}
+                      <div className=" d-flex gap-2">
+                        <Button
+                          disabled={isUnavailable || loading}
+                          className="w-50 border-0"
+                          style={{
+                            backgroundColor: isCharging ? "#f97316" : "#4ade80",
+                            color: "white",
+                            transition: "all 0.3s",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isUnavailable && !loading) {
+                              e.currentTarget.style.backgroundColor = isCharging
+                                ? "#ea580c"
+                                : "#22c55e";
+                              e.currentTarget.style.transform =
+                                "translateY(-2px)";
+                              e.currentTarget.style.boxShadow =
+                                "0 4px 8px rgba(0,0,0,0.2)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = isCharging
+                              ? "#f97316"
+                              : "#4ade80";
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
+                          onClick={() => {
+                            if (isCharging) {
+                              // TODO: Xử lý dừng sạc
+                              alert(
+                                `Chức năng 'Dừng sạc' cho ${point.name} chưa được cài đặt.`
+                              );
+                            } else {
+                              handleShowStartModal(point);
+                            }
+                          }}
+                        >
+                          {isCharging ? "Dừng sạc" : "Khởi động"}
+                        </Button>{" "}
+                        {statusInfo.text !== "Đang sạc" && (
+                          <Button
+                            className="w-50 border-0"
+                            disabled={loading}
+                            style={{
+                              backgroundColor: "#fbbf24",
+                              color: "#000",
+                              transition: "all 0.3s",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!loading) {
+                                e.currentTarget.style.backgroundColor =
+                                  "#f59e0b";
+                                e.currentTarget.style.transform =
+                                  "translateY(-2px)";
+                                e.currentTarget.style.boxShadow =
+                                  "0 4px 8px rgba(0,0,0,0.2)";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "#fbbf24";
+                              e.currentTarget.style.transform = "translateY(0)";
+                              e.currentTarget.style.boxShadow = "none";
+                            }}
+                            onClick={() => {
+                              setSelectedPoint(point);
+                              setShowModal(true);
+                            }}
+                          >
+                            Chỉnh sửa
+                          </Button>
+                        )}
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        </>
+      )}
 
-                  <div className=" d-flex gap-2">
-                    <Button
-                      variant={isCharging ? "danger" : "dark"}
-                      disabled={isUnavailable || loading}
-                      className="bg-red w-50"
-                      onClick={() => {
-                        if (isCharging) {
-                          // TODO: Xử lý dừng sạc
-                          alert(
-                            `Chức năng 'Dừng sạc' cho ${point.name} chưa được cài đặt.`
-                          );
-                        } else {
-                          handleShowStartModal(point);
-                        }
-                      }}
-                    >
-                      {isCharging ? "Dừng sạc" : "Khởi động"}
-                    </Button>
+      {/* Tab: Quản lý yêu cầu */}
+      {activeTab === "sessions" && (
+        <StaffPaymentRequests key={`sessions-${refreshKey}`} />
+      )}
 
-                    {statusInfo.text !== "Đang sạc" && (
-                      <Button
-                        variant="warning"
-                        className="w-50"
-                        disabled={loading}
-                        onClick={() => {
-                          setSelectedPoint(point);
-                          setShowModal(true);
-                        }}
-                      >
-                        Chỉnh sửa
-                      </Button>
-                    )}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          );
-        })}
-      </Row>
+      {/* Tab: Giao dịch */}
+      {activeTab === "transactions" && (
+        <StaffTransactions key={`transactions-${refreshKey}`} />
+      )}
+
+      {/* Tab: Sự cố */}
+      {activeTab === "reports" && (
+        <StaffReports key={`reports-${refreshKey}`} />
+      )}
     </Container>
   );
 }
