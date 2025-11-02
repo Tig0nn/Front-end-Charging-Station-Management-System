@@ -178,7 +178,7 @@ function App() {
             <MainLayoutDriver>
               <Routes>
                 {/* Route mặc định sẽ là trang bản đồ */}
-                <Route path="/" element={<MapPage />} />
+                <Route index element={<Navigate to="/driver/map" replace />} />
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/session" element={<ChargingSessionPage />} />
                 <Route

@@ -125,7 +125,11 @@ const TransactionHistory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
 
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) return (
+    <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
+      <div className="spinner-border text-[#2bf0b5]"/>
+    </div>
+  );
 
   if (error) {
     return (
@@ -238,7 +242,7 @@ const TransactionHistory = () => {
               <td className="px-6 py-4 whitespace-nowrap">
                 {(s.paymentStatus === "UNPAID" && s.status === "COMPLETED") ? (
                   <button
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-3 py-1 bg-[#2bf0b5] text-white font-bold rounded hover:bg-[#00ffc6]"
                     onClick={() => handleOpenPaymentModal(s)}
                   >
                     Thanh toán
@@ -571,11 +575,11 @@ export default function HistoryPage() {
     { path: "analysis", label: "Phân tích" },
     { path: "habits", label: "Thói quen" },
   ];
-  useEffect(() =>async () => {
-    try{
+  useEffect(() => async () => {
+    try {
       let response = await chargingSessionsAPI.getMySessions();
       console.log("Fetched charging sessions:", response.data);
-    }catch(err){
+    } catch (err) {
       console.error("Lỗi tính toán chỉ số tổng hợp:", err);
     }
   }, []);
@@ -583,7 +587,7 @@ export default function HistoryPage() {
     <div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-green-500 text-2xl"><i class="bi bi-cash-stack"></i></span>
+          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-cash-stack"></i></span>
           <div>
             <div className="text-sm text-gray-500">Tổng chi phí</div>
             <div className="text-lg font-bold">{formatCurrency(totalCost)}</div>
@@ -591,7 +595,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-yellow-600 text-2xl"><i class="bi bi-lightning-fill"></i></span>
+          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-lightning-fill"></i></span>
           <div>
             <div className="text-sm text-gray-500">Tổng lượng điện đã sạc</div>
             <div className="text-lg font-bold">{totalEnergy.toFixed(1)} kW</div>
@@ -599,7 +603,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-blue-600 text-2xl"><i class="bi bi-clock-fill"></i></span>
+          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-clock-fill"></i></span>
           <div>
             <div className="text-sm text-gray-500">Số phiên sạc</div>
             <div className="text-lg font-bold">{totalSessions}</div>
@@ -607,7 +611,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-purple-600 text-2xl"><i class="bi bi-cash-coin"></i></span>
+          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-cash-coin"></i></span>
           <div>
             <div className="text-sm text-gray-500">Chi phí trung bình trên kW</div>
             <div className="text-lg font-bold">{formatCurrency(avgCostPerKw)}</div>

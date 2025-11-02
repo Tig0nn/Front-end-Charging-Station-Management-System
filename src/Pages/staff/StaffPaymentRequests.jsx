@@ -56,8 +56,8 @@ const StaffPaymentRequests = () => {
     } catch (e) {
       setError(
         e?.response?.data?.message ||
-          e?.message ||
-          "Không thể tải yêu cầu thanh toán"
+        e?.message ||
+        "Không thể tải yêu cầu thanh toán"
       );
       setItems([]);
     } finally {
@@ -105,7 +105,9 @@ const StaffPaymentRequests = () => {
             <Card.Title as="h5" className="mb-0">Yêu cầu thanh toán tiền mặt</Card.Title>
           </div>
           {loading ? (
-            <div>Đang tải...</div>
+            <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
+              <div className="spinner-border text-primary" />
+            </div>
           ) : error ? (
             <div className="alert alert-danger" role="alert">
               {error}
