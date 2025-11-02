@@ -60,7 +60,7 @@ export default function MapPage() {
     try {
       setLoading(true);
       // Call API to get all stations (backend returns OPERATIONAL by default)
-      const response = await stationsAPI.getOverview();
+      const response = await stationsAPI.getAllDetails();
       console.log("📍 Stations API response:", response);
 
       let stationsData = [];
@@ -81,19 +81,32 @@ export default function MapPage() {
         stationId: station.stationId,
         stationName: station.name, // Backend uses 'name'
         address: station.address,
-        operatorName: station.operatorName,
-        contactPhone: station.contactPhone,
         latitude: station.latitude,
         longitude: station.longitude,
         status: station.status, // OPERATIONAL, MAINTENANCE, OUT_OF_SERVICE, CLOSED
-        active: station.active,
+
+        // Thông tin charging points từ API mới
+        totalChargingPoints: station.totalChargingPoints || 0,
+        activeChargingPoints: station.activeChargingPoints || 0,
+        offlineChargingPoints: station.offlineChargingPoints || 0,
+        maintenanceChargingPoints: station.maintenanceChargingPoints || 0,
+        chargingPointsSummary: station.chargingPointsSummary || "",
+
+        // Tính số trạm khả dụng (AVAILABLE)
+        totalChargers: station.totalChargingPoints || 0,
+        availableChargers: station.activeChargingPoints || 0,
+
+        // Thông tin bổ sung
+        revenue: station.revenue || 0,
+        usagePercent: station.usagePercent || 0,
         staffId: station.staffId,
         staffName: station.staffName,
-        // Add default values for fields not in backend
-        totalChargers: 0, // Will be updated from chargers API if needed
-        availableChargers: 0,
+
+        // Thông tin liên hệ (fallback)
         pricePerKwh: "3,500đ/kWh",
         hotline: station.contactPhone || "N/A",
+        contactPhone: station.contactPhone,
+        operatorName: station.operatorName,
         email: station.operatorName
           ? `${station.operatorName}@email.com`
           : "N/A",
@@ -269,30 +282,55 @@ export default function MapPage() {
 
   return (
     <div className="map-page-container">
-      {/* Station List Sidebar */}
-      <StationList
-        stations={stations}
-        error={error}
-        searchQuery={searchQuery}
-        selectedStation={selectedStation}
-        userLocation={userLocation}
-        onSearchChange={setSearchQuery}
-        onStationClick={handleStationClick}
-        onShowDirections={handleShowDirections}
-        onStartCharging={handleOpenChargerModal}
-        onRetry={fetchStations}
-        calculateDistance={calculateDistance}
-      />
-
-      {/* Map Container */}
+      {/* Map Container - Bên trái */}
       <div className="map-container">
+        {/* Header cho Map với thanh tìm kiếm */}
+        <div className="map-header">
+          <div className="d-flex align-items-center justify-content-between gap-3">
+            {/* Tiêu đề */}
+            <div className="d-flex align-items-center gap-2">
+              <i
+                className="bi bi-geo-alt"
+                style={{ fontSize: "20px", color: "#10b981" }}
+              ></i>
+              <h2
+                className="mb-0"
+                style={{ fontSize: "18px", fontWeight: "600" }}
+              >
+                Bản đồ trạm sạc
+              </h2>
+            </div>
+
+            {/* Thanh tìm kiếm */}
+            <div className="map-search-container">
+              <i className="bi bi-search map-search-icon"></i>
+              <input
+                type="text"
+                placeholder="Tìm kiếm trạm sạc..."
+                className="map-search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  className="map-search-clear"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Xóa tìm kiếm"
+                >
+                  <i className="bi bi-x-circle-fill"></i>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <MapView
           mapCenter={mapCenter}
           userLocation={userLocation}
           stations={stations}
           showRoute={showRoute}
           routeDestination={routeDestination}
-          selectedStation={selectedStation} // 🔥 Thêm dòng này
+          selectedStation={selectedStation}
           onStationClick={handleStationClick}
           onShowDirections={handleShowDirections}
           onRouteFound={setRouteInfo}
@@ -309,6 +347,21 @@ export default function MapPage() {
         {/* Route Info Panel */}
         {showRoute && <RouteInfoPanel routeInfo={routeInfo} />}
       </div>
+
+      {/* Station List Sidebar - Bên phải */}
+      <StationList
+        stations={stations}
+        error={error}
+        searchQuery={searchQuery}
+        selectedStation={selectedStation}
+        userLocation={userLocation}
+        onSearchChange={setSearchQuery}
+        onStationClick={handleStationClick}
+        onShowDirections={handleShowDirections}
+        onStartCharging={handleOpenChargerModal}
+        onRetry={fetchStations}
+        calculateDistance={calculateDistance}
+      />
 
       {/* Charger Selection Modal */}
       {showChargerModal && stationForCharging && (
