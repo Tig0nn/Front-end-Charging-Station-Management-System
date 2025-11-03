@@ -9,77 +9,89 @@ const GoogleCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Lấy authorization code từ URL
-        const code = searchParams.get("code");
+        const token = searchParams.get("token");
         const errorParam = searchParams.get("error");
 
         console.log("🔵 Google callback received");
-        console.log("🔵 Authorization code:", code?.substring(0, 20) + "...");
 
         if (errorParam) {
           throw new Error(`Google authorization failed: ${errorParam}`);
         }
 
-        if (!code) {
-          throw new Error("No authorization code received from Google");
+        if (!token) {
+          throw new Error("No token received from backend");
         }
 
-        // Gửi code đến backend
-        const baseURL =
-          import.meta.env.VITE_API_BASE_URL ||
-          "http://localhost:8080/evchargingstation";
-        const endpoint = `${baseURL}/api/auth/google/callback`;
+        console.log("🔵 FULL TOKEN:", token);
 
-        console.log("🔵 Sending code to backend:", endpoint);
+        // ▼▼▼ THAY ĐỔI QUAN TRỌNG Ở ĐÂY ▼▼▼
+        // Luôn sử dụng localhost:8080 khi ở local dev để tránh lỗi của NGROK
+        // const baseURL =
+        //   import.meta.env.VITE_API_BASE_URL ||
+        //   "http://localhost:8080/evchargingstation";
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            code: code,
-            redirectUri: `${window.location.origin}/auth/google/callback`,
-          }),
+        const baseURL = "http://localhost:8080/evchargingstation";
+        // ▲▲▲ KẾT THÚC THAY ĐỔI ▲▲▲
+
+        const requestURL = `${baseURL}/api/users/driver/myInfo`;
+
+        const requestHeaders = {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        };
+
+        console.log("🔵 Calling fetch to URL:", requestURL);
+        console.log("🔵 Sending headers:", JSON.stringify(requestHeaders));
+
+        const userInfoResponse = await fetch(requestURL, {
+          method: "GET",
+          headers: requestHeaders,
+          cache: "no-cache",
         });
 
-        console.log("🔵 Backend response status:", response.status);
+        console.log("🔵 Fetch response received:", userInfoResponse);
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Backend error: ${response.status} - ${errorText}`);
+        // 1. Luôn đọc nội dung dưới dạng TEXT trước, bất kể status là gì
+        const responseText = await userInfoResponse.text();
+
+        if (!userInfoResponse.ok) {
+          // Nếu status không phải 2xx, log lỗi và ném ra
+          console.error(
+            "❌ Fetch failed response text (non-ok):",
+            responseText
+          );
+          throw new Error(
+            `Failed to fetch user info: ${
+              userInfoResponse.status
+            }. Response: ${responseText.substring(0, 100)}...`
+          );
         }
 
-        const data = await response.json();
-        console.log("✅ Backend response:", data);
+        // 2. Log nội dung text (để xem có phải HTML của ngrok không)
+        console.log(
+          "🔵 Received response text:",
+          responseText.substring(0, 200) + "..."
+        );
 
-        if (data.code === 0 && data.result) {
-          const { token, userInfo } = data.result;
+        // 3. BÂY GIỜ mới thử parse
+        const userData = JSON.parse(responseText);
+        // Nếu responseText là HTML, lỗi "Unexpected token '<'" sẽ xảy ra ở ĐÂY
+        // và sẽ được khối catch bên dưới bắt lại.
 
-          // Lưu token
-          localStorage.setItem("authToken", token);
-          localStorage.setItem("user", JSON.stringify(userInfo));
-          localStorage.setItem("role", userInfo.role);
+        console.log("✅ User info response (parsed):", userData);
 
-          console.log("✅ Login successful, redirecting...");
+        let userInfo = userData.result || userData;
 
-          // Redirect dựa trên role
-          const role = userInfo.role?.toUpperCase();
-          if (role === "DRIVER") {
-            navigate("/driver/map", { replace: true });
-          } else if (role === "ADMIN") {
-            navigate("/admin/dashboard", { replace: true });
-          } else if (role === "STAFF") {
-            navigate("/staff/station-overview", { replace: true });
-          } else {
-            navigate("/driver/map", { replace: true });
-          }
-        } else {
-          throw new Error(data.message || "Login failed");
-        }
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("user", JSON.stringify(userInfo));
+        localStorage.setItem("role", "DRIVER");
+
+        console.log("✅ Login successful, redirecting to driver map...");
+        navigate("/driver/map", { replace: true });
       } catch (err) {
-        console.error("❌ Callback error:", err);
-        setError(err.message);
+        // Lỗi (bao gồm cả lỗi JSON.parse) sẽ bị bắt ở đây
+        console.error("❌ Callback error (includes JSON parse error):", err);
+        setError(err.message); // err.message sẽ là "Unexpected token '<'..."
 
         setTimeout(() => {
           navigate("/login", { replace: true });
@@ -90,6 +102,7 @@ const GoogleCallback = () => {
     handleCallback();
   }, [searchParams, navigate]);
 
+  // ...Phần return (JSX) không thay đổi...
   if (error) {
     return (
       <div
