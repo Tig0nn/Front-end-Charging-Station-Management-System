@@ -287,7 +287,6 @@ export default function StationOverview() {
           {selectedPoint && (
             <div className="d-flex gap-2 mt-3">
               <Button
-                variant="warning"
                 className="w-50"
                 onClick={() => handleUpdateStatus("MAINTENANCE")}
               >
@@ -296,7 +295,7 @@ export default function StationOverview() {
               <Button
                 variant="secondary"
                 className="w-50"
-                onClick={() => handleUpdateStatus("OFFLINE")}
+                onClick={() => handleUpdateStatus("OUT_OF_SERVICE")}
               >
                 Tạm dừng
               </Button>
@@ -359,14 +358,7 @@ export default function StationOverview() {
       </Modal>
 
      
-      <Button
-        variant="outline-primary"
-        onClick={() => fetchChargingPoints(true)} // Bấm nút này sẽ hiện spinner
-        disabled={loading}
-        className="mb-3"
-      >
-        {loading ? "Đang tải..." : "Tải lại dữ liệu"}
-      </Button>
+      
       <Row xs={1} md={2} lg={3} className="g-3">
         {chargingPoints.map((point) => {
           const statusInfo = getStatusInfo(point);

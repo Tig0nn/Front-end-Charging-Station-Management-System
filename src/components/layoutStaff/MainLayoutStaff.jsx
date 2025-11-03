@@ -112,19 +112,14 @@ export default function MainLayoutStaff({ children }) {
       icon: "bi-gear",
     },
     {
-      path: "/staff/transactions",
-      label: "Giao dịch",
+      path: "/staff/payment-requests",
+      label: "Thanh toán",
       icon: "bi-currency-dollar",
     },
     {
-      path: "/staff/payment-requests",
+      path: "/staff/reports",
       label: "Sự cố",
       icon: "bi-exclamation-triangle",
-    },
-    {
-      path: "/staff/reports",
-      label: "Report",
-      icon: "bi-file-text",
     },
   ];
 
@@ -218,7 +213,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-activity"
-                    style={{ fontSize: "20px", color: "#10b981" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Điểm sạc hoạt động
@@ -254,7 +249,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-people"
-                    style={{ fontSize: "20px", color: "#3b82f6" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Phiên sạc hôm nay
@@ -288,7 +283,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-currency-dollar"
-                    style={{ fontSize: "20px", color: "#10b981" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Doanh thu hôm nay
@@ -322,7 +317,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-clock"
-                    style={{ fontSize: "20px", color: "#8b5cf6" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Thời gian TB

@@ -3,10 +3,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.jsx";
 import GoogleLoginButton from "../components/GoogleLoginButton.jsx";
-import "./BackGround.css";
-import "./Login.css";
-import { Form, Button, Alert } from "react-bootstrap";
+import { Alert } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+import logo from "../assets/image/logo.png";
 
 function Login() {
   // Điều hướng và xác thực
@@ -57,7 +56,7 @@ function Login() {
   }, []);
 
   // Xử lý đăng nhập
-  async function HandleClick(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const { email, password } = form;
@@ -112,152 +111,110 @@ function Login() {
     }
   }
 
-  // Các phần giao diện phụ
-  const suggestion = (
-    <div className="title">
-      <h1>Đăng nhập</h1>
-    </div>
-  );
-
-  const directToSignUp = (
-    <div className="login">
-      <label>Chưa có tài khoản? </label>{" "}
-      <Link
-        to="/signup"
-        className="ml-1 font-semibold text-[#2bf0b5]! hover:text-[#00ffc6]! no-underline!
-        hover:[text-shadow:0_0_5px_#00ffc6,0_0_10px_#00ffc6,0_0_15px_#00ffc6]!"
-      >
-        Đăng ký
-      </Link>
-    </div>
-  );
-
-  const helper = (
-    <div className="mt-3 space-y-4">
-      <Form.Check
-        type="checkbox"
-        label="Ghi nhớ"
-        checked={remember}
-        onChange={(e) => setRemember(e.target.checked)}
-        style={{ color: "#eaeaea" }}
-      />
-      <div className="flex flex-col justify-center items-center gap-4 mt-4">
-        <div className="w-full flex items-center justify-center">
-          <div className="flex-1 border-t border-gray-500"></div>
-          <span className="px-3 text-white text-sm">Hoặc</span>
-          <div className="flex-1 border-t border-gray-500"></div>
-        </div>
-
-        {/* Google Login Button */}
-        <GoogleLoginButton />
-      </div>
-    </div>
-  );
-
-  // Form đăng nhập
-  const loginForm = (
-    <div className="form-fields">
-      <Form.Group className="mb-3" controlId="formBasicEmail">
-        <Form.Label style={{ color: "#eaeaea", fontWeight: 600 }}>
-          Email
-        </Form.Label>
-        <Form.Control
-          name="email"
-          type="email"
-          placeholder="example@gmail.com"
-          value={form.email}
-          onChange={handleChangeValue}
-          onFocus={handleFocus}
-          style={{
-            backgroundColor: "#253340",
-            color: "#fff",
-            border: "1px solid #333",
-            borderRadius: "10px",
-            padding: "12px 14px",
-            fontSize: "15px",
-            borderColor: loginErr ? "red" : "#333",
-            boxShadow: loginErr ? "0 0 6px rgba(255, 0, 0, 1)" : "none",
-          }}
-          required
-        />
-      </Form.Group>
-
-      <Form.Group className="mb-3" controlId="formBasicPassword">
-        <Form.Label style={{ color: "#eaeaea", fontWeight: 600 }}>
-          Mật khẩu
-        </Form.Label>
-        <Form.Control
-          name="password"
-          type="password"
-          placeholder="Nhập mật khẩu"
-          value={form.password}
-          onChange={handleChangeValue}
-          onFocus={handleFocus}
-          style={{
-            backgroundColor: "#253340",
-            color: "#fff",
-            border: "1px solid #333",
-            borderRadius: "10px",
-            padding: "12px 14px",
-            fontSize: "15px",
-            borderColor: loginErr ? "red" : "#333",
-            boxShadow: loginErr ? "0 0 6px rgba(255, 0, 0, 1)" : "none",
-          }}
-          required
-        />
-      </Form.Group>
-
-      {loginErr && (
-        <Alert variant="danger" className="mb-3" style={{ fontSize: "14px" }}>
-          {loginErr}
-        </Alert>
-      )}
-
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        style={{
-          background: "linear-gradient(90deg, #2bf0b5, #00ffc6)",
-          border: "none",
-          borderRadius: "10px",
-          padding: "14px",
-          fontSize: "16px",
-          fontWeight: 600,
-          width: "100%",
-          color: "#000000",
-          transition: "all 0.4s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.background =
-            "linear-gradient(90deg, #5fffd4, #2bf0b5)";
-          e.target.style.boxShadow =
-            "0 0 8px #00ffc6, 0 0 16px #00ffc6, 0 0 24px #00ffc6";
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.background =
-            "linear-gradient(90deg, #2bf0b5, #00ffc6)";
-          e.target.style.boxShadow = "none";
-        }}
-      >
-        {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
-      </Button>
-    </div>
-  );
-
   return (
-    <div className="login-page">
-      <div className="background">
-        <Link to="/">
-          <img className="logo" src="src/assets/image/logo.png" alt="Logo" />
-        </Link>
-        <div className="container">
-          <Form className="form-container" onSubmit={HandleClick}>
-            {suggestion}
-            {directToSignUp}
-            {loginForm}
-            {helper}
-          </Form>
+    <div className="flex justify-start min-h-screen bg-green-50">
+      <div className="w-[400px] bg-white rounded-xl shadow p-8">
+
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Link to="/">
+            <img src={logo} alt="Logo" className="h-16 object-contain" />
+          </Link>
         </div>
+
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-semibold text-gray-800">Đăng nhập</h1>
+        </div>
+
+        {/* Form */}
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              placeholder="example@gmail.com"
+              value={form.email}
+              onChange={handleChangeValue}
+              onFocus={handleFocus}
+              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${loginErr ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
+                }`}
+              required
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mật khẩu
+            </label>
+            <input
+              name="password"
+              type="password"
+              placeholder="Nhập mật khẩu"
+              value={form.password}
+              onChange={handleChangeValue}
+              onFocus={handleFocus}
+              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${loginErr ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
+                }`}
+              required
+            />
+          </div>
+
+          {/* Error message */}
+          {loginErr && (
+            <Alert variant="danger" className="text-sm py-2">
+              {loginErr}
+            </Alert>
+          )}
+
+          {/* Remember Me */}
+          <div className="flex items-center gap-2">
+            <input
+              id="remember"
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-400"
+            />
+            <label htmlFor="remember" className="text-sm text-gray-700 select-none">
+              Ghi nhớ đăng nhập
+            </label>
+          </div>
+
+          {/* Button */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#2bf0b5] hover:bg-[#00ffc6] cursor-pointer"
+              }`}
+          >
+            {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
+          </button>
+
+          {/* Link */}
+          <div className="text-center mt-4 text-sm">
+            <span className="text-gray-600">Chưa có tài khoản?</span>
+            <Link
+              to="/signup"
+              className="!text-[#2bf0b5] !font-semibold ml-1 !no-underline"
+            >
+              Đăng ký
+            </Link>
+          </div>
+          <div className="flex flex-col justify-center items-center gap-4">
+            <div className="w-full flex items-center justify-center">
+              <div className="flex-1 border-t border-gray-300"></div>
+              <span className="px-3 text-gray-500 text-sm">Hoặc</span>
+              <div className="flex-1 border-t border-gray-300"></div>
+            </div>
+            <GoogleLoginButton />
+          </div>
+        </form>
       </div>
     </div>
   );
