@@ -169,7 +169,7 @@ export default function StationOverview() {
     }
   };
 
-  // --- 💡 USEEFFECT ĐÃ ĐƯỢC CẬP NHẬT ĐỂ POLLING ---
+  // --- USEEFFECT ĐÃ ĐƯỢC CẬP NHẬT ĐỂ POLLING ---
   useEffect(() => {
     fetchChargingPoints(true); // Tải lần đầu
 
@@ -259,13 +259,6 @@ export default function StationOverview() {
     }
   };
 
-  const totalPoints = chargingPoints.length;
-  const activePoints = chargingPoints.filter(
-    (p) =>
-      getStatusInfo(p).text === "Sẵn sàng" ||
-      getStatusInfo(p).text === "Đang sạc"
-  ).length;
-
   if (loading && chargingPoints.length === 0) {
     return (
       <Container className="text-center py-5">
@@ -294,7 +287,6 @@ export default function StationOverview() {
           {selectedPoint && (
             <div className="d-flex gap-2 mt-3">
               <Button
-                variant="warning"
                 className="w-50"
                 onClick={() => handleUpdateStatus("MAINTENANCE")}
               >
@@ -303,7 +295,7 @@ export default function StationOverview() {
               <Button
                 variant="secondary"
                 className="w-50"
-                onClick={() => handleUpdateStatus("OFFLINE")}
+                onClick={() => handleUpdateStatus("OUT_OF_SERVICE")}
               >
                 Tạm dừng
               </Button>
@@ -365,30 +357,8 @@ export default function StationOverview() {
         </Modal.Footer>
       </Modal>
 
-      {/* Tên trạm */}
-      <h4 className="mb-2">
-        Trạm sạc: {chargingPoints[0]?.stationName || "Đang tải..."}
-      </h4>
-      <Row className="mb-4">
-        <Col md={3}>
-          <Card className="text-center shadow-sm">
-            <Card.Body>
-              <h6 className="text-muted">Điểm sạc hoạt động</h6>
-              <h4>
-                {activePoints}/{totalPoints}
-              </h4>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-      <Button
-        variant="outline-primary"
-        onClick={() => fetchChargingPoints(true)} // Bấm nút này sẽ hiện spinner
-        disabled={loading}
-        className="mb-3"
-      >
-        {loading ? "Đang tải..." : "Tải lại dữ liệu"}
-      </Button>
+     
+      
       <Row xs={1} md={2} lg={3} className="g-3">
         {chargingPoints.map((point) => {
           const statusInfo = getStatusInfo(point);

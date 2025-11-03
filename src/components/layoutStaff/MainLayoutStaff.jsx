@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Container, Row, Col, Button, Card } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "./Header";
@@ -8,6 +8,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 export default function MainLayoutStaff({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const timerRef = useRef(null);
 
   // Staff profile data
   const [staffProfile, setStaffProfile] = useState(null);
@@ -22,12 +23,7 @@ export default function MainLayoutStaff({ children }) {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchStaffProfile();
-    fetchDashboardStats();
-  }, []);
-
-  const fetchStaffProfile = async () => {
+  const fetchStaffProfile = useCallback(async () => {
     try {
       console.log("📞 Fetching staff profile...");
       const response = await staffAPI.getStaffProfile();
@@ -40,16 +36,15 @@ export default function MainLayoutStaff({ children }) {
     } catch (error) {
       console.error("❌ Error fetching staff profile:", error);
     }
-  };
+  }, []);
 
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async (showLoadingSpinner = true) => {
     try {
-      setLoading(true);
+      if (showLoadingSpinner) setLoading(true);
       const response = await staffAPI.getStaffDashboard();
 
       const data =
         response.data?.result || response.result || response.data || {};
-
       // Update staff profile from dashboard API
       if (data.stationId) {
         setStaffProfile({
@@ -71,9 +66,29 @@ export default function MainLayoutStaff({ children }) {
     } catch (error) {
       console.error("Error fetching staff dashboard:", error);
     } finally {
-      setLoading(false);
+      if (showLoadingSpinner) setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchStaffProfile();
+    fetchDashboardStats(true); // Tải lần đầu với loading
+
+    // Thiết lập polling mỗi 30 giây cho dashboard stats
+    timerRef.current = setInterval(() => {
+      console.log("(Polling) Đang tải lại dashboard stats...");
+      fetchDashboardStats(false); // Tải lại ngầm
+    }, 30000);
+
+    // Cleanup khi unmount
+    return () => {
+      if (timerRef.current) {
+        console.log("Dọn dẹp: Dừng polling MainLayoutStaff.");
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [fetchStaffProfile, fetchDashboardStats]);
 
   // Format số tiền
   const formatRevenue = (value) => {
@@ -97,19 +112,14 @@ export default function MainLayoutStaff({ children }) {
       icon: "bi-gear",
     },
     {
-      path: "/staff/transactions",
-      label: "Giao dịch",
+      path: "/staff/payment-requests",
+      label: "Thanh toán",
       icon: "bi-currency-dollar",
     },
     {
-      path: "/staff/payment-requests",
+      path: "/staff/reports",
       label: "Sự cố",
       icon: "bi-exclamation-triangle",
-    },
-    {
-      path: "/staff/reports",
-      label: "Report",
-      icon: "bi-file-text",
     },
   ];
 
@@ -166,7 +176,7 @@ export default function MainLayoutStaff({ children }) {
                   }}
                 >
                   {stats.activePoints}/{stats.totalPoints} hoạt động
-                </span>
+                </span>{" "}
                 <Button
                   variant="dark"
                   className="d-flex align-items-center gap-2"
@@ -176,10 +186,11 @@ export default function MainLayoutStaff({ children }) {
                     fontSize: "14px",
                     fontWeight: "600",
                   }}
-                  onClick={() => window.location.reload()}
+                  onClick={() => fetchDashboardStats(true)}
+                  disabled={loading}
                 >
                   <i className="bi bi-arrow-clockwise"></i>
-                  Làm mới
+                  {loading ? "Đang tải..." : "Làm mới"}
                 </Button>
               </div>
             </div>
@@ -202,7 +213,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-activity"
-                    style={{ fontSize: "20px", color: "#10b981" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Điểm sạc hoạt động
@@ -238,7 +249,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-people"
-                    style={{ fontSize: "20px", color: "#3b82f6" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Phiên sạc hôm nay
@@ -272,7 +283,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-currency-dollar"
-                    style={{ fontSize: "20px", color: "#10b981" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Doanh thu hôm nay
@@ -306,7 +317,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-clock"
-                    style={{ fontSize: "20px", color: "#8b5cf6" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Thời gian TB
