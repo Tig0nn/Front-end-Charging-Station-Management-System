@@ -109,6 +109,10 @@ const apiServices = {
   },
 
   revenue: {
+    // Lấy doanh thu theo ngày
+    getDaily: (year, month, day) =>
+      api.get(`/api/revenue/daily?year=${year}&month=${month}&day=${day}`),
+
     // Lấy doanh thu theo tuần (ISO week format: week 1-53)
     getWeekly: (year, week) =>
       api.get(`/api/revenue/weekly?year=${year}&week=${week}`),

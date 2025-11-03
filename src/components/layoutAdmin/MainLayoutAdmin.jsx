@@ -50,10 +50,14 @@ const MainLayoutAdmin = ({ children }) => {
 
   // Navigation tabs
   const tabs = [
-    { path: "/admin/dashboard", label: "Tổng quan", icon: "bi-bar-chart" },
+    { path: "/admin/reports", label: "Phân tích", icon: "bi-graph-up" },
     { path: "/admin/stations", label: "Trạm sạc", icon: "bi-geo-alt" },
     { path: "/admin/users", label: "Người dùng", icon: "bi-people" },
-    { path: "/admin/reports", label: "Phân tích", icon: "bi-graph-up" },
+    {
+      path: "/admin/incidents",
+      label: "Sự cố",
+      icon: "bi-exclamation-triangle",
+    },
   ];
 
   const isActiveTab = (path) => location.pathname === path;

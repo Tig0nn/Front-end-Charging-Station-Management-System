@@ -30,6 +30,7 @@ const RevenueChart = () => {
   const [period, setPeriod] = useState("weekly");
   const [totalRevenue, setTotalRevenue] = useState(0);
 
+  // Hàm tính số tuần ISO (Thứ 2 là ngày đầu tuần)
   const getISOWeekNumber = (date) => {
     const target = new Date(date.valueOf());
     const dayNum = (date.getDay() + 6) % 7; // Monday = 0
@@ -41,6 +42,52 @@ const RevenueChart = () => {
     }
     return 1 + Math.ceil((firstThursday - target) / 604800000);
   };
+
+  // Lấy ngày đầu tuần (Thứ 2) theo chuẩn ISO
+  const getMonday = (date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Nếu Chủ nhật thì lùi 6 ngày
+    return new Date(d.setDate(diff));
+  };
+
+  // Lấy tất cả các ngày trong tuần hiện tại
+  const getCurrentWeekDays = () => {
+    const monday = getMonday(new Date());
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday);
+      day.setDate(monday.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  // Lấy tất cả các tuần trong tháng hiện tại
+  const getCurrentMonthWeeks = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    // Ngày đầu và cuối tháng
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const weeks = [];
+    let currentMonday = getMonday(firstDay);
+
+    while (currentMonday <= lastDay) {
+      const weekNum = getISOWeekNumber(currentMonday);
+      weeks.push({
+        weekNumber: weekNum,
+        startDate: new Date(currentMonday),
+      });
+      currentMonday.setDate(currentMonday.getDate() + 7);
+    }
+
+    return weeks;
+  };
+
   // Chart configuration
   const chartOptions = {
     responsive: true,
@@ -139,7 +186,6 @@ const RevenueChart = () => {
       setLoading(true);
       setError("");
 
-      let response;
       const currentYear = new Date().getFullYear();
       const currentMonth = new Date().getMonth() + 1;
 
@@ -147,132 +193,124 @@ const RevenueChart = () => {
         `🔧 Loading revenue data for period: ${selectedPeriod}, year: ${currentYear}, month: ${currentMonth}`
       );
 
-      if (selectedPeriod === "weekly") {
-        const currentWeek = getISOWeekNumber(new Date());
-        console.log(
-          `📅 Current ISO week: ${currentWeek}, year: ${currentYear}`
-        );
-
-        response = await revenueAPI.getWeekly(currentYear, currentWeek);
-      } else if (selectedPeriod === "monthly") {
-        // Get monthly data (current month)
-        response = await revenueAPI.getMonthly(currentYear, currentMonth);
-      } else if (selectedPeriod === "yearly") {
-        // Get yearly data
-        response = await revenueAPI.getYearly(currentYear);
-      }
-
-      console.log("📊 Revenue API response:", response);
-      console.log("📈 Response status:", response?.status);
-      console.log("📈 Response data:", response?.data);
-
-      // Handle response format: { code: 1000, result: [...] }
-      const data = response.data;
-      console.log("📈 Response data:", data);
-
-      if (data.code !== 1000) {
-        throw new Error(data.message || "API returned error");
-      }
-
-      const revenueData = data.result || [];
-      console.log("💰 Revenue data array:", revenueData);
-
-      // Generate labels based on period
       let labels = [];
       let processedData = [];
 
       if (selectedPeriod === "weekly") {
-        // For weekly data - check if backend returns daily breakdown
-        console.log("🔍 Processing weekly data:", revenueData);
+        // TUẦN NÀY: Hiển thị 7 ngày (Thứ 2 - Chủ nhật)
+        const weekDays = getCurrentWeekDays();
+        const dayLabels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+        const dailyRevenue = new Array(7).fill(0);
 
-        // Check if data has day-by-day breakdown (dayOfWeek: 1-7, where 1=Monday, 7=Sunday)
-        const hasDailyData =
-          revenueData.length > 0 &&
-          (revenueData[0].dayOfWeek !== undefined ||
-            revenueData[0].date !== undefined);
+        // Gọi API /api/revenue/daily cho từng ngày trong tuần
+        for (let i = 0; i < weekDays.length; i++) {
+          const day = weekDays[i];
+          try {
+            const response = await revenueAPI.getDaily(
+              day.getFullYear(),
+              day.getMonth() + 1,
+              day.getDate()
+            );
 
-        if (hasDailyData) {
-          // Backend returns daily data with ISO week format
-          console.log("✅ Backend provided daily breakdown (ISO week format)");
-
-          const dayNames = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]; // Monday to Sunday
-          const dailyRevenue = new Array(7).fill(0);
-
-          if (revenueData[0].dayOfWeek !== undefined) {
-            // Format 1: [{dayOfWeek: 1, totalRevenue: 50000}, ...] where 1=Monday
-            revenueData.forEach((item) => {
-              if (item.dayOfWeek >= 1 && item.dayOfWeek <= 7) {
-                dailyRevenue[item.dayOfWeek - 1] = item.totalRevenue || 0;
-              }
-            });
-          } else if (revenueData[0].date !== undefined) {
-            // Format 2: [{date: "2025-10-29", totalRevenue: 50000}, ...]
-            revenueData.forEach((item) => {
-              const dateObj = new Date(item.date);
-              const dayOfWeek = (dateObj.getDay() + 6) % 7; // Convert to ISO: 0=Monday, 6=Sunday
-              dailyRevenue[dayOfWeek] = item.totalRevenue || 0;
-            });
+            const data = response.data;
+            if (data.code === 1000 && data.result) {
+              // Tổng doanh thu của tất cả trạm trong ngày này
+              const dayRevenue = data.result.reduce(
+                (sum, station) => sum + (station.totalRevenue || 0),
+                0
+              );
+              dailyRevenue[i] = dayRevenue;
+            }
+          } catch (err) {
+            console.warn(
+              `Không thể tải dữ liệu ngày ${day.toISOString()}:`,
+              err
+            );
+            dailyRevenue[i] = 0;
           }
-
-          labels = dayNames;
-          processedData = dailyRevenue;
-        } else {
-          // Backend returns only total weekly revenue - show as single bar
-          console.log("⚠️ Backend only provided total weekly revenue");
-
-          const totalWeeklyRevenue = revenueData.reduce(
-            (sum, station) => sum + (station.totalRevenue || 0),
-            0
-          );
-
-          const currentWeek = getISOWeekNumber(new Date());
-          labels = [`Tuần ${currentWeek}`];
-          processedData = [totalWeeklyRevenue];
         }
+
+        labels = dayLabels;
+        processedData = dailyRevenue;
       } else if (selectedPeriod === "monthly") {
-        // For monthly data - sum all stations for the month
-        const totalMonthlyRevenue = revenueData.reduce(
-          (sum, station) => sum + (station.totalRevenue || 0),
-          0
-        );
-        labels = [`T${currentMonth}`];
-        processedData = [totalMonthlyRevenue];
-      } else if (selectedPeriod === "yearly") {
-        // For yearly data - if result contains monthly breakdown, use it
-        if (revenueData.length > 0 && revenueData[0].month) {
-          labels = [
-            "T1",
-            "T2",
-            "T3",
-            "T4",
-            "T5",
-            "T6",
-            "T7",
-            "T8",
-            "T9",
-            "T10",
-            "T11",
-            "T12",
-          ];
-          processedData = labels.map((_, index) => {
-            const monthData = revenueData.filter(
-              (item) => item.month === index + 1
+        // THÁNG NÀY: Hiển thị các tuần trong tháng (Tuần 1, 2, 3, 4...)
+        const monthWeeks = getCurrentMonthWeeks();
+        const weeklyRevenue = [];
+
+        // Gọi API /api/revenue/weekly cho từng tuần trong tháng
+        for (const weekInfo of monthWeeks) {
+          try {
+            const response = await revenueAPI.getWeekly(
+              weekInfo.startDate.getFullYear(),
+              weekInfo.weekNumber
             );
-            return monthData.reduce(
-              (sum, station) => sum + (station.totalRevenue || 0),
-              0
+
+            const data = response.data;
+            if (data.code === 1000 && data.result) {
+              // Tổng doanh thu của tuần này
+              const weekRevenue = data.result.reduce(
+                (sum, station) => sum + (station.totalRevenue || 0),
+                0
+              );
+              weeklyRevenue.push(weekRevenue);
+            } else {
+              weeklyRevenue.push(0);
+            }
+          } catch (err) {
+            console.warn(
+              `Không thể tải dữ liệu tuần ${weekInfo.weekNumber}:`,
+              err
             );
-          });
-        } else {
-          // If result is total yearly, show just one bar
-          const totalYearlyRevenue = revenueData.reduce(
-            (sum, station) => sum + (station.totalRevenue || 0),
-            0
-          );
-          labels = [`${currentYear}`];
-          processedData = [totalYearlyRevenue];
+            weeklyRevenue.push(0);
+          }
         }
+
+        // Hiển thị số thứ tự tuần trong tháng: Tuần 1, 2, 3, 4...
+        labels = monthWeeks.map((w, index) => `Tuần ${index + 1}`);
+        processedData = weeklyRevenue;
+      } else if (selectedPeriod === "yearly") {
+        // NĂM NÀY: Hiển thị 12 tháng trong năm
+        labels = [
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7",
+          "T8",
+          "T9",
+          "T10",
+          "T11",
+          "T12",
+        ];
+        const monthlyRevenue = new Array(12).fill(0);
+
+        // Gọi API /api/revenue/monthly cho từng tháng
+        for (let month = 1; month <= 12; month++) {
+          try {
+            const response = await revenueAPI.getMonthly(currentYear, month);
+
+            const data = response.data;
+            if (data.code === 1000 && data.result) {
+              // Tổng doanh thu của tháng này
+              const revenue = data.result.reduce(
+                (sum, station) => sum + (station.totalRevenue || 0),
+                0
+              );
+              monthlyRevenue[month - 1] = revenue;
+            }
+          } catch (err) {
+            console.warn(`Không thể tải dữ liệu tháng ${month}:`, err);
+            monthlyRevenue[month - 1] = 0;
+          }
+        }
+
+        processedData = monthlyRevenue;
       }
+
+      console.log("📈 Processed labels:", labels);
+      console.log("💰 Processed data:", processedData);
 
       // Create gradient colors (green theme)
       const maxValue = Math.max(...processedData);

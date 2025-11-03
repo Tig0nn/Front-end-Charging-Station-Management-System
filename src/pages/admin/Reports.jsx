@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Spinner,
-  Alert,
-} from "react-bootstrap";
+import { Row, Col, Card, Form, Spinner, Alert } from "react-bootstrap";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,6 +13,7 @@ import {
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 import { revenueAPI } from "../../lib/apiServices.js";
+import RevenueChart from "../../components/charts/RevenueChart.jsx";
 
 // Đăng ký các thành phần cần thiết cho Chart.js
 ChartJS.register(
@@ -34,16 +27,7 @@ ChartJS.register(
   Legend
 );
 
-// Hàm định dạng tiền tệ
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
-
 const Reports = () => {
-  const [period, setPeriod] = useState("monthly");
   const [chartData, setChartData] = useState({
     labels: [],
     revenueData: [],
@@ -52,24 +36,16 @@ const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Load data from API
-  const loadReportsData = async (selectedPeriod) => {
+  // Load data from API - Hiển thị 6 tháng gần nhất
+  const loadReportsData = async () => {
     try {
       setLoading(true);
       setError("");
 
       const currentYear = new Date().getFullYear();
-      const currentMonth = new Date().getMonth() + 1;
-      let response;
 
-      if (selectedPeriod === "weekly") {
-        const currentWeek = Math.ceil(new Date().getDate() / 7);
-        response = await revenueAPI.getWeekly(currentYear, currentWeek);
-      } else if (selectedPeriod === "monthly") {
-        response = await revenueAPI.getMonthly(currentYear, currentMonth);
-      } else if (selectedPeriod === "yearly") {
-        response = await revenueAPI.getYearly(currentYear);
-      }
+      // Lấy dữ liệu của năm hiện tại
+      const response = await revenueAPI.getYearly(currentYear);
 
       const data = response.data;
       if (data.code !== 1000) {
@@ -78,78 +54,40 @@ const Reports = () => {
 
       const revenueData = data.result || [];
 
-      // Process data based on period
-      let labels = [];
-      let processedRevenue = [];
-      let processedSessions = [];
+      // Lấy 6 tháng gần nhất
+      const currentMonth = new Date().getMonth() + 1; // 1-12
+      const months = [];
+      const labels = [];
 
-      if (selectedPeriod === "weekly") {
-        labels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-        const totalRevenue = revenueData.reduce(
+      for (let i = 5; i >= 0; i--) {
+        let month = currentMonth - i;
+        let year = currentYear;
+
+        if (month <= 0) {
+          month += 12;
+          year -= 1;
+        }
+
+        months.push({ month, year });
+        labels.push(`T${month}`);
+      }
+
+      // Xử lý dữ liệu cho 6 tháng
+      const processedRevenue = months.map(({ month }) => {
+        const monthData = revenueData.filter((item) => item.month === month);
+        return monthData.reduce(
           (sum, station) => sum + (station.totalRevenue || 0),
           0
         );
-        const totalSessions = revenueData.reduce(
+      });
+
+      const processedSessions = months.map(({ month }) => {
+        const monthData = revenueData.filter((item) => item.month === month);
+        return monthData.reduce(
           (sum, station) => sum + (station.totalSessions || 0),
           0
         );
-
-        // Distribute across week
-        const variations = [1.1, 1.0, 1.2, 1.3, 1.4, 0.9, 0.8];
-        processedRevenue = variations.map((factor) =>
-          Math.floor((totalRevenue / 7) * factor)
-        );
-        processedSessions = variations.map((factor) =>
-          Math.floor((totalSessions / 7) * factor)
-        );
-      } else if (selectedPeriod === "monthly") {
-        labels = [`T${currentMonth}`];
-        processedRevenue = [
-          revenueData.reduce(
-            (sum, station) => sum + (station.totalRevenue || 0),
-            0
-          ),
-        ];
-        processedSessions = [
-          revenueData.reduce(
-            (sum, station) => sum + (station.totalSessions || 0),
-            0
-          ),
-        ];
-      } else if (selectedPeriod === "yearly") {
-        labels = [
-          "T1",
-          "T2",
-          "T3",
-          "T4",
-          "T5",
-          "T6",
-          "T7",
-          "T8",
-          "T9",
-          "T10",
-          "T11",
-          "T12",
-        ];
-        processedRevenue = labels.map((_, index) => {
-          const monthData = revenueData.filter(
-            (item) => item.month === index + 1
-          );
-          return monthData.reduce(
-            (sum, station) => sum + (station.totalRevenue || 0),
-            0
-          );
-        });
-        processedSessions = labels.map((_, index) => {
-          const monthData = revenueData.filter(
-            (item) => item.month === index + 1
-          );
-          return monthData.reduce(
-            (sum, station) => sum + (station.totalSessions || 0),
-            0
-          );
-        });
-      }
+      });
 
       setChartData({
         labels,
@@ -164,10 +102,10 @@ const Reports = () => {
     }
   };
 
-  // Load data when component mounts or period changes
+  // Load data when component mounts
   useEffect(() => {
-    loadReportsData(period);
-  }, [period]);
+    loadReportsData();
+  }, []);
 
   // Cấu hình chung cho các biểu đồ
   const commonOptions = {
@@ -224,14 +162,16 @@ const Reports = () => {
     ],
   };
 
-  const totalRevenue = chartData.revenueData.reduce((sum, val) => sum + val, 0);
-  const totalSessions = chartData.sessionData.reduce(
-    (sum, val) => sum + val,
-    0
-  );
-
   return (
-    <Container fluid className="p-4">
+    <>
+      {/* Biểu đồ doanh thu chính từ Dashboard */}
+      <Row className="mb-4">
+        <Col xs={12}>
+          <RevenueChart />
+        </Col>
+      </Row>
+
+      {/* 2 biểu đồ phụ: Tăng trưởng và Phiên sạc */}
       {loading ? (
         <div className="text-center py-5">
           <Spinner animation="border" variant="primary" />
@@ -243,75 +183,32 @@ const Reports = () => {
           <p>{error}</p>
         </Alert>
       ) : (
-        <>
-          <Row className="mb-4">
-            <Col md={12}>
-              <Card>
-                <Card.Header className="d-flex justify-content-between align-items-center">
-                  <h4 className="mb-0">Báo cáo tổng quan</h4>
-                  <Form.Select
-                    size="sm"
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                    style={{ width: "150px" }}
-                  >
-                    <option value="weekly">Theo Tuần</option>
-                    <option value="monthly">Theo Tháng</option>
-                    <option value="yearly">Theo Năm</option>
-                  </Form.Select>
-                </Card.Header>
-              </Card>
-            </Col>
-          </Row>
-
-          <Row className="mb-4">
-            <Col md={6}>
-              <Card className="h-100">
-                <Card.Body>
-                  <h5 className="text-muted">Tổng doanh thu</h5>
-                  <h2 className="fw-bold text-success">
-                    {formatCurrency(totalRevenue)}
-                  </h2>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={6}>
-              <Card className="h-100">
-                <Card.Body>
-                  <h5 className="text-muted">Tổng số phiên sạc</h5>
-                  <h2 className="fw-bold text-primary">
-                    {totalSessions.toLocaleString("vi-VN")}
-                  </h2>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col lg={6} className="mb-4">
-              <Card>
-                <Card.Header>
-                  <Card.Title>Biểu đồ tăng trưởng doanh thu</Card.Title>
-                </Card.Header>
-                <Card.Body style={{ height: "400px" }}>
-                  <Line options={commonOptions} data={revenueChartData} />
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col lg={6} className="mb-4">
-              <Card>
-                <Card.Header>
-                  <Card.Title>Biểu đồ số phiên sạc</Card.Title>
-                </Card.Header>
-                <Card.Body style={{ height: "400px" }}>
-                  <Bar options={commonOptions} data={sessionChartData} />
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </>
+        <Row>
+          <Col lg={6} className="mb-4">
+            <Card>
+              <Card.Header>
+                <Card.Title className="mb-0">
+                  Biểu đồ tăng trưởng doanh thu
+                </Card.Title>
+              </Card.Header>
+              <Card.Body style={{ height: "400px" }}>
+                <Line options={commonOptions} data={revenueChartData} />
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={6} className="mb-4">
+            <Card>
+              <Card.Header>
+                <Card.Title className="mb-0">Biểu đồ số phiên sạc</Card.Title>
+              </Card.Header>
+              <Card.Body style={{ height: "400px" }}>
+                <Bar options={commonOptions} data={sessionChartData} />
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       )}
-    </Container>
+    </>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   Badge,
   Container,
   ListGroup,
+  Dropdown,
 } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { vehiclesAPI } from "../../lib/apiServices.js";
@@ -28,6 +29,7 @@ const VehicleInfoPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState(""); // Error trong delete modal
 
   // Form states - CHỈ CẦN licensePlate và model
   const [formData, setFormData] = useState({
@@ -169,8 +171,7 @@ const VehicleInfoPage = () => {
   const deleteVehicle = async (vehicleId) => {
     try {
       setFormLoading(true);
-      setError("");
-      setSuccessMessage("");
+      setDeleteError(""); // Clear delete modal error
 
       await vehiclesAPI.deleteVehicle(vehicleId);
 
@@ -198,7 +199,17 @@ const VehicleInfoPage = () => {
         errorMessage = err.message;
       }
 
-      setError(errorMessage);
+      // Xử lý lỗi foreign key constraint
+      if (
+        errorMessage.includes("foreign key constraint") ||
+        errorMessage.includes("charging_sessions") ||
+        errorMessage.includes("Cannot delete")
+      ) {
+        errorMessage =
+          "Không thể xóa xe này vì đang có phiên sạc liên quan. Vui lòng hoàn thành hoặc hủy các phiên sạc trước khi xóa xe.";
+      }
+
+      setDeleteError(errorMessage); // Set error trong modal
       return { success: false, error: errorMessage };
     } finally {
       setFormLoading(false);
@@ -397,6 +408,7 @@ const VehicleInfoPage = () => {
   // Open delete modal
   const openDeleteModal = (vehicle) => {
     setVehicleToDelete(vehicle);
+    setDeleteError(""); // Clear error trước khi mở modal
     setShowDeleteModal(true);
   };
 
@@ -422,33 +434,28 @@ const VehicleInfoPage = () => {
               {vehicle.licensePlate}
             </Badge>
           </div>
-          <div className="dropdown">
-            <Button
-              variant="link"
-              className="text-muted p-0"
-              data-bs-toggle="dropdown"
+          <Dropdown align="end">
+            <Dropdown.Toggle
+              as="button"
+              className="btn btn-link text-muted p-0 border-0"
+              style={{ boxShadow: "none", background: "none" }}
+              bsPrefix="custom-dropdown"
             >
               <i className="bi bi-three-dots-vertical"></i>
-            </Button>
-            <ul className="dropdown-menu dropdown-menu-end">
-              <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => openEditModal(vehicle)}
-                >
-                  <i className="bi bi-pencil me-2"></i>Chỉnh sửa
-                </button>
-              </li>
-              <li>
-                <button
-                  className="dropdown-item text-danger"
-                  onClick={() => openDeleteModal(vehicle)}
-                >
-                  <i className="bi bi-trash me-2"></i>Xóa
-                </button>
-              </li>
-            </ul>
-          </div>
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => openEditModal(vehicle)}>
+                <i className="bi bi-pencil me-2"></i>Chỉnh sửa
+              </Dropdown.Item>
+              <Dropdown.Item
+                onClick={() => openDeleteModal(vehicle)}
+                className="text-danger"
+              >
+                <i className="bi bi-trash me-2"></i>Xóa
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
         </div>
 
         <div className="vehicle-details">
@@ -841,7 +848,13 @@ const VehicleInfoPage = () => {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+      <Modal
+        show={showDeleteModal}
+        onHide={() => {
+          setShowDeleteModal(false);
+          setDeleteError(""); // Clear error khi đóng modal
+        }}
+      >
         <Modal.Header closeButton>
           <Modal.Title>
             <i className="bi bi-exclamation-triangle text-danger me-2"></i>
@@ -851,6 +864,14 @@ const VehicleInfoPage = () => {
         <Modal.Body>
           {vehicleToDelete && (
             <div>
+              {/* Hiển thị lỗi nếu có */}
+              {deleteError && (
+                <Alert variant="danger" className="mb-3">
+                  <i className="bi bi-exclamation-circle me-2"></i>
+                  {deleteError}
+                </Alert>
+              )}
+
               <p>Bạn có chắc chắn muốn xóa xe này không?</p>
               <div className="bg-light p-3 rounded">
                 <strong>
@@ -868,7 +889,7 @@ const VehicleInfoPage = () => {
                 </small>
               </div>
               <p className="text-danger mt-2 mb-0">
-                <small> Hành động này không thể hoàn tác!</small>
+                <small>⚠️ Hành động này không thể hoàn tác!</small>
               </p>
             </div>
           )}
@@ -876,7 +897,10 @@ const VehicleInfoPage = () => {
         <Modal.Footer>
           <Button
             variant="secondary"
-            onClick={() => setShowDeleteModal(false)}
+            onClick={() => {
+              setShowDeleteModal(false);
+              setDeleteError(""); // Clear error khi hủy
+            }}
             disabled={formLoading}
           >
             Hủy

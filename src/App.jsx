@@ -4,7 +4,7 @@ import Login from "./Pages/Login";
 import Signup from "./Pages/SignUp";
 import GoogleCallback from "./Pages/GoogleCallback";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
-import { Dashboard, NotFound, Reports, StationsList, UsersList } from "./Pages";
+import { NotFound, Reports, StationsList, UsersList } from "./Pages";
 import EVChargingLanding from "./Pages/EVChargingLanding";
 import MainLayoutDriver from "./components/layoutDriver/MainLayoutDriver";
 import MapPage from "./Pages/driver/MapPage";
@@ -130,8 +130,12 @@ function App() {
         element={
           <MainLayoutAdmin>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              {/* Default route - Phân tích */}
+              <Route path="/" element={<Reports />} />
+
+              {/* Reports Routes - Trang phân tích */}
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/reports/*" element={<Reports />} />
 
               {/* Stations Routes */}
               <Route path="/stations" element={<StationsList />} />
@@ -140,9 +144,7 @@ function App() {
               {/* Users Routes */}
               <Route path="/users" element={<UsersList />} />
 
-              {/* Reports Routes */}
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/reports/*" element={<Reports />} />
+              {/* Incidents */}
               <Route path="/incidents" element={<AdminIncidents />} />
 
               {/* 404 Page */}
