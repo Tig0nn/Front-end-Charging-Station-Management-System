@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./BackGround.css"; // import nền gradient
 import { usersAPI } from "../lib/apiServices"; // dùng usersAPI cho update + get info
 import { useAuth } from "../hooks/useAuth.jsx";
 export default function AddUserInfoPage() {

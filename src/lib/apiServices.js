@@ -289,7 +289,6 @@ const apiServices = {
       api.post("/api/payment/cash/request", { sessionId }),
   },
 
-  // Đưa staff ra ngoài (ngang cấp với chargingSessions)
   staff: {
     getAllReports: () => api.get("/api/staff/incidents"),
     getAllStaffs: () => api.get("/api/stations/staff/all"),
@@ -297,7 +296,7 @@ const apiServices = {
     getStaffProfile: () => api.get("/api/staff/profile"),
     getChargingPoint: () => api.get("/api/staff/my-station/charging-points"),
     submitReport: (reportData) => api.post("/api/staff/incidents", reportData),
-    // Pending cash payment requests for staff approval
+    getPaymentHistory: (stationId) => api.get(`/api/stations/${stationId}/payment-history`),
     approvePendingPaymentRequest: (paymentId) =>
       api.put(`/api/cash-payments/staff/confirm/${paymentId}`),
     getPendingPaymentRequests: () =>

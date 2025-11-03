@@ -39,17 +39,24 @@ const StaffPaymentRequests = () => {
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedReq, setSelectedReq] = useState(null);
+  const [history, setHistory] = useState([]);
 
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [filterMethod, setFilterMethod] = useState("ALL");
 
   const load = async () => {
     try {
       setError("");
       setLoading(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const stationId = user?.stationId;
       const res = await staffAPI.getPendingPaymentRequests();
+      const history = await staffAPI.getPaymentHistory(stationId);
+      setHistory(Array.isArray(history?.data?.result) ? history.data.result : []);
+      console.log("Fetched payment history:", history.data);
       console.log("Fetched pending payment requests:", res.data);
       const list = res?.data?.result || res?.data || [];
       setItems(Array.isArray(list) ? list : []);
@@ -57,7 +64,7 @@ const StaffPaymentRequests = () => {
       setError(
         e?.response?.data?.message ||
         e?.message ||
-        "Không thể tải yêu cầu thanh toán"
+        "Tải dữ liệu thất bại."
       );
       setItems([]);
     } finally {
@@ -75,7 +82,10 @@ const StaffPaymentRequests = () => {
     setSubmitSuccess("");
     setShowModal(true);
   };
-
+  const filteredHistory = history.filter((r) => {
+    if (filterMethod === "ALL") return true;
+    return r.paymentMethod === filterMethod;
+  });
   const handleSubmit = async () => {
     if (!selectedReq?.paymentId) return;
     try {
@@ -151,9 +161,73 @@ const StaffPaymentRequests = () => {
                     <td>{(Number(r.energyKwh || 0)).toFixed(1)} kW</td>
                     <td>{formatCurrency(r.amount)}</td>
                     <td>
-                      <Button variant="dark" size="sm" onClick={() => approveAndOpenModal(r)}>
+                      <button className="p-1 font-normal text-white !rounded-md bg-[#2bf0b5] !border-none hover:bg-[#00ffc6]" variant="dark" size="sm" onClick={() => approveAndOpenModal(r)}>
                         Duyệt yêu cầu
-                      </Button>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card.Body>
+      </Card>
+      <Card className="shadow-sm mt-10">
+        <Card.Body className="p-4">
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <Card.Title as="h5" className="mb-0">Lịch sử giao dịch tại trạm</Card.Title>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <select
+                value={filterMethod}
+                onChange={(e) => setFilterMethod(e.target.value)}
+                className="form-select w-auto focus:outline-none focus:ring-0 outline-none shadow-none"
+              >
+                <option value="ALL">Tất cả</option>
+                <option value="ZALOPAY">ZaloPay</option>
+                <option value="CASH">Tiền mặt</option>
+              </select>
+            </div>
+          </div>
+          {loading ? (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
+              <div className="spinner-border text-primary" />
+            </div>
+          ) : error ? (
+            <div className="alert alert-danger" role="alert">
+              {error}
+            </div>
+          ) : history.length === 0 ? (
+            <div className="alert alert-info" role="alert">
+              Hiện không có lịch sử thanh toán.
+            </div>
+          ) : (
+            <Table responsive hover className="align-middle">
+              <thead className="table-light">
+                <tr>
+                  <th>Thời gian thanh toán</th>
+                  <th>Trụ sạc</th>
+                  <th>Khách hàng</th>
+                  <th>Số tiền</th>
+                  <th>Phương thức</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredHistory.map((r) => (
+                  <tr key={r.paymentId}>
+                    <td>
+                      {formatDateTime(r.paymentTime).date}<br /><div className="text-muted small">{formatDateTime(r.paymentTime).time}</div>
+                    </td>
+                    <td>{r.chargingPointName || "-"}</td>
+                    <td>
+                      {r.customerName || "-"}
+                    </td>
+                    <td>{formatCurrency(r.amount)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {r.paymentMethod === "ZALOPAY" ? (
+                        <span className="text-green-600 font-bold"><i class="bi bi-wallet mr-1"></i>ZaloPay</span>
+                      ) : (
+                        <span className="text-green-600 font-bold"><i class="bi bi-cash mr-1"></i>Tiền mặt</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -194,9 +268,9 @@ const StaffPaymentRequests = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Đóng
           </Button>
-          <Button variant="dark" onClick={handleSubmit} disabled={submitting}>
+          <button className="p-1.5 font-normal text-white !rounded-md bg-[#2bf0b5] !border-none hover:bg-[#00ffc6]" onClick={handleSubmit} disabled={submitting}>
             {submitting ? "Đang xử lý..." : "Xác nhận"}
-          </Button>
+          </button>
         </Modal.Footer>
       </Modal>
     </Container>

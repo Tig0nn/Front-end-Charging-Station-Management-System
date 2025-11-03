@@ -147,21 +147,6 @@ export default function MainLayoutStaff({ children }) {
                 </p>
               </div>
               <div className="d-flex align-items-center gap-3">
-                <span
-                  style={{
-                    backgroundColor: "#f3f4f6",
-                    color: "#111827",
-                    padding: "8px 16px",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    borderRadius: "8px",
-                    display: "inline-block",
-                    minWidth: "140px",
-                    textAlign: "center",
-                  }}
-                >
-                  {stats.activePoints}/{stats.totalPoints} hoạt động
-                </span>
                 <Button
                   variant="dark"
                   className="d-flex align-items-center gap-2"
@@ -197,7 +182,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-activity"
-                    style={{ fontSize: "20px", color: "#10b981" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Điểm sạc hoạt động
@@ -233,7 +218,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-people"
-                    style={{ fontSize: "20px", color: "#3b82f6" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Phiên sạc hôm nay
@@ -267,7 +252,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-currency-dollar"
-                    style={{ fontSize: "20px", color: "#10b981" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Doanh thu hôm nay
@@ -301,7 +286,7 @@ export default function MainLayoutStaff({ children }) {
                 <div className="d-flex align-items-center gap-2 mb-2">
                   <i
                     className="bi bi-clock"
-                    style={{ fontSize: "20px", color: "#8b5cf6" }}
+                    style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
                     Thời gian TB
