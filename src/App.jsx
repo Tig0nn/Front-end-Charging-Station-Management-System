@@ -17,7 +17,6 @@ import VehicleInfoPage from "./Pages/driver/VehicleInfoPage";
 import PaymentPage from "./Pages/driver/PaymentPage";
 import AddStation from "./Pages/admin/AddStation";
 import StaffReports from "./Pages/staff/StaffReports";
-import StaffTransactions from "./Pages/staff/StaffTransactions";
 import StaffPaymentRequests from "./Pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./Pages/driver/ProfileLayout";
 import NotificationPage from "./Pages/driver/NotificationPage";
@@ -158,11 +157,10 @@ function App() {
           <MainLayoutStaff>
             <Routes>
               {/* Route mặc định sẽ là trang trạm sạc */}
-              <Route path="/" element={<StationOverview />} />
+              <Route index element={<Navigate to="/staff/station" replace />} />
               <Route path="/station" element={<StationOverview />} />
 
               {/* Các route khác cho Staff */}
-              <Route path="/transactions" element={<StaffTransactions />} />
               <Route
                 path="/payment-requests"
                 element={<StaffPaymentRequests />}

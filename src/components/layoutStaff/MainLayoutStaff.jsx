@@ -97,19 +97,14 @@ export default function MainLayoutStaff({ children }) {
       icon: "bi-gear",
     },
     {
-      path: "/staff/transactions",
-      label: "Giao dịch",
+      path: "/staff/payment-requests",
+      label: "Thanh toán",
       icon: "bi-currency-dollar",
     },
     {
-      path: "/staff/payment-requests",
+      path: "/staff/reports",
       label: "Sự cố",
       icon: "bi-exclamation-triangle",
-    },
-    {
-      path: "/staff/reports",
-      label: "Report",
-      icon: "bi-file-text",
     },
   ];
 
