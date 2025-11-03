@@ -142,7 +142,7 @@ export default function Signup() {
     console.log(email, password, confirmed_password);
   };
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-green-50 signup-page">
+    <div className="flex justify-start min-h-screen bg-green-50">
       <div className="w-[400px] bg-white rounded-xl shadow p-8">
 
         <div className="flex justify-center mb-6">
