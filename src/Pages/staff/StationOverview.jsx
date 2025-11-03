@@ -169,7 +169,7 @@ export default function StationOverview() {
     }
   };
 
-  // --- 💡 USEEFFECT ĐÃ ĐƯỢC CẬP NHẬT ĐỂ POLLING ---
+  // --- USEEFFECT ĐÃ ĐƯỢC CẬP NHẬT ĐỂ POLLING ---
   useEffect(() => {
     fetchChargingPoints(true); // Tải lần đầu
 
@@ -258,13 +258,6 @@ export default function StationOverview() {
       setLoading(false); // Luôn tắt loading
     }
   };
-
-  const totalPoints = chargingPoints.length;
-  const activePoints = chargingPoints.filter(
-    (p) =>
-      getStatusInfo(p).text === "Sẵn sàng" ||
-      getStatusInfo(p).text === "Đang sạc"
-  ).length;
 
   if (loading && chargingPoints.length === 0) {
     return (
@@ -365,22 +358,7 @@ export default function StationOverview() {
         </Modal.Footer>
       </Modal>
 
-      {/* Tên trạm */}
-      <h4 className="mb-2">
-        Trạm sạc: {chargingPoints[0]?.stationName || "Đang tải..."}
-      </h4>
-      <Row className="mb-4">
-        <Col md={3}>
-          <Card className="text-center shadow-sm">
-            <Card.Body>
-              <h6 className="text-muted">Điểm sạc hoạt động</h6>
-              <h4>
-                {activePoints}/{totalPoints}
-              </h4>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+     
       <Button
         variant="outline-primary"
         onClick={() => fetchChargingPoints(true)} // Bấm nút này sẽ hiện spinner
