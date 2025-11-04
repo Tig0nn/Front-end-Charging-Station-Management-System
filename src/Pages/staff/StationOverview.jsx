@@ -187,7 +187,8 @@ export default function StationOverview() {
         timerRef.current = null;
       }
     };
-  }, []); // Chỉ chạy 1 lần
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Chỉ chạy 1 lần khi mount
 
   const handleShowStartModal = (point) => {
     setPointToStart(point);
@@ -357,8 +358,6 @@ export default function StationOverview() {
         </Modal.Footer>
       </Modal>
 
-     
-      
       <Row xs={1} md={2} lg={3} className="g-3">
         {chargingPoints.map((point) => {
           const statusInfo = getStatusInfo(point);
@@ -444,7 +443,7 @@ export default function StationOverview() {
                       {isCharging ? "Dừng sạc" : "Khởi động"}
                     </Button>
 
-                    {statusInfo.text !== "Đang sạc" && (
+                    {statusInfo.text !== "Đang sạc" && !isCharging && (
                       <Button
                         variant="warning"
                         className="w-50"
@@ -454,7 +453,7 @@ export default function StationOverview() {
                           setShowModal(true);
                         }}
                       >
-                        Chỉnh sửa
+                        Cài đặt
                       </Button>
                     )}
                   </div>

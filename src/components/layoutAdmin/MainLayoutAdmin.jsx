@@ -58,6 +58,11 @@ const MainLayoutAdmin = ({ children }) => {
       label: "Sự cố",
       icon: "bi-exclamation-triangle",
     },
+    {
+      path: "/admin/qr-codes",
+      label: "Mã QR",
+      icon: "bi-qr-code",
+    },
   ];
 
   const isActiveTab = (path) => location.pathname === path;

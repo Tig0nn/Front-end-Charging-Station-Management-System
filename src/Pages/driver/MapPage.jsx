@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import "./MapPage.css";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices.js";
@@ -14,6 +14,7 @@ import {
 
 export default function MapPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,6 +27,7 @@ export default function MapPage() {
   const [showRoute, setShowRoute] = useState(false);
   const [routeDestination, setRouteDestination] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [preSelectedPointId, setPreSelectedPointId] = useState(null); // For QR code flow
 
   // Charging session states
   const [showChargingPanel, setShowChargingPanel] = useState(false);
@@ -55,6 +57,43 @@ export default function MapPage() {
     fetchStations();
     getUserLocation();
   }, []);
+
+  // --- 🆕 HANDLE QR CODE FLOW ---
+  useEffect(() => {
+    const pointId = searchParams.get("pointId");
+    const stationId = searchParams.get("stationId");
+
+    if (pointId && stations.length > 0) {
+      console.log(
+        "🔍 QR Code detected! pointId:",
+        pointId,
+        "stationId:",
+        stationId
+      );
+
+      // Tìm station chứa charging point này
+      let targetStation = null;
+
+      if (stationId) {
+        // Nếu có stationId từ QR, tìm trực tiếp
+        targetStation = stations.find((s) => s.stationId === stationId);
+      }
+
+      if (targetStation) {
+        console.log("✅ Found station from QR:", targetStation);
+        setPreSelectedPointId(pointId);
+        setStationForCharging(targetStation);
+        setShowChargerModal(true);
+
+        // Clear URL params sau khi xử lý
+        setSearchParams({});
+      } else {
+        console.warn("⚠️ Station not found for pointId:", pointId);
+        alert("Không tìm thấy trạm sạc. Vui lòng thử lại.");
+        setSearchParams({});
+      }
+    }
+  }, [searchParams, stations, setSearchParams]);
 
   const fetchStations = async () => {
     try {
@@ -369,6 +408,7 @@ export default function MapPage() {
           station={stationForCharging}
           onClose={handleCloseChargerModal}
           onStartCharging={handleStartCharging}
+          preSelectedPointId={preSelectedPointId}
         />
       )}
 

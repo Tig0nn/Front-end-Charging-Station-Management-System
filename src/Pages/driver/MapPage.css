@@ -175,12 +175,13 @@
 
 /* Station Count Header */
 .station-count-header {
-  padding: 24px 24px 16px 24px;
+  padding: 20px 20px 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid rgba(16, 185, 129, 0.1);
   flex-shrink: 0;
+  gap: 12px;
 }
 
 .station-count-title {
@@ -188,6 +189,7 @@
   font-weight: 800;
   color: #111827;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .station-count-badge {
@@ -198,6 +200,41 @@
   font-size: 0.9rem;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* QR Scanner Button in Header */
+.qr-scan-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.qr-scan-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.qr-scan-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.qr-scan-button svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Thanh tìm kiếm mới */

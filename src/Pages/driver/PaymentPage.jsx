@@ -21,7 +21,6 @@ export default function PaymentPage() {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        console.log("🔄 Loading data from real backend API...");
         setLoading(true);
         setError(null);
 
@@ -56,7 +55,6 @@ export default function PaymentPage() {
             isCurrent: false,
           }));
 
-          console.log("✅ Converted plans from backend:", apiPlans);
           setAvailablePlans(apiPlans);
         } else {
           console.warn("⚠️ No plans returned from backend");
@@ -161,12 +159,31 @@ export default function PaymentPage() {
           // Handle errors
           const errorCode =
             error.response?.data?.code || error.response?.status;
-          if (errorCode === 404) {
+          const errorMessage = error.response?.data?.message || error.message;
+
+          console.log("⚠️ Current plan API error details:", {
+            errorCode,
+            errorMessage,
+            fullResponse: error.response?.data,
+            status: error.response?.status,
+          });
+
+          // Backend error codes for "no plan":
+          // - 14001: User Not Existed (user chưa có plan nào)
+          // - 404: Not found
+          // - 400: Bad request (có thể là chưa có plan)
+          if (errorCode === 14001 || errorCode === 404 || errorCode === 400) {
             console.log(
-              "ℹ️ No current plan found - User may not have subscribed yet"
+              `ℹ️ No current plan (code: ${errorCode}) - "${errorMessage}"`
+            );
+            console.log(
+              "✅ This is normal for users who haven't subscribed yet"
             );
           } else {
-            console.log("ℹ️ Error loading current plan:", error.message);
+            console.warn(
+              "⚠️ Unexpected error loading current plan:",
+              errorMessage
+            );
           }
           // Not having a plan is okay - user might be on default free plan
           setCurrentSubscription(null);

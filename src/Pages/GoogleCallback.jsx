@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { setAuthToken } from "../lib/api";
+import apiServices from "../lib/apiServices";
 
 const GoogleCallback = () => {
   const [searchParams] = useSearchParams();
@@ -11,87 +13,45 @@ const GoogleCallback = () => {
       try {
         const token = searchParams.get("token");
         const errorParam = searchParams.get("error");
-
         console.log("🔵 Google callback received");
-
         if (errorParam) {
           throw new Error(`Google authorization failed: ${errorParam}`);
         }
-
         if (!token) {
           throw new Error("No token received from backend");
         }
-
         console.log("🔵 FULL TOKEN:", token);
-
-        // ▼▼▼ THAY ĐỔI QUAN TRỌNG Ở ĐÂY ▼▼▼
-        // Luôn sử dụng localhost:8080 khi ở local dev để tránh lỗi của NGROK
-        // const baseURL =
-        //   import.meta.env.VITE_API_BASE_URL ||
-        //   "http://localhost:8080/evchargingstation";
-
-        const baseURL = "http://localhost:8080/evchargingstation";
-        // ▲▲▲ KẾT THÚC THAY ĐỔI ▲▲▲
-
-        const requestURL = `${baseURL}/api/users/driver/myInfo`;
-
-        const requestHeaders = {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        };
-
-        console.log("🔵 Calling fetch to URL:", requestURL);
-        console.log("🔵 Sending headers:", JSON.stringify(requestHeaders));
-
-        const userInfoResponse = await fetch(requestURL, {
-          method: "GET",
-          headers: requestHeaders,
-          cache: "no-cache",
-        });
-
-        console.log("🔵 Fetch response received:", userInfoResponse);
-
-        // 1. Luôn đọc nội dung dưới dạng TEXT trước, bất kể status là gì
-        const responseText = await userInfoResponse.text();
-
-        if (!userInfoResponse.ok) {
-          // Nếu status không phải 2xx, log lỗi và ném ra
-          console.error(
-            "❌ Fetch failed response text (non-ok):",
-            responseText
-          );
-          throw new Error(
-            `Failed to fetch user info: ${
-              userInfoResponse.status
-            }. Response: ${responseText.substring(0, 100)}...`
-          );
-        }
-
-        // 2. Log nội dung text (để xem có phải HTML của ngrok không)
-        console.log(
-          "🔵 Received response text:",
-          responseText.substring(0, 200) + "..."
-        );
-
-        // 3. BÂY GIỜ mới thử parse
-        const userData = JSON.parse(responseText);
-        // Nếu responseText là HTML, lỗi "Unexpected token '<'" sẽ xảy ra ở ĐÂY
-        // và sẽ được khối catch bên dưới bắt lại.
-
-        console.log("✅ User info response (parsed):", userData);
-
-        let userInfo = userData.result || userData;
-
-        localStorage.setItem("authToken", token);
+        // Lưu token vào localStorage và axios instance
+        setAuthToken(token);
+        console.log("🔵 Calling API to get driver info...");
+        // Sử dụng apiServices thay vì fetch thủ công
+        const response = await apiServices.users.getDriverInfo();
+        console.log("✅ User info response:", response.data);
+        let userInfo = response.data.result || response.data;
+        // Lưu thông tin user và role
         localStorage.setItem("user", JSON.stringify(userInfo));
         localStorage.setItem("role", "DRIVER");
-
         console.log("✅ Login successful, redirecting to driver map...");
         navigate("/driver/map", { replace: true });
       } catch (err) {
-        // Lỗi (bao gồm cả lỗi JSON.parse) sẽ bị bắt ở đây
-        console.error("❌ Callback error (includes JSON parse error):", err);
-        setError(err.message); // err.message sẽ là "Unexpected token '<'..."
+        // Lỗi từ API hoặc network
+        console.error("❌ Callback error:", err);
+        let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
+
+        if (err.response) {
+          // Lỗi từ backend
+          errorMessage =
+            err.response.data?.message || `Lỗi: ${err.response.status}`;
+        } else if (err.request) {
+          // Không nhận được response từ server
+          errorMessage =
+            "Không thể kết nối đến server. Vui lòng kiểm tra kết nối.";
+        } else {
+          // Lỗi khác
+          errorMessage = err.message;
+        }
+
+        setError(errorMessage);
 
         setTimeout(() => {
           navigate("/login", { replace: true });

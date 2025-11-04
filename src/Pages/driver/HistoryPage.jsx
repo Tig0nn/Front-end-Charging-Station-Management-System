@@ -35,7 +35,7 @@ const formatDateTime = (iso) => {
   const mi = String(d.getMinutes()).padStart(2, "0");
   return {
     date: `${dd}/${mm}/${yyyy}`,
-    time: `${hh}:${mi}`
+    time: `${hh}:${mi}`,
   };
 };
 
@@ -77,11 +77,9 @@ const EmptyState = ({ icon = "bi-ev-station", title, message }) => (
 let sessionsCache = null;
 
 function useMySessions() {
-
   const [data, setData] = useState(sessionsCache || []);
   const [loading, setLoading] = useState(!sessionsCache);
   const [error, setError] = useState("");
-
 
   const reload = React.useCallback(async () => {
     try {
@@ -125,11 +123,15 @@ const TransactionHistory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
 
-  if (loading) return (
-    <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
-      <div className="spinner-border text-[#2bf0b5]"/>
-    </div>
-  );
+  if (loading)
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "50vh" }}
+      >
+        <div className="spinner-border text-[#2bf0b5]" />
+      </div>
+    );
 
   if (error) {
     return (
@@ -152,7 +154,7 @@ const TransactionHistory = () => {
   // Hàm mở popup và chọn session
   const handleOpenPaymentModal = (session) => {
     setSelectedSession(session); // Lưu lại session đang được chọn
-    setIsModalOpen(true);       // Bật "công tắc" để mở popup
+    setIsModalOpen(true); // Bật "công tắc" để mở popup
   };
   // Hàm này được truyền cho popup để nó tự đóng
   const handleCloseModal = () => {
@@ -218,7 +220,10 @@ const TransactionHistory = () => {
           {sessions.map((s) => (
             <tr key={s.sessionId} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                {formatDateTime(s.startTime).date} <br /><div className="text-muted small">{formatDateTime(s.startTime).time}</div>
+                {formatDateTime(s.startTime).date} <br />
+                <div className="text-muted small">
+                  {formatDateTime(s.startTime).time}
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                 {s.stationName}
@@ -234,13 +239,17 @@ const TransactionHistory = () => {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {s.status === "COMPLETED" ? (
-                  <span className="text-green-600 font-medium">Đã hoàn thành</span>
+                  <span className="text-green-600 font-medium">
+                    Đã hoàn thành
+                  </span>
                 ) : (
-                  <span className="text-red-600 font-medium">Chưa hoàn thành</span>
+                  <span className="text-red-600 font-medium">
+                    Chưa hoàn thành
+                  </span>
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {(s.paymentStatus === "UNPAID" && s.status === "COMPLETED") ? (
+                {s.paymentStatus === "UNPAID" && s.status === "COMPLETED" ? (
                   <button
                     className="px-3 py-1 bg-[#2bf0b5] text-white font-bold rounded hover:bg-[#00ffc6]"
                     onClick={() => handleOpenPaymentModal(s)}
@@ -248,9 +257,13 @@ const TransactionHistory = () => {
                     Thanh toán
                   </button>
                 ) : s.paymentStatus === "PENDING" ? (
-                  <span className="text-yellow-600 font-medium">Đang xử lý</span>
+                  <span className="text-yellow-600 font-medium">
+                    Đang xử lý
+                  </span>
                 ) : (
-                  <span className="text-green-600 font-medium">Đã thanh toán</span>
+                  <span className="text-green-600 font-medium">
+                    Đã thanh toán
+                  </span>
                 )}
               </td>
             </tr>
@@ -263,7 +276,7 @@ const TransactionHistory = () => {
         session={selectedSession}
         onProcessPayment={handleProcessPayment} // Truyền hàm xử lý vào
       />
-    </div >
+    </div>
   );
 };
 
@@ -497,8 +510,7 @@ const ChargingHabits = () => {
   // Thống kê khác
   const avgMins = Math.round(
     sessions.reduce((sum, s) => sum + Number(s.durationMin || 0), 0) /
-    (sessions.length || 1)
-
+      (sessions.length || 1)
   );
 
   const hourBins = Array(12).fill(0);
@@ -569,25 +581,30 @@ export default function HistoryPage() {
   const totalCost = sessions.reduce((sum, s) => sum + (s.costTotal || 0), 0);
   const totalEnergy = sessions.reduce((sum, s) => sum + (s.energyKwh || 0), 0);
   const totalSessions = sessions.length;
-  const avgCostPerKw = totalEnergy ? Math.round(totalCost / totalEnergy) : 0
+  const avgCostPerKw = totalEnergy ? Math.round(totalCost / totalEnergy) : 0;
   const tabs = [
     { path: "transactions", label: "Giao dịch" },
     { path: "analysis", label: "Phân tích" },
     { path: "habits", label: "Thói quen" },
   ];
-  useEffect(() => async () => {
-    try {
-      let response = await chargingSessionsAPI.getMySessions();
-      console.log("Fetched charging sessions:", response.data);
-    } catch (err) {
-      console.error("Lỗi tính toán chỉ số tổng hợp:", err);
-    }
-  }, []);
+  useEffect(
+    () => async () => {
+      try {
+        let response = await chargingSessionsAPI.getMySessions();
+        console.log("Fetched charging sessions:", response.data);
+      } catch (err) {
+        console.error("Lỗi tính toán chỉ số tổng hợp:", err);
+      }
+    },
+    []
+  );
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-cash-stack"></i></span>
+          <span className="text-[#2bf0b5] text-2xl">
+            <i class="bi bi-cash-stack"></i>
+          </span>
           <div>
             <div className="text-sm text-gray-500">Tổng chi phí</div>
             <div className="text-lg font-bold">{formatCurrency(totalCost)}</div>
@@ -595,7 +612,9 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-lightning-fill"></i></span>
+          <span className="text-[#2bf0b5] text-2xl">
+            <i class="bi bi-lightning-fill"></i>
+          </span>
           <div>
             <div className="text-sm text-gray-500">Tổng lượng điện đã sạc</div>
             <div className="text-lg font-bold">{totalEnergy.toFixed(1)} kW</div>
@@ -603,7 +622,9 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-clock-fill"></i></span>
+          <span className="text-[#2bf0b5] text-2xl">
+            <i class="bi bi-clock-fill"></i>
+          </span>
           <div>
             <div className="text-sm text-gray-500">Số phiên sạc</div>
             <div className="text-lg font-bold">{totalSessions}</div>
@@ -611,10 +632,16 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl"><i class="bi bi-cash-coin"></i></span>
+          <span className="text-[#2bf0b5] text-2xl">
+            <i class="bi bi-cash-coin"></i>
+          </span>
           <div>
-            <div className="text-sm text-gray-500">Chi phí trung bình trên kW</div>
-            <div className="text-lg font-bold">{formatCurrency(avgCostPerKw)}</div>
+            <div className="text-sm text-gray-500">
+              Chi phí trung bình trên kW
+            </div>
+            <div className="text-lg font-bold">
+              {formatCurrency(avgCostPerKw)}
+            </div>
           </div>
         </div>
       </div>
@@ -626,9 +653,10 @@ export default function HistoryPage() {
             key={`/driver/history/${tab.path}`}
             to={`/driver/history/${tab.path}`}
             className={({ isActive }) =>
-              `px-4 py-2 rounded-full text-sm font-medium transition !no-underline ${isActive
-                ? "bg-gray-900 !text-white shadow"
-                : "bg-gray-200 !text-gray-700 hover:bg-gray-300"
+              `px-4 py-2 rounded-full text-sm font-medium transition !no-underline ${
+                isActive
+                  ? "bg-gray-900 !text-white shadow"
+                  : "bg-gray-200 !text-gray-700 hover:bg-gray-300"
               }`
             }
           >
