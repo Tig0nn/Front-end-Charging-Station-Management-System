@@ -47,30 +47,42 @@ const StaffPaymentRequests = () => {
   const [submitSuccess, setSubmitSuccess] = useState("");
   const [filterMethod, setFilterMethod] = useState("ALL");
 
-  const load = async () => {
-    try {
-      setError("");
-      setLoading(true);
-      const user = JSON.parse(localStorage.getItem("user"));
-      const stationId = user?.stationId;
-      const res = await staffAPI.getPendingPaymentRequests();
-      const history = await staffAPI.getPaymentHistory(stationId);
-      setHistory(Array.isArray(history?.data?.result) ? history.data.result : []);
-      console.log("Fetched payment history:", history.data);
-      console.log("Fetched pending payment requests:", res.data);
-      const list = res?.data?.result || res?.data || [];
-      setItems(Array.isArray(list) ? list : []);
-    } catch (e) {
-      setError(
-        e?.response?.data?.message ||
-        e?.message ||
-        "Tải dữ liệu thất bại."
-      );
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+const load = async () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const stationId = user?.stationId;
+
+  try {
+    setError("");
+    setLoading(true);
+
+    // Gọi API song song thay vì lần lượt
+    const [pendingRes, historyRes] = await Promise.all([
+      staffAPI.getPendingPaymentRequests(),
+      staffAPI.getPaymentHistory(stationId)
+    ]);
+
+    // Xử lý dữ liệu
+    const paymentList = pendingRes?.data?.result || pendingRes?.data || [];
+    const historyList =
+      Array.isArray(historyRes?.data?.result) ? historyRes.data.result : [];
+
+    // Set state
+    setItems(paymentList);
+    setHistory(historyList);
+
+  } catch (e) {
+    setError(
+      e?.response?.data?.message ||
+      e?.message ||
+      "Tải dữ liệu thất bại."
+    );
+    setItems([]);
+    setHistory([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     load();
