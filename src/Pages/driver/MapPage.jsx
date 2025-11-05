@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import "leaflet/dist/leaflet.css";
 import "./MapPage.css";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices.js";
@@ -216,7 +217,6 @@ export default function MapPage() {
     setShowChargerModal(false);
     setStationForCharging(null);
   };
-
   const handleStartCharging = async (charger, vehicle, targetSoc) => {
     console.log("--- BẮT ĐẦU LUỒNG SẠC ---");
     console.log("1. Dữ liệu nhận được:", { charger, vehicle, targetSoc });
@@ -234,6 +234,8 @@ export default function MapPage() {
 
       // 3. Gọi API để bắt đầu phiên sạc
       console.log("3. Đang gọi API startCharging...");
+      const loadingToast = toast.loading("Đang khởi động phiên sạc...");
+
       const response = await chargingPointsAPI.startCharging(payload);
 
       // 4. Lấy sessionId từ kết quả trả về
@@ -241,19 +243,24 @@ export default function MapPage() {
 
       console.log("4. API Response thành công:", response.data);
       console.log("5. Trích xuất sessionId:", sessionId);
+
       if (sessionId) {
         console.log(
           `6. Thành công! Đang điều hướng đến /driver/session/${sessionId}`
         );
+
+        toast.dismiss(loadingToast);
+        toast.success(" Khởi động phiên sạc thành công!");
+
         localStorage.setItem("activeSessionId", sessionId);
         navigate(`/driver/session/${sessionId}`);
       } else {
         throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
       }
     } catch (err) {
-      console.error(" LỖI khi bắt đầu phiên sạc:", err);
-      alert(
-        `Không thể bắt đầu phiên sạc: ${
+      console.error("❌ LỖI khi bắt đầu phiên sạc:", err);
+      toast.error(
+        `❌ Không thể bắt đầu phiên sạc: ${
           err.response?.data?.message || err.message
         }`
       );

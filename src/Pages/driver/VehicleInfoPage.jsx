@@ -6,7 +6,6 @@ import {
   Row,
   Col,
   Spinner,
-  Alert,
   Modal,
   Badge,
   Container,
@@ -14,6 +13,7 @@ import {
   Dropdown,
 } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import toast from "react-hot-toast";
 import { vehiclesAPI } from "../../lib/apiServices.js";
 
 const VehicleInfoPage = () => {
@@ -21,15 +21,12 @@ const VehicleInfoPage = () => {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState(null);
-  const [deleteError, setDeleteError] = useState(""); // Error trong delete modal
 
   // Form states - CHỈ CẦN licensePlate và model
   const [formData, setFormData] = useState({
@@ -48,12 +45,10 @@ const VehicleInfoPage = () => {
   const [formLoading, setFormLoading] = useState(false);
 
   // ===== API Methods =====
-
   // Fetch all vehicles
   const fetchVehicles = async () => {
     try {
       setLoading(true);
-      setError("");
 
       const response = await vehiclesAPI.getMyVehicles();
       const vehicleData = response?.data?.result || response?.data || [];
@@ -64,23 +59,22 @@ const VehicleInfoPage = () => {
         err.response?.data?.message ||
         err.message ||
         "Không thể tải danh sách xe";
-      setError(errorMessage);
+      toast.error(` ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
-
   // Create vehicle
   const createVehicle = async (vehicleData) => {
     try {
       setFormLoading(true);
-      setError("");
-      setSuccessMessage("");
 
       const processedData = {
         licensePlate: vehicleData.licensePlate,
         model: vehicleData.model,
       };
+
+      const loadingToast = toast.loading("Đang thêm xe mới...");
 
       const response = await vehiclesAPI.createVehicle(processedData);
       const newVehicle =
@@ -90,7 +84,8 @@ const VehicleInfoPage = () => {
         setVehicles((prev) => [...prev, newVehicle]);
       }
 
-      setSuccessMessage("Xe đã được thêm thành công!");
+      toast.dismiss(loadingToast);
+      toast.success("✅ Xe đã được thêm thành công!");
       return { success: true, data: newVehicle };
     } catch (err) {
       console.error("❌ Error creating vehicle:", err);
@@ -104,19 +99,16 @@ const VehicleInfoPage = () => {
         errorMessage = err.message;
       }
 
-      setError(errorMessage);
+      toast.error(`❌ ${errorMessage}`);
       return { success: false, error: errorMessage };
     } finally {
       setFormLoading(false);
     }
   };
-
   // Update vehicle
   const updateVehicle = async (vehicleId, vehicleData) => {
     try {
       setFormLoading(true);
-      setError("");
-      setSuccessMessage("");
 
       const processedData = {};
       if (vehicleData.licensePlate) {
@@ -125,6 +117,8 @@ const VehicleInfoPage = () => {
       if (vehicleData.model) {
         processedData.model = vehicleData.model;
       }
+
+      const loadingToast = toast.loading("Đang cập nhật thông tin xe...");
 
       const response = await vehiclesAPI.updateVehicle(
         vehicleId,
@@ -142,7 +136,8 @@ const VehicleInfoPage = () => {
         setSelectedVehicle(updatedVehicle);
       }
 
-      setSuccessMessage("Thông tin xe đã được cập nhật thành công!");
+      toast.dismiss(loadingToast);
+      toast.success("✅ Thông tin xe đã được cập nhật thành công!");
       return { success: true, data: updatedVehicle };
     } catch (err) {
       console.error("❌ Error updating vehicle:", err);
@@ -160,18 +155,18 @@ const VehicleInfoPage = () => {
         errorMessage = err.message;
       }
 
-      setError(errorMessage);
+      toast.error(`❌ ${errorMessage}`);
       return { success: false, error: errorMessage };
     } finally {
       setFormLoading(false);
     }
   };
-
   // Delete vehicle
   const deleteVehicle = async (vehicleId) => {
     try {
       setFormLoading(true);
-      setDeleteError(""); // Clear delete modal error
+
+      const loadingToast = toast.loading("Đang xóa xe...");
 
       await vehiclesAPI.deleteVehicle(vehicleId);
 
@@ -183,7 +178,8 @@ const VehicleInfoPage = () => {
         setSelectedVehicle(null);
       }
 
-      setSuccessMessage("Xe đã được xóa thành công!");
+      toast.dismiss(loadingToast);
+      toast.success("✅ Xe đã được xóa thành công!");
       return { success: true };
     } catch (err) {
       console.error("❌ Error deleting vehicle:", err);
@@ -209,17 +205,15 @@ const VehicleInfoPage = () => {
           "Không thể xóa xe này vì đang có phiên sạc liên quan. Vui lòng hoàn thành hoặc hủy các phiên sạc trước khi xóa xe.";
       }
 
-      setDeleteError(errorMessage); // Set error trong modal
+      toast.error(`❌ ${errorMessage}`);
       return { success: false, error: errorMessage };
     } finally {
       setFormLoading(false);
     }
   };
-
   // Clear messages
   const clearMessages = () => {
-    setError("");
-    setSuccessMessage("");
+    // No longer needed with toast
   };
 
   // Load vehicles on mount
@@ -404,18 +398,14 @@ const VehicleInfoPage = () => {
     setValidated(false);
     setShowEditModal(true);
   };
-
   // Open delete modal
   const openDeleteModal = (vehicle) => {
     setVehicleToDelete(vehicle);
-    setDeleteError(""); // Clear error trước khi mở modal
     setShowDeleteModal(true);
   };
-
   // Open add modal
   const openAddModal = () => {
     resetForm();
-    clearMessages();
     setShowAddModal(true);
   };
 
@@ -505,21 +495,8 @@ const VehicleInfoPage = () => {
         <Button variant="dark" onClick={openAddModal} disabled={loading}>
           <i className="bi bi-plus-circle me-2"></i>
           Thêm xe mới
-        </Button>
+        </Button>{" "}
       </div>
-
-      {/* Alert Messages */}
-      {error && (
-        <Alert variant="danger" dismissible onClose={clearMessages}>
-          {error}
-        </Alert>
-      )}
-      {successMessage && (
-        <Alert variant="success" dismissible onClose={clearMessages}>
-          {successMessage}
-        </Alert>
-      )}
-
       {/* Vehicles Grid */}
       {vehicles.length === 0 ? (
         <Card className="text-center border-0 shadow-sm">
@@ -544,7 +521,6 @@ const VehicleInfoPage = () => {
           ))}
         </Row>
       )}
-
       {/* Add Vehicle Modal */}
       <Modal
         show={showAddModal}
@@ -702,7 +678,6 @@ const VehicleInfoPage = () => {
           </Form>
         </Modal.Body>
       </Modal>
-
       {/* Edit Vehicle Modal */}
       <Modal
         show={showEditModal}
@@ -845,14 +820,12 @@ const VehicleInfoPage = () => {
             </div>
           </Form>
         </Modal.Body>
-      </Modal>
-
+      </Modal>{" "}
       {/* Delete Confirmation Modal */}
       <Modal
         show={showDeleteModal}
         onHide={() => {
           setShowDeleteModal(false);
-          setDeleteError(""); // Clear error khi đóng modal
         }}
       >
         <Modal.Header closeButton>
@@ -864,14 +837,6 @@ const VehicleInfoPage = () => {
         <Modal.Body>
           {vehicleToDelete && (
             <div>
-              {/* Hiển thị lỗi nếu có */}
-              {deleteError && (
-                <Alert variant="danger" className="mb-3">
-                  <i className="bi bi-exclamation-circle me-2"></i>
-                  {deleteError}
-                </Alert>
-              )}
-
               <p>Bạn có chắc chắn muốn xóa xe này không?</p>
               <div className="bg-light p-3 rounded">
                 <strong>
@@ -893,13 +858,12 @@ const VehicleInfoPage = () => {
               </p>
             </div>
           )}
-        </Modal.Body>
+        </Modal.Body>{" "}
         <Modal.Footer>
           <Button
             variant="secondary"
             onClick={() => {
               setShowDeleteModal(false);
-              setDeleteError(""); // Clear error khi hủy
             }}
             disabled={formLoading}
           >

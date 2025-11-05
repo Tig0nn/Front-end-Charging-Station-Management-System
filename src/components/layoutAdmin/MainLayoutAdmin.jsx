@@ -9,6 +9,7 @@ import {
   Dropdown,
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router";
+import { Toaster } from "react-hot-toast";
 import Header from "./Header";
 import { systemOverviewAPI } from "../../lib/apiServices.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -66,9 +67,34 @@ const MainLayoutAdmin = ({ children }) => {
   ];
 
   const isActiveTab = (path) => location.pathname === path;
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#ffffff" }}>
+      {/* Toaster for toast notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            minWidth: "350px",
+            padding: "16px",
+            fontSize: "14px",
+            fontWeight: "500",
+          },
+          success: {
+            style: {
+              background: "#10b981",
+              color: "white",
+            },
+          },
+          error: {
+            style: {
+              background: "#ef4444",
+              color: "white",
+            },
+          },
+        }}
+      />
+
       {/* Header */}
       <Header />
 
@@ -106,7 +132,6 @@ const MainLayoutAdmin = ({ children }) => {
               </div>
             </Col>
           </Row>
-
           {/* Stats Cards */}
           {loading ? (
             <Row className="g-4 mb-4">
@@ -314,35 +339,53 @@ const MainLayoutAdmin = ({ children }) => {
                 </Card>
               </Col>
             </Row>
-          )}
-
-          {/* Navigation Tabs */}
+          )}{" "}
+          {/* Navigation Tabs - Modern Pill Style */}
           <Row className="mb-4">
             <Col>
               <div
-                className="d-inline-flex gap-1 p-1 rounded"
+                className="d-inline-flex gap-2 p-2"
                 style={{
-                  backgroundColor: "#f3f4f6",
-                  borderRadius: "8px",
+                  backgroundColor: "#f8fafc",
+                  borderRadius: "50px",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
                 }}
               >
                 {tabs.map((tab) => (
                   <Button
                     key={tab.path}
                     variant="link"
-                    className={`d-flex align-items-center gap-2 text-decoration-none border-0 ${
-                      isActiveTab(tab.path) ? "bg-white" : ""
-                    }`}
+                    className={`d-flex align-items-center gap-2 text-decoration-none border-0`}
                     style={{
-                      borderRadius: "6px",
-                      padding: "8px 20px",
-                      color: isActiveTab(tab.path) ? "#111827" : "#6b7280",
+                      borderRadius: "50px",
+                      padding: "6px 20px",
+                      color: isActiveTab(tab.path) ? "#ffffff" : "#64748b",
+                      backgroundColor: isActiveTab(tab.path)
+                        ? "#22c55e"
+                        : "transparent",
                       fontWeight: isActiveTab(tab.path) ? "600" : "500",
                       fontSize: "14px",
                       boxShadow: isActiveTab(tab.path)
-                        ? "0 1px 2px rgba(0,0,0,0.05)"
+                        ? "0 4px 6px rgba(34, 197, 94, 0.25), 0 2px 4px rgba(0,0,0,0.1)"
                         : "none",
-                      transition: "all 0.2s ease",
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transform: isActiveTab(tab.path)
+                        ? "translateY(-1px)"
+                        : "translateY(0px)",
+                      minWidth: "fit-content",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActiveTab(tab.path)) {
+                        e.target.style.backgroundColor = "#e2e8f0";
+                        e.target.style.color = "#334155";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActiveTab(tab.path)) {
+                        e.target.style.backgroundColor = "transparent";
+                        e.target.style.color = "#64748b";
+                      }
                     }}
                     onClick={() => navigate(tab.path)}
                   >

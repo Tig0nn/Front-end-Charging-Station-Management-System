@@ -16,31 +16,28 @@ const GoogleLoginButton = () => {
     // 3. Process authentication
     window.location.href = `${baseURL}/oauth2/authorization/google`;
   };
-
   return (
     <button
       type="button"
       onClick={handleGoogleLogin}
       className="w-full d-flex align-items-center justify-content-center gap-3"
       style={{
-        backgroundColor: "#2C3E50",
-        borderColor: "transparent",
+        backgroundColor: "white",
+        borderColor: "#D1D5DB",
         padding: "12px",
         borderRadius: "10px",
-        border: "1px solid transparent",
+        border: "2px solid #D1D5DB",
         transition: "all 0.3s ease",
         cursor: "pointer",
-        color: "white",
+        color: "#374151",
       }}
       onMouseEnter={(e) => {
-        e.target.style.backgroundColor = "white";
-        e.target.style.color = "black";
-        e.target.style.borderColor = "#2C3E50";
+        e.target.style.backgroundColor = "#F9FAFB";
+        e.target.style.borderColor = "#9CA3AF";
       }}
       onMouseLeave={(e) => {
-        e.target.style.backgroundColor = "#2C3E50";
-        e.target.style.color = "white";
-        e.target.style.borderColor = "transparent";
+        e.target.style.backgroundColor = "white";
+        e.target.style.borderColor = "#D1D5DB";
       }}
     >
       {/* Google Logo SVG */}
@@ -68,7 +65,7 @@ const GoogleLoginButton = () => {
         />
       </svg>
 
-      <span style={{ fontSize: "15px", fontWeight: 500, color: "inherit" }}>
+      <span style={{ fontSize: "15px", fontWeight: 500, color: "#374151" }}>
         Đăng nhập với Google
       </span>
     </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { staffAPI } from "../../lib/apiServices";
 import moment from "moment";
 import {
@@ -34,45 +34,28 @@ const getSeverityBadge = (severity) => {
 };
 
 const StaffReports = () => {
-  const timerRef = useRef(null);
   const [reports, setReports] = useState([]);
   const [error, setError] = useState(null);
-  // Hàm fetch reports với useCallback
-  const fetchReports = useCallback(async () => {
-    try {
-      const response = await staffAPI.getAllReports();
-      console.log("Fetched reports:", response.data);
-      setReports(response.data?.result || response.data || []);
-      setError(null);
-    } catch (err) {
-      console.error("Failed to fetch reports:", err);
-
-      // Hiển thị lỗi rõ ràng
-      if (err?.response?.status === 401) {
-        setError("Không thể tải được các báo cáo. Vui lòng thử lại sau.");
-      }
-      setReports([]);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchReports(); // Tải lần đầu
+    // hàm gọi API lấy danh sách báo cáo
+    const fetchReports = async () => {
+      try {
+        const response = await staffAPI.getAllReports();
+        console.log("Fetched reports:", response.data);
+        setReports(response.data?.result || response.data || []);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch reports:", err);
 
-    // Thiết lập polling mỗi 20 giây
-    timerRef.current = setInterval(() => {
-      console.log("(Polling) Đang tải lại danh sách báo cáo...");
-      fetchReports(); // Tải lại ngầm
-    }, 20000);
-
-    // Cleanup khi unmount
-    return () => {
-      if (timerRef.current) {
-        console.log("Dọn dẹp: Dừng polling StaffReports.");
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+        // Hiển thị lỗi rõ ràng
+        if (err?.response?.status === 401) {
+          setError("Không thể tải được các báo cáo. Vui lòng thử lại sau.");
+        }
+        setReports([]);
       }
     };
-  }, [fetchReports]);
+    fetchReports();
+  }, []);
   const user = JSON.parse(localStorage.getItem("user")); // Lấy object user ra
   const stationId = user?.stationId; // Lấy field stationId
   const [report, setReport] = useState({
@@ -101,10 +84,9 @@ const StaffReports = () => {
         //ném lỗi
         throw new Error(response.data?.message || "Gửi báo cáo thất bại");
       }
-
-      // Tải lại danh sách báo cáo
-      await fetchReports();
-
+      const reports = await staffAPI.getAllReports();
+      console.log("Fetched reports:", reports.data);
+      setReports(reports.data?.result || reports.data || []);
       setReport({
         stationId: stationId,
         chargingPointId: "",
@@ -142,11 +124,7 @@ const StaffReports = () => {
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label>Mức độ nghiêm trọng</Form.Label>
-              <Form.Select
-                onChange={handleChangeValue}
-                name="severity"
-                required
-              >
+              <Form.Select onChange={handleChangeValue} name="severity" required>
                 <option value="">Chọn mức độ nghiêm trọng</option>
                 <option value="LOW">Thấp</option>
                 <option value="MEDIUM">Trung bình</option>
@@ -202,41 +180,30 @@ const StaffReports = () => {
             <p className="text-muted mb-0">Không có báo cáo.</p>
           ) : (
             <ListGroup variant="flush">
-              {reports.map((incident) => (
-                <ListGroup.Item
-                  key={incident.incidentId}
-                  className="d-flex justify-content-between align-items-start px-0 py-3"
-                >
-                  <div>
-                    <div className="fw-bold">
-                      <span
-                        className={`text-${
-                          incident.severity === "HIGH"
-                            ? "danger"
-                            : incident.severity === "MEDIUM"
-                            ? "warning"
-                            : incident.severity === "LOW"
-                            ? "info"
-                            : "dark"
-                        } me-2`}
-                      >
-                        ●
-                      </span>
-                      {incident.stationName} - Trụ sạc:{" "}
-                      {incident.chargingPointName}
+              {reports
+                .map((incident) => (
+                  <ListGroup.Item
+                    key={incident.incidentId}
+                    className="d-flex justify-content-between align-items-start px-0 py-3"
+                  >
+                    <div>
+                      <div className="fw-bold">
+                        <span className={`text-${incident.severity === 'HIGH' ? 'danger' 
+                          : incident.severity === 'MEDIUM' ? 'warning'
+                          : incident.severity === 'LOW' ? 'info' 
+                          : 'dark'} me-2`}>●</span>
+                        {incident.stationName} -
+                        Trụ sạc: {incident.chargingPointName}
+                      </div>
+                      <p className="mb-1 ms-4">{incident.description}</p>
+                      <small className="text-muted ms-4">
+                        {moment.utc(incident.reportedAt).utcOffset(7).format("HH:mm - DD/MM/YYYY")} -
+                        Báo cáo bởi: {incident.reporterName}
+                      </small>
                     </div>
-                    <p className="mb-1 ms-4">{incident.description}</p>
-                    <small className="text-muted ms-4">
-                      {moment
-                        .utc(incident.reportedAt)
-                        .utcOffset(7)
-                        .format("HH:mm - DD/MM/YYYY")}{" "}
-                      - Báo cáo bởi: {incident.reporterName}
-                    </small>
-                  </div>
-                  {getSeverityBadge(incident.severity)}
-                </ListGroup.Item>
-              ))}
+                    {getSeverityBadge(incident.severity)}
+                  </ListGroup.Item>
+                ))}
             </ListGroup>
           )}
         </Card.Body>

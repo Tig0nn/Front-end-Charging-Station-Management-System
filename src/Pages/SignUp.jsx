@@ -98,7 +98,7 @@ export default function Signup() {
 
         console.log("Registration successful:", response.data);
 
-        // Check response 
+        // Check response
         if (response.data?.code === 1000) {
           alert("Đăng ký thành công!");
           console.log("User created:", response.data.result);
@@ -124,9 +124,7 @@ export default function Signup() {
         // Hiển thị lỗi dựa trên response
         if (err.response?.status === 400) {
           // Email đã được đăng kí
-          if (
-            errorMessage.toLowerCase().includes("user existed")
-          ) {
+          if (errorMessage.toLowerCase().includes("user existed")) {
             setErrors({ form: "Email đã được sử dụng" });
           } else {
             setErrors({ form: "Có lỗi đã xảy ra." });
@@ -142,134 +140,189 @@ export default function Signup() {
     console.log(email, password, confirmed_password);
   };
   return (
-    <div className="flex justify-start min-h-screen bg-green-50">
-      <div className="w-[400px] bg-white rounded-xl shadow p-8">
-
-        <div className="flex justify-center mb-6">
-          <Link to="/">
-            <img src={logo} alt="Logo" className="h-16 object-contain" />
-          </Link>
+    <div className="min-h-screen flex">
+      {/* Left Side - Register Form */}
+      <div className="w-full lg:w-2/5 bg-white flex flex-col px-8 sm:px-12 lg:px-16 py-8 relative z-10">
+        {/* Logo và tên ở góc trái trên cùng */}
+        <div className="flex items-center gap-4 mb-8 -ml-2">
+          <img src={logo} alt="Logo" className="h-28 object-contain" />
+          <span className="text-3xl font-bold text-gray-900">T-Green</span>
         </div>
 
-
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-semibold text-gray-800">Đăng ký</h1>
-        </div>
-
-        <form className="space-y-5" onSubmit={handleSubmit}>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              name="email"
-              type="text"
-              placeholder="example123@gmail.com"
-              onFocus={handleFocus}
-              onChange={handleChangeValue}
-              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.email
-                  ? "border-red-500 ring-1 ring-red-500"
-                  : "border-gray-300"
-                }`}
-            />
-            {errors.email && (
-              <div className="text-red-500 text-sm mt-1">{errors.email}</div>
-            )}
-          </div>
-
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mật khẩu
-            </label>
-            <input
-              name="password"
-              type="password"
-              placeholder="Mật khẩu từ 6 - 20 kí tự."
-              onFocus={handleFocus}
-              onChange={handleChangeValue}
-              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.password
-                  ? "border-red-500 ring-1 ring-red-500"
-                  : "border-gray-300"
-                }`}
-            />
-            {errors.password && (
-              <div className="text-red-500 text-sm mt-1">
-                {errors.password}
-              </div>
-            )}
-          </div>
-
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Xác nhận mật khẩu
-            </label>
-            <input
-              name="confirmed_password"
-              type="password"
-              placeholder="Nhập lại mật khẩu"
-              onFocus={handleFocus}
-              onChange={handleChangeValue}
-              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.confirmed_password
-                  ? "border-red-500 ring-1 ring-red-500"
-                  : "border-gray-300"
-                }`}
-            />
-            {errors.confirmed_password && (
-              <div className="text-red-500 text-sm mt-1">
-                {errors.confirmed_password}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              id="agree-checkbox"
-              type="checkbox"
-              checked={agree}
-              onChange={handleAgree}
-              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-400"
-            />
-            <label
-              htmlFor="agree-checkbox"
-              className="text-sm text-gray-700 select-none"
-            >
-              Tôi đồng ý với các điều khoản và dịch vụ.
-            </label>
-          </div>
-
-
-          {errors.form && (
-            <div className="text-center text-red-500 text-sm mt-2">
-              {errors.form}
+        {/* Phần form căn giữa */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="max-w-md w-full">
+            {/* Heading */}
+            <div className="mb-10">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Tạo tài khoản mới
+              </h1>
+              <p className="text-gray-600">Đăng ký để bắt đầu trải nghiệm</p>
             </div>
-          )}
 
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="text"
+                  placeholder="example123@gmail.com"
+                  onFocus={handleFocus}
+                  onChange={handleChangeValue}
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
+                    errors.email
+                      ? "border-red-500 ring-2 ring-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {errors.email && (
+                  <div className="text-red-500 text-sm">{errors.email}</div>
+                )}
+              </div>
 
-          <button
-            type="submit"
-            disabled={!agree || isSubmitting}
-            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${!agree || isSubmitting
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#2bf0b5] hover:bg-[#00ffc6]  cursor-pointer"
-              }`}
-          >
-            {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
-          </button>
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Mật khẩu
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="Mật khẩu từ 6 - 20 ký tự"
+                  onFocus={handleFocus}
+                  onChange={handleChangeValue}
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
+                    errors.password
+                      ? "border-red-500 ring-2 ring-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {errors.password && (
+                  <div className="text-red-500 text-sm">{errors.password}</div>
+                )}
+              </div>
 
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Xác nhận mật khẩu
+                </label>
+                <input
+                  name="confirmed_password"
+                  type="password"
+                  placeholder="Nhập lại mật khẩu"
+                  onFocus={handleFocus}
+                  onChange={handleChangeValue}
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
+                    errors.confirmed_password
+                      ? "border-red-500 ring-2 ring-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {errors.confirmed_password && (
+                  <div className="text-red-500 text-sm">
+                    {errors.confirmed_password}
+                  </div>
+                )}
+              </div>
 
-          <div className="text-center mt-4 text-sm">
-            <span className="text-gray-600">Đã có tài khoản?</span>
-            <Link
-              to="/login"
-              className="!text-[#2bf0b5] !font-semibold ml-1 !no-underline"
-            >
-              Đăng nhập
-            </Link>
+              {/* Terms Agreement */}
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  id="agree-checkbox"
+                  type="checkbox"
+                  checked={agree}
+                  onChange={handleAgree}
+                  className="h-4 w-4 text-emerald-600 border-gray-400 rounded focus:ring-emerald-500 cursor-pointer"
+                />
+                <label
+                  htmlFor="agree-checkbox"
+                  className="text-sm text-gray-700 select-none cursor-pointer"
+                >
+                  Tôi đồng ý với{" "}
+                  <a
+                    href="#"
+                    className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                  >
+                    điều khoản dịch vụ
+                  </a>{" "}
+                  và{" "}
+                  <a
+                    href="#"
+                    className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                  >
+                    chính sách bảo mật
+                  </a>
+                </label>
+              </div>
+
+              {/* Form Error */}
+              {errors.form && (
+                <div className="text-center text-red-500 text-sm">
+                  {errors.form}
+                </div>
+              )}
+
+              {/* Register Button */}
+              <button
+                type="submit"
+                disabled={!agree || isSubmitting}
+                className={`w-full h-12 text-white font-semibold rounded-lg transition-all duration-200 ${
+                  !agree || isSubmitting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-600/50"
+                }`}
+              >
+                {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
+              </button>
+
+              {/* Login Link */}
+              <div className="text-center text-sm pt-1">
+                <span className="text-gray-600">Đã có tài khoản? </span>
+                <Link
+                  to="/login"
+                  className="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors"
+                >
+                  Đăng nhập ngay
+                </Link>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
+      </div>
+
+      {/* Right Side - Hero Image */}
+      <div className="hidden lg:flex lg:w-3/5 relative overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1625998259975-b243bf480751?q=80&w=2072&auto=format&fit=crop)",
+          }}
+        ></div>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-600/70 via-emerald-500/60 to-green-600/70"></div>
+
+        {/* Subtle Pattern Overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        </div>
+
+        {/* Simple Content */}
+        <div className="relative w-full h-full flex items-end p-16">
+          <div className="text-white space-y-4">
+            <h2 className="text-6xl font-bold leading-tight">
+              Hành trình xanh
+            </h2>
+            <p className="text-2xl text-white/90">Bắt đầu ngay hôm nay</p>
+          </div>
+        </div>
       </div>
     </div>
   );

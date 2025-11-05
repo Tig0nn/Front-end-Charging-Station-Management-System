@@ -109,112 +109,164 @@ function Login() {
     } finally {
       setIsSubmitting(false);
     }
-  }
-
+  };
   return (
-    <div className="flex justify-start min-h-screen bg-green-50">
-      <div className="w-[400px] bg-white rounded-xl shadow p-8">
-
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <Link to="/">
-            <img src={logo} alt="Logo" className="h-16 object-contain" />
-          </Link>
+    <div className="min-h-screen flex">
+      {/* Left Side - Login Form */}
+      <div className="w-full lg:w-2/5 bg-white flex flex-col px-8 sm:px-12 lg:px-16 py-8 relative z-10">
+        {/* Logo và tên ở góc trái trên cùng */}
+        <div className="flex items-center gap-4 mb-8 -ml-2">
+          <img src={logo} alt="Logo" className="h-28 object-contain" />
+          <span className="text-3xl font-bold text-gray-900">T-Green</span>
         </div>
 
-        {/* Title */}
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-semibold text-gray-800">Đăng nhập</h1>
-        </div>
-
-        {/* Form */}
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              name="email"
-              type="email"
-              placeholder="example@gmail.com"
-              value={form.email}
-              onChange={handleChangeValue}
-              onFocus={handleFocus}
-              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${loginErr ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
-                }`}
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mật khẩu
-            </label>
-            <input
-              name="password"
-              type="password"
-              placeholder="Nhập mật khẩu"
-              value={form.password}
-              onChange={handleChangeValue}
-              onFocus={handleFocus}
-              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${loginErr ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
-                }`}
-              required
-            />
-          </div>
-
-          {/* Error message */}
-          {loginErr && (
-            <Alert variant="danger" className="text-sm py-2">
-              {loginErr}
-            </Alert>
-          )}
-
-          {/* Remember Me */}
-          <div className="flex items-center gap-2">
-            <input
-              id="remember"
-              type="checkbox"
-              checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
-              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-400"
-            />
-            <label htmlFor="remember" className="text-sm text-gray-700 select-none">
-              Ghi nhớ đăng nhập
-            </label>
-          </div>
-
-          {/* Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#2bf0b5] hover:bg-[#00ffc6] cursor-pointer"
-              }`}
-          >
-            {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
-          </button>
-
-          {/* Link */}
-          <div className="text-center mt-4 text-sm">
-            <span className="text-gray-600">Chưa có tài khoản?</span>
-            <Link
-              to="/signup"
-              className="!text-[#2bf0b5] !font-semibold ml-1 !no-underline"
-            >
-              Đăng ký
-            </Link>
-          </div>
-          <div className="flex flex-col justify-center items-center gap-4">
-            <div className="w-full flex items-center justify-center">
-              <div className="flex-1 border-t border-gray-300"></div>
-              <span className="px-3 text-gray-500 text-sm">Hoặc</span>
-              <div className="flex-1 border-t border-gray-300"></div>
+        {/* Phần form căn giữa */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="max-w-md w-full">
+            {/* Heading */}
+            <div className="mb-10">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Chào mừng trở lại
+              </h1>
+              <p className="text-gray-600">Đăng nhập để tiếp tục trải nghiệm</p>
             </div>
-            <GoogleLoginButton />
+
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="driver@gmail.com"
+                  value={form.email}
+                  onChange={handleChangeValue}
+                  onFocus={handleFocus}
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
+                    loginErr
+                      ? "border-red-500 ring-2 ring-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+              </div>
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Mật khẩu
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={handleChangeValue}
+                  onFocus={handleFocus}
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
+                    loginErr
+                      ? "border-red-500 ring-2 ring-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+              </div>
+              {/* Error message */}
+              {loginErr && (
+                <Alert variant="danger" className="text-sm py-2">
+                  {loginErr}
+                </Alert>
+              )}
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    id="remember"
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="h-4 w-4 text-emerald-600 border-gray-400 rounded focus:ring-emerald-500 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="remember"
+                    className="text-sm text-gray-700 select-none cursor-pointer"
+                  >
+                    Ghi nhớ đăng nhập
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full h-12 text-white font-semibold rounded-lg transition-all duration-200 ${
+                  isSubmitting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-600/50"
+                }`}
+              >
+                {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
+              </button>{" "}
+              {/* Register Link */}
+              <div className="text-center text-sm pt-1">
+                <span className="text-gray-600">Chưa có tài khoản? </span>
+                <Link
+                  to="/signup"
+                  className="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors"
+                >
+                  Đăng ký ngay
+                </Link>
+              </div>
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>{" "}
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-gray-500">hoặc</span>
+                </div>
+              </div>{" "}
+              {/* Google Login */}
+              <GoogleLoginButton />
+            </form>
           </div>
-        </form>
+        </div>
+      </div>
+
+      {/* Right Side - Hero Image */}
+      <div className="hidden lg:flex lg:w-3/5 relative overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1593941707882-a5bba14938c7?q=80&w=2072&auto=format&fit=crop)",
+          }}
+        ></div>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/70 via-emerald-500/60 to-teal-600/70"></div>
+
+        {/* Subtle Pattern Overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        </div>
+
+        {/* Simple Content */}
+        <div className="relative w-full h-full flex items-end p-16">
+          <div className="text-white space-y-4">
+            <h2 className="text-6xl font-bold leading-tight">Tương lai xanh</h2>
+            <p className="text-2xl text-white/90">Bắt đầu từ đây</p>
+          </div>
+        </div>
       </div>
     </div>
   );
