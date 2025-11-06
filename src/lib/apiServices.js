@@ -37,9 +37,7 @@ const apiServices = {
 
   plans: {
     getPlans: () => {
-      // Thêm timestamp để tránh cache
-      const timestamp = Date.now();
-      return api.get(`/api/plans?_t=${timestamp}`);
+      return api.get(`/api/plans`);
     },
     create: (planData) => api.post("/api/plans", planData),
     update: (planId, planData) => api.put(`/api/plans/${planId}`, planData),
@@ -92,7 +90,7 @@ const apiServices = {
   // 🚉 Stations API Services
   // =========================
   stations: {
-    getAllDetails: () => api.get("/api/stations"),
+    getAllDetails: () => api.get("/api/stations?view=detail"),
     create: (stationData) => api.post("/api/stations", stationData),
     update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),
     delete: (stationId) => api.delete(`/api/stations/${stationId}`),

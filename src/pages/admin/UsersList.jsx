@@ -41,7 +41,7 @@ const UsersList = () => {
   const fetchPlans = async () => {
     try {
       setPlansLoading(true);
-      const response = await plansAPI.getAll();
+      const response = await plansAPI.getPlans();
       console.log("📦 Plans API response:", response);
 
       let plansData = [];
@@ -89,7 +89,7 @@ const UsersList = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const res = await usersAPI.getAll();
+        const res = await usersAPI.getStaff();
         setUsers(res?.data?.result || []);
       } catch (err) {
         console.error("Lỗi khi tải danh sách người dùng:", err);
