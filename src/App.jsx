@@ -66,11 +66,20 @@ function RequireDriverInfo({ children }) {
 
   const role = String(user?.role || "").toUpperCase();
   const phone = user?.phone || user?.phoneNum || user?.phoneNumber;
-  const hasPhone = phone && String(phone).trim() !== "";
+
+  // Check nếu phone tồn tại và không phải null/undefined/empty
+  const hasPhone =
+    phone !== null &&
+    phone !== undefined &&
+    String(phone).trim() !== "" &&
+    String(phone).trim() !== "null";
 
   //Nếu là DRIVER và không có phone → redirect về add-info
   if (role === "DRIVER" && !hasPhone) {
-    console.log("No phone found, redirecting to add-info");
+    console.log(
+      "❌ No valid phone found, redirecting to add-info. Phone value:",
+      phone
+    );
     return <Navigate to="/driver/add-info" replace />;
   }
 

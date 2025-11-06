@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth.jsx";
 export default function AddUserInfoPage() {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -41,8 +41,7 @@ export default function AddUserInfoPage() {
     const { last_name, first_name, gender, dob, phoneNum } = form;
     const newErrors = {};
 
-    if (!last_name.trim())
-      newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
+    if (!last_name.trim()) newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
     else if (last_name.trim().length < 1 || last_name.trim().length > 20)
       newErrors.last_name = "Họ giới hạn từ 1-20 kí tự.";
 
@@ -64,6 +63,8 @@ export default function AddUserInfoPage() {
 
     try {
       setIsSubmitting(true);
+
+      // Update driver info
       await usersAPI.updateDriverInfo({
         lastName: last_name.trim(),
         firstName: first_name.trim(),
@@ -72,18 +73,32 @@ export default function AddUserInfoPage() {
         phone: phoneNum.trim(),
       });
 
-      const prof = await usersAPI.getDriverInfo().catch(() => null);
+      // Get fresh user info from API
+      const prof = await usersAPI.getDriverInfo();
       const updatedUser = prof?.data?.result;
 
+      if (!updatedUser) {
+        throw new Error("Không thể lấy thông tin người dùng sau khi cập nhật");
+      }
+
       // Chuẩn hóa role để guard không chặn
-      if (!updatedUser.role)
+      if (!updatedUser.role) {
         updatedUser.role = String("DRIVER").toUpperCase();
+      }
+
+      // ✅ Đảm bảo phone được lưu đúng
+      if (!updatedUser.phone && phoneNum) {
+        updatedUser.phone = phoneNum.trim();
+      }
+
+      console.log("💾 Saving user to localStorage:", updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      navigate("/driver");
+
+      // Force reload để App.jsx check lại
+      window.location.href = "/driver";
     } catch (err) {
-      alert(
-        err?.response?.data?.message || err.message || "Đã có lỗi xảy ra"
-      );
+      console.error("❌ Error:", err);
+      alert(err?.response?.data?.message || err.message || "Đã có lỗi xảy ra");
     } finally {
       setIsSubmitting(false);
     }
@@ -208,9 +223,7 @@ export default function AddUserInfoPage() {
               }`}
             />
             {errors.phoneNum && (
-              <div className="text-red-500 text-sm mt-1">
-                {errors.phoneNum}
-              </div>
+              <div className="text-red-500 text-sm mt-1">{errors.phoneNum}</div>
             )}
           </div>
           <div className="flex items-center gap-2">
