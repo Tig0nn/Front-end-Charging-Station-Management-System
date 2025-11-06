@@ -29,11 +29,21 @@ export default function MainLayoutStaff({ children }) {
       console.log("📞 Fetching staff profile...");
       const response = await staffAPI.getStaffProfile();
 
-      const profileData =
+      const responseData =
         response.data?.result || response.result || response.data || {};
+
+      // Backend returns data inside staffProfile object
+      const profileData = responseData.staffProfile || responseData;
+
       console.log("👤 Staff profile:", profileData);
 
       setStaffProfile(profileData);
+
+      // Save to localStorage for Header and other components
+      localStorage.setItem("staff", JSON.stringify(profileData));
+
+      // Trigger storage event for other components
+      window.dispatchEvent(new Event("storage"));
     } catch (error) {
       console.error("❌ Error fetching staff profile:", error);
     }

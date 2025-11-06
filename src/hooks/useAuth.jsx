@@ -94,12 +94,20 @@ export const AuthProvider = ({ children }) => {
           .finally(() => setLoading(false));
       } else {
         const userData = {
-          userId: userInfo.userId || decodedToken.sub || decodedToken.userId || decodedToken.id,
+          userId:
+            userInfo.userId ||
+            decodedToken.sub ||
+            decodedToken.userId ||
+            decodedToken.id,
           email: userInfo.email || decodedToken.email || decodedToken.sub,
           role: role,
           firstName: userInfo.firstName || decodedToken.firstName || null,
           lastName: userInfo.lastName || decodedToken.lastName || null,
-          fullName: userInfo.fullName || decodedToken.fullName || decodedToken.name || null,
+          fullName:
+            userInfo.fullName ||
+            decodedToken.fullName ||
+            decodedToken.name ||
+            null,
         };
         setUser(userData);
         setIsAuthenticated(true);
@@ -116,9 +124,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
 
       // Clear old data before login
-      localStorage.removeItem("users");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
       localStorage.removeItem("currentUserId");
 
+      // 1) Gọi API login để lấy token
       // 1) Gọi API login để lấy token
       const response = await authAPI.login(credentials);
       console.log("Login response:", response);
@@ -129,6 +139,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error("No token received from server");
       }
 
+      // 2) Decode token để lấy role
       // 2) Decode token để lấy role
       const decodedToken = decodeToken(token);
       console.log("Decoded token:", decodedToken);
@@ -155,18 +166,24 @@ export const AuthProvider = ({ children }) => {
           const userInfoResponse = await usersAPI.getDriverInfo();
           console.log("Driver info response:", userInfoResponse.data);
 
-          const driverData =
+          const responseData =
             userInfoResponse.data?.result || userInfoResponse.data;
 
+          // Backend returns data inside driverProfile object
+          const driverData = responseData.driverProfile || responseData;
+
+          // Map data với correct field names (backend uses lowercase)
           userData = {
             userId: driverData.userId || null,
             email: driverData.email || null,
             phone: driverData.phone || null,
             dateOfBirth: driverData.dateOfBirth || null,
             gender: driverData.gender || null,
-            firstName: driverData.firstName || null,
-            lastName: driverData.lastName || null,
-            fullName: driverData.fullName || null,
+            firstName: driverData.firstname || driverData.firstName || null,
+            lastName: driverData.lastname || driverData.lastName || null,
+            fullName: driverData.fullname || driverData.fullName || null,
+            address: driverData.address || null,
+            joinDate: driverData.joinDate || null,
             role: driverData.role || role,
           };
 
@@ -205,10 +222,7 @@ export const AuthProvider = ({ children }) => {
             role: staffData.role || role,
           };
         } catch (staffError) {
-          console.warn(
-            "Cannot get staff info:",
-            staffError
-          );
+          console.warn("Cannot get staff info:", staffError);
         }
       } else {
         // 6) Nếu là ADMIN hoặc role khác, chỉ dùng thông tin từ token
@@ -235,6 +249,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
+      // Store user data in localStorage
       // Store user data in localStorage
       localStorage.setItem("user", JSON.stringify(userData));
       if (userData.role) {
@@ -276,13 +291,13 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("adminTab");
       localStorage.removeItem("staffTab");
 
-      // Try to call logout API (optional, don't fail if it errors)
-      await authAPI.logout();
+      // KHÔNG gọi API logout vì backend redirect về Google (gây lỗi CORS)
+      // Client-side logout là đủ nếu backend không cung cấp proper logout endpoint
+      console.log("✅ Client-side logout completed");
     } catch (error) {
-      console.warn("Logout API call failed (ignoring):", error);
-      // Continue with logout process even if API call fails
+      console.error("❌ Logout error:", error);
     } finally {
-      // Always redirect to login page
+      // Always redirect to login page (guaranteed to happen)
       window.location.href = "/login";
     }
   };

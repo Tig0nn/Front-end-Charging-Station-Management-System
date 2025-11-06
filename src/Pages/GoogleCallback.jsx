@@ -21,18 +21,53 @@ const GoogleCallback = () => {
           throw new Error("No token received from backend");
         }
         console.log("🔵 FULL TOKEN:", token);
+
+        // ✅ IMPORTANT: Clear old user data before setting new token
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
+        localStorage.removeItem("currentUserId");
+        console.log("🧹 Cleared old user data from localStorage");
+
         // Lưu token vào localStorage và axios instance
         setAuthToken(token);
         console.log("🔵 Calling API to get driver info...");
         // Sử dụng apiServices thay vì fetch thủ công
         const response = await apiServices.users.getDriverInfo();
         console.log("✅ User info response:", response.data);
-        let userInfo = response.data.result || response.data;
+
+        const responseData = response.data.result || response.data;
+
+        // Backend returns data inside driverProfile object
+        const driverData = responseData.driverProfile || responseData;
+
+        // Map data correctly
+        const userInfo = {
+          userId: driverData.userId || null,
+          email: driverData.email || null,
+          phone: driverData.phone || null,
+          dateOfBirth: driverData.dateOfBirth || null,
+          gender: driverData.gender || null,
+          firstName: driverData.firstname || driverData.firstName || null,
+          lastName: driverData.lastname || driverData.lastName || null,
+          fullName: driverData.fullname || driverData.fullName || null,
+          address: driverData.address || null,
+          joinDate: driverData.joinDate || null,
+          role: "DRIVER",
+        };
+
         // Lưu thông tin user và role
         localStorage.setItem("user", JSON.stringify(userInfo));
         localStorage.setItem("role", "DRIVER");
+
         console.log("✅ Login successful, redirecting to driver map...");
-        navigate("/driver/map", { replace: true });
+
+        // Check if user has phone - redirect accordingly
+        if (!userInfo.phone) {
+          console.log("No phone found, redirecting to add-info");
+          navigate("/driver/add-info", { replace: true });
+        } else {
+          navigate("/driver/map", { replace: true });
+        }
       } catch (err) {
         // Lỗi từ API hoặc network
         console.error("❌ Callback error:", err);

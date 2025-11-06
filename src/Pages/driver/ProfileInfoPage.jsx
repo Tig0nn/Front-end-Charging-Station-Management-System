@@ -28,17 +28,44 @@ const ProfileInfoPage = () => {
 
   // Cập nhật form data từ useAuth.user
   useEffect(() => {
-    if (user) {
-      setFormData({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.split("T")[0] : "",
-        gender: user.gender === "M" ? "M" : "F",
-        address: user.address || "",
-      });
-    }
+    const updateFormData = () => {
+      // Read from localStorage in case useAuth hasn't updated yet
+      let currentUser = user;
+      if (!currentUser || !currentUser.firstName) {
+        try {
+          currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        } catch (e) {
+          console.error("Error reading user from localStorage:", e);
+        }
+      }
+
+      if (currentUser) {
+        setFormData({
+          firstName: currentUser.firstName || "",
+          lastName: currentUser.lastName || "",
+          email: currentUser.email || "",
+          phone: currentUser.phone || "",
+          dateOfBirth: currentUser.dateOfBirth
+            ? currentUser.dateOfBirth.split("T")[0]
+            : "",
+          gender: currentUser.gender === "M" ? "M" : "F",
+          address: currentUser.address || "",
+        });
+      }
+    };
+
+    updateFormData();
+
+    // Listen for storage events to update when ProfileLayout updates localStorage
+    const handleStorageChange = () => {
+      updateFormData();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [user]);
 
   // Xử lý khi người dùng thay đổi giá trị trong form

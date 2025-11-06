@@ -16,10 +16,37 @@ const ProfileLayout = () => {
       setLoading(true);
       console.log("📞 Fetching driver info from API...");
       const response = await usersAPI.getDriverInfo();
-      
-      const driverData = response.data?.result || response.result || response.data;
+
+      const responseData =
+        response.data?.result || response.result || response.data;
+
+      // Backend returns data inside driverProfile object
+      const driverData = responseData.driverProfile || responseData;
+
       console.log("👤 Driver data:", driverData);
-      setUserData(driverData);
+
+      // Map to consistent format
+      const userData = {
+        userId: driverData.userId,
+        email: driverData.email,
+        phone: driverData.phone,
+        dateOfBirth: driverData.dateOfBirth,
+        gender: driverData.gender,
+        firstName: driverData.firstname || driverData.firstName,
+        lastName: driverData.lastname || driverData.lastName,
+        fullName: driverData.fullname || driverData.fullName,
+        address: driverData.address,
+        joinDate: driverData.joinDate,
+        role: driverData.role || "DRIVER",
+      };
+
+      setUserData(userData);
+
+      // Update localStorage so ProfileInfoPage can access via useAuth()
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // Trigger storage event to notify other components
+      window.dispatchEvent(new Event("storage"));
     } catch (err) {
       console.error("❌ Error fetching driver info:", err);
       // Fallback: Lấy từ localStorage nếu API lỗi

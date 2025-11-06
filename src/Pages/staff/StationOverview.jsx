@@ -57,8 +57,10 @@ export default function StationOverview() {
   const [error, setError] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user"));
-  const stationId = user?.stationId;
+
+  // Read from "staff" localStorage instead of "user"
+  const staff = JSON.parse(localStorage.getItem("staff") || "{}");
+  const stationId = staff?.stationId;
 
   const [showStartModal, setShowStartModal] = useState(false);
   const [pointToStart, setPointToStart] = useState(null);
@@ -259,7 +261,6 @@ export default function StationOverview() {
       setLoading(false); // Luôn tắt loading
     }
   };
-
 
   if (loading && chargingPoints.length === 0) {
     return (

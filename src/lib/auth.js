@@ -1,3 +1,5 @@
+import { authAPI } from "./apiServices";
+
 const USER_KEY = "authUser";
 
 export function setCurrentUser(user) {
@@ -30,3 +32,25 @@ export function clearAuth() {
   localStorage.removeItem("authToken");
   localStorage.removeItem(USER_KEY);
 }
+
+export const handleLogout = async () => {
+  try {
+    console.log("🚪 Starting logout process...");
+
+    // Gọi API logout
+    const response = await authAPI.logout();
+    console.log("✅ Logout API response:", response);
+
+    // Clear local storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+
+    window.location.href = "/login";
+  } catch (error) {
+    console.error("❌ Logout API error:", error);
+    // Nếu API không tồn tại, vẫn clear local và logout
+    localStorage.clear();
+    window.location.href = "/login";
+  }
+};

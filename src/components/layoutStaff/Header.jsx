@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Navbar, Container, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.jsx";
-import { staffAPI } from "../../lib/apiServices";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Header = () => {
@@ -11,26 +10,29 @@ const Header = () => {
   const [staffName, setStaffName] = useState("Nhân viên");
 
   useEffect(() => {
-    fetchStaffProfile();
-  }, []);
-
-  const fetchStaffProfile = async () => {
-    try {
-      const response = await staffAPI.getStaffProfile();
-      const profileData =
-        response.data?.result || response.result || response.data || {};
-
-      setStaffName(profileData.fullName || "Nhân viên");
-    } catch (error) {
-      console.error("Error fetching staff profile:", error);
-      // Fallback to localStorage
-      const storedUser = localStorage.getItem("user");
-      if (storedUser && storedUser !== "null") {
-        const user = JSON.parse(storedUser);
-        setStaffName(user.fullName || user.firstName || "Nhân viên");
+    // Read from localStorage instead of API
+    const loadStaffProfile = () => {
+      const storedStaff = localStorage.getItem("staff");
+      if (storedStaff && storedStaff !== "null") {
+        try {
+          const staff = JSON.parse(storedStaff);
+          setStaffName(staff.fullName || staff.fullname || "Nhân viên");
+        } catch (error) {
+          console.error("Error parsing staff from localStorage:", error);
+          setStaffName("Nhân viên");
+        }
       }
-    }
-  };
+    };
+
+    loadStaffProfile();
+
+    // Listen for storage updates from MainLayoutStaff
+    window.addEventListener("storage", loadStaffProfile);
+
+    return () => {
+      window.removeEventListener("storage", loadStaffProfile);
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();

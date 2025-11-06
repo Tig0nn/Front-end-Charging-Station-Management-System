@@ -17,15 +17,22 @@ export default function AddUserInfoPage() {
   });
 
   const [agree, setAgree] = useState(false);
+  const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleChangeValue = (e) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
   const handleFocus = (e) => {
+    const key = e.target.name;
+    if (errors[key]) {
+      const n = { ...errors };
+      delete n[key];
+      setErrors(n);
     const key = e.target.name;
     if (errors[key]) {
       const n = { ...errors };
@@ -38,7 +45,10 @@ export default function AddUserInfoPage() {
     e.preventDefault();
     const { last_name, first_name, gender, dob, phoneNum } = form;
     const newErrors = {};
+    const newErrors = {};
 
+    if (!last_name.trim()) newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
+    else if (last_name.trim().length < 1 || last_name.trim().length > 20)
     if (!last_name.trim()) newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
     else if (last_name.trim().length < 1 || last_name.trim().length > 20)
       newErrors.last_name = "Họ giới hạn từ 1-20 kí tự.";
@@ -58,7 +68,9 @@ export default function AddUserInfoPage() {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
+    if (Object.keys(newErrors).length > 0) return;
 
+    try {
     try {
       setIsSubmitting(true);
       await usersAPI.updateDriverInfo({

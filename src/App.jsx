@@ -22,7 +22,7 @@ import ProfileLayout from "./Pages/driver/ProfileLayout";
 import NotificationPage from "./Pages/driver/NotificationPage";
 import AdminIncidents from "./Pages/admin/AdminIncidents";
 import QRCodeManager from "./Pages/admin/QRCodeManager";
-import { usersAPI } from "./lib/apiServices";
+// import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./Pages/AddUserInfoPage";
 import { useEffect } from "react";
 
@@ -34,52 +34,21 @@ function RequireDriverInfo({ children }) {
   const isAuthenticated = !!localStorage.getItem("authToken");
 
   useEffect(() => {
+    // ⚠️ DISABLED: MainLayoutDriver and ProfileLayout already fetch driver info
+    // This prevents duplicate API calls (3-4x per page load)
+    // If needed in future, enable this and disable API calls in layout components
+    /*
     const syncDriverInfo = async () => {
       // Chỉ sync nếu đã đăng nhập và không ở trang add-info
       if (!isAuthenticated || loc.pathname.startsWith("/driver/add-info")) {
         return;
       }
 
-      // Lấy user hiện tại từ localStorage
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem("user") || "null");
-      } catch {
-        return;
-      }
-
-      const role = String(user?.role || "").toUpperCase();
-
-      // Chỉ sync nếu là DRIVER
-      if (role !== "DRIVER") {
-        return;
-      }
-
-      // Gọi API getDriverInfo để lấy thông tin mới nhất
-      try {
-        const response = await usersAPI.getDriverInfo();
-        console.log("Driver info response:", response.data);
-
-        const driverData = response.data?.result || response.data;
-
-        // Merge driver info vào user hiện tại
-        const updatedUser = {
-          ...user,
-          ...driverData,
-          // Đảm bảo role không bị ghi đè
-          role: user.role,
-        };
-
-        console.log("Updated user with driver info:", updatedUser);
-
-        // Lưu lại vào localStorage
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-      } catch (error) {
-        console.warn("Cannot sync driver info:", error);
-      }
+      // ... rest of code
     };
 
     syncDriverInfo();
+    */
   }, [isAuthenticated, loc.pathname]);
 
   //Chưa đăng nhập → về login

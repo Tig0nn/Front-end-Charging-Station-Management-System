@@ -25,7 +25,7 @@ export default function PaymentPage() {
         setError(null);
 
         // Load plans from real backend API
-        const plansResponse = await plansAPI.getAll();
+        const plansResponse = await plansAPI.getPlans();
         console.log("📦 Plans API response:", plansResponse);
 
         // Check response structure and extract plans

@@ -12,7 +12,7 @@ import {
   Alert,
   Modal,
 } from "react-bootstrap";
-import { staffAPI } from "../../lib/apiServices.js";
+import { adminAPI } from "../../lib/apiServices.js";
 
 const AdminIncidents = () => {
   const [incidents, setIncidents] = useState([]);
@@ -45,7 +45,7 @@ const AdminIncidents = () => {
       setLoading(true);
       setError("");
 
-      const response = await staffAPI.getAllReports();
+      const response = await adminAPI.getAllIncidents();
       console.log("📋 Incidents response:", response);
 
       const data = response?.data?.result || response?.data || [];

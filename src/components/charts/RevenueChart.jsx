@@ -180,7 +180,7 @@ const RevenueChart = () => {
     return amount.toString();
   };
 
-  // Load revenue data
+  // 🆕 Load revenue data using new unified API
   const loadRevenueData = async (selectedPeriod) => {
     try {
       setLoading(true);
@@ -202,15 +202,16 @@ const RevenueChart = () => {
         const dayLabels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
         const dailyRevenue = new Array(7).fill(0);
 
-        // Gọi API /api/revenue/daily cho từng ngày trong tuần
+        // 🆕 Gọi API mới cho từng ngày trong tuần
         for (let i = 0; i < weekDays.length; i++) {
           const day = weekDays[i];
           try {
-            const response = await revenueAPI.getDaily(
-              day.getFullYear(),
-              day.getMonth() + 1,
-              day.getDate()
-            );
+            const response = await revenueAPI.getRevenues({
+              period: "daily",
+              year: day.getFullYear(),
+              month: day.getMonth() + 1,
+              day: day.getDate(),
+            });
 
             const data = response.data;
             if (data.code === 1000 && data.result) {
@@ -237,13 +238,14 @@ const RevenueChart = () => {
         const monthWeeks = getCurrentMonthWeeks();
         const weeklyRevenue = [];
 
-        // Gọi API /api/revenue/weekly cho từng tuần trong tháng
+        // 🆕 Gọi API mới cho từng tuần trong tháng
         for (const weekInfo of monthWeeks) {
           try {
-            const response = await revenueAPI.getWeekly(
-              weekInfo.startDate.getFullYear(),
-              weekInfo.weekNumber
-            );
+            const response = await revenueAPI.getRevenues({
+              period: "weekly",
+              year: weekInfo.startDate.getFullYear(),
+              week: weekInfo.weekNumber,
+            });
 
             const data = response.data;
             if (data.code === 1000 && data.result) {
@@ -286,10 +288,14 @@ const RevenueChart = () => {
         ];
         const monthlyRevenue = new Array(12).fill(0);
 
-        // Gọi API /api/revenue/monthly cho từng tháng
+        // 🆕 Gọi API mới cho từng tháng
         for (let month = 1; month <= 12; month++) {
           try {
-            const response = await revenueAPI.getMonthly(currentYear, month);
+            const response = await revenueAPI.getRevenues({
+              period: "monthly",
+              year: currentYear,
+              month: month,
+            });
 
             const data = response.data;
             if (data.code === 1000 && data.result) {

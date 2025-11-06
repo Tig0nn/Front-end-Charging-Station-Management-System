@@ -21,7 +21,7 @@ const formatDateTime = (iso) => {
     const mi = String(d.getMinutes()).padStart(2, "0");
     return {
       date: `${dd}/${mm}/${yyyy}`,
-      time: `${hh}:${mi}`
+      time: `${hh}:${mi}`,
     };
   } catch {
     return iso;
@@ -34,7 +34,6 @@ const StaffPaymentRequests = () => {
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedReq, setSelectedReq] = useState(null);
-
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -51,8 +50,8 @@ const StaffPaymentRequests = () => {
     } catch (e) {
       setError(
         e?.response?.data?.message ||
-        e?.message ||
-        "Không thể tải yêu cầu thanh toán"
+          e?.message ||
+          "Không thể tải yêu cầu thanh toán"
       );
       setItems([]);
     } finally {
@@ -84,23 +83,28 @@ const StaffPaymentRequests = () => {
       // Load lại danh sách để xóa yêu cầu đã xử lý
       await load();
     } catch (err) {
-      setSubmitError(err?.response?.data?.message || "Lỗi khi xác nhận thanh toán");
+      setSubmitError(
+        err?.response?.data?.message || "Lỗi khi xác nhận thanh toán"
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-
   return (
     <Container fluid className="p-4">
-
       <Card className="shadow-sm">
         <Card.Body className="p-4">
           <div className="d-flex align-items-center justify-content-between mb-3">
-            <Card.Title as="h5" className="mb-0">Yêu cầu thanh toán tiền mặt</Card.Title>
+            <Card.Title as="h5" className="mb-0">
+              Yêu cầu thanh toán tiền mặt
+            </Card.Title>
           </div>
           {loading ? (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
+            <div
+              className="d-flex justify-content-center align-items-center"
+              style={{ height: "50vh" }}
+            >
               <div className="spinner-border text-primary" />
             </div>
           ) : error ? (
@@ -126,27 +130,38 @@ const StaffPaymentRequests = () => {
               </thead>
               <tbody>
                 {items.map((r) => (
-                  <tr key={r.requestId || r.id}>
+                  <tr key={r.paymentId || r.requestId || r.id}>
                     <td>
                       {r.driverName || "-"}
                       {r.driverPhone ? (
                         <div className="text-muted small">{r.driverPhone}</div>
                       ) : null}
                     </td>
-                    <td>{r.licensePlate || "-"}</td>
+                    <td>{r.vehicleModel || "-"}</td>
                     <td>
-                      {r.stationName || "-"}
-                      {r.chargingPointName ? (
+                      {r.chargingPointId ? (
                         <div className="text-muted small">
-                          {r.chargingPointName}
+                          {r.chargingPointId.substring(0, 8)}...
                         </div>
-                      ) : null}
+                      ) : (
+                        "-"
+                      )}
                     </td>
-                    <td>{formatDateTime(r.sessionStartTime).date}<br /><div className="text-muted small">{formatDateTime(r.sessionStartTime).time}</div></td>
-                    <td>{(Number(r.energyKwh || 0)).toFixed(1)} kW</td>
-                    <td>{formatCurrency(r.amount)}</td>
                     <td>
-                      <Button variant="dark" size="sm" onClick={() => approveAndOpenModal(r)}>
+                      {formatDateTime(r.startTime).date}
+                      <br />
+                      <div className="text-muted small">
+                        {formatDateTime(r.startTime).time}
+                      </div>
+                    </td>
+                    <td>{Number(r.energyKwh || 0).toFixed(1)} kWh</td>
+                    <td>{formatCurrency(r.costTotal)}</td>
+                    <td>
+                      <Button
+                        variant="dark"
+                        size="sm"
+                        onClick={() => approveAndOpenModal(r)}
+                      >
                         Duyệt yêu cầu
                       </Button>
                     </td>
@@ -157,7 +172,12 @@ const StaffPaymentRequests = () => {
           )}
         </Card.Body>
       </Card>
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered size="lg">
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        centered
+        size="lg"
+      >
         <Modal.Header closeButton>
           <Modal.Title>Xác nhận thanh toán</Modal.Title>
         </Modal.Header>
@@ -166,22 +186,47 @@ const StaffPaymentRequests = () => {
             <>
               <div className="d-flex justify-content">
                 <div className="mr-60">
-                  <p><strong>Tài xế:</strong> {selectedReq.driverName}</p>
-                  <p><strong>Biển số:</strong> {selectedReq.licensePlate}</p>
-                  <p><strong>Số điện thoại:</strong> {selectedReq.driverPhone}</p>
+                  <p>
+                    <strong>Tài xế:</strong> {selectedReq.driverName}
+                  </p>
+                  <p>
+                    <strong>Xe:</strong> {selectedReq.vehicleModel || "-"}
+                  </p>
+                  <p>
+                    <strong>Số điện thoại:</strong> {selectedReq.driverPhone}
+                  </p>
                 </div>
                 <div>
-                  <p><strong>Trạm sạc:</strong> {selectedReq.stationName}</p>
-                  <p><strong>Trụ sạc:</strong> {selectedReq.chargingPointName}</p>
-                  <p><strong>Lượng điện đã sạc:</strong> {(Number(selectedReq.energyKwh || 0)).toFixed(1)} kW</p>
+                  <p>
+                    <strong>Trụ sạc:</strong>{" "}
+                    {selectedReq.chargingPointId
+                      ? selectedReq.chargingPointId.substring(0, 13) + "..."
+                      : "-"}
+                  </p>
+                  <p>
+                    <strong>Thời gian:</strong>{" "}
+                    {formatDateTime(selectedReq.startTime).date}{" "}
+                    {formatDateTime(selectedReq.startTime).time}
+                  </p>
+                  <p>
+                    <strong>Lượng điện đã sạc:</strong>{" "}
+                    {Number(selectedReq.energyKwh || 0).toFixed(1)} kWh
+                  </p>
                 </div>
               </div>
               <div className="text-xl font-bold mt-5">
-                <p><strong>Số tiền:</strong> {formatCurrency(selectedReq.amount)}</p>
+                <p>
+                  <strong>Số tiền:</strong>{" "}
+                  {formatCurrency(selectedReq.costTotal)}
+                </p>
               </div>
 
-              {submitError && <div className="alert alert-danger">{submitError}</div>}
-              {submitSuccess && <div className="alert alert-success">{submitSuccess}</div>}
+              {submitError && (
+                <div className="alert alert-danger">{submitError}</div>
+              )}
+              {submitSuccess && (
+                <div className="alert alert-success">{submitSuccess}</div>
+              )}
             </>
           )}
         </Modal.Body>

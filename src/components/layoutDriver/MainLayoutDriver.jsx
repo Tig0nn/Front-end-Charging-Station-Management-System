@@ -105,18 +105,41 @@ const MainLayoutDriver = ({ children }) => {
       try {
         console.log("📞 MainLayoutDriver: Fetching driver info...");
         const response = await usersAPI.getDriverInfo();
-        const driverData =
+
+        const responseData =
           response.data?.result || response.result || response.data;
 
+        // Backend returns data inside driverProfile object
+        const driverData = responseData.driverProfile || responseData;
+
         const name =
+          driverData.fullname ||
           driverData.fullName ||
+          driverData.firstname ||
           driverData.firstName ||
+          driverData.lastname ||
           driverData.lastName ||
           driverData.username ||
           "Tài xế";
 
         console.log("👤 MainLayoutDriver: Driver name:", name);
         setUserName(name);
+
+        // Also update localStorage for other components
+        const userData = {
+          userId: driverData.userId,
+          email: driverData.email,
+          phone: driverData.phone,
+          dateOfBirth: driverData.dateOfBirth,
+          gender: driverData.gender,
+          firstName: driverData.firstname || driverData.firstName,
+          lastName: driverData.lastname || driverData.lastName,
+          fullName: driverData.fullname || driverData.fullName,
+          address: driverData.address,
+          joinDate: driverData.joinDate,
+          role: "DRIVER",
+        };
+        localStorage.setItem("user", JSON.stringify(userData));
       } catch (error) {
         console.error(
           "❌ MainLayoutDriver: Error fetching driver info:",
