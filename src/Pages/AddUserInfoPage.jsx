@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usersAPI } from "../lib/apiServices"; // dùng usersAPI cho update + get info
 import { useAuth } from "../hooks/useAuth.jsx";
+
 export default function AddUserInfoPage() {
   const { logout } = useAuth();
+  const navigate = useNavigate();
+  
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
   const [form, setForm] = useState({
     last_name: "",
     first_name: "",
@@ -15,24 +19,15 @@ export default function AddUserInfoPage() {
     dob: "",
     phoneNum: "",
   });
-
-  const [agree, setAgree] = useState(false);
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
 
   const handleChangeValue = (e) => {
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
   const handleFocus = (e) => {
-    const key = e.target.name;
-    if (errors[key]) {
-      const n = { ...errors };
-      delete n[key];
-      setErrors(n);
     const key = e.target.name;
     if (errors[key]) {
       const n = { ...errors };
@@ -45,11 +40,9 @@ export default function AddUserInfoPage() {
     e.preventDefault();
     const { last_name, first_name, gender, dob, phoneNum } = form;
     const newErrors = {};
-    const newErrors = {};
 
-    if (!last_name.trim()) newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
-    else if (last_name.trim().length < 1 || last_name.trim().length > 20)
-    if (!last_name.trim()) newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
+    if (!last_name.trim())
+      newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
     else if (last_name.trim().length < 1 || last_name.trim().length > 20)
       newErrors.last_name = "Họ giới hạn từ 1-20 kí tự.";
 
@@ -68,9 +61,7 @@ export default function AddUserInfoPage() {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-    if (Object.keys(newErrors).length > 0) return;
 
-    try {
     try {
       setIsSubmitting(true);
       await usersAPI.updateDriverInfo({
@@ -90,18 +81,21 @@ export default function AddUserInfoPage() {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       navigate("/driver");
     } catch (err) {
-      alert(err?.response?.data?.message || err.message || "Đã có lỗi xảy ra");
+      alert(
+        err?.response?.data?.message || err.message || "Đã có lỗi xảy ra"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-green-50 signup-page">
       <div className="w-[500px] bg-white rounded-xl shadow p-8">
         <div className="text-center mb-6">
-          <h1 className="text-xl font-semibold text-gray-800">Vui lòng nhập thông tin</h1>
+          <h1 className="text-xl font-semibold text-gray-800">
+            Vui lòng nhập thông tin
+          </h1>
         </div>
 
         <form onSubmit={handleSubmitForm} className="space-y-5">
@@ -117,8 +111,11 @@ export default function AddUserInfoPage() {
                 placeholder="Họ"
                 onChange={handleChangeValue}
                 onFocus={handleFocus}
-                className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.last_name ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
-                  }`}
+                className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${
+                  errors.last_name
+                    ? "border-red-500 ring-1 ring-red-500"
+                    : "border-gray-300"
+                }`}
               />
               <input
                 name="first_name"
@@ -126,8 +123,11 @@ export default function AddUserInfoPage() {
                 placeholder="Tên"
                 onChange={handleChangeValue}
                 onFocus={handleFocus}
-                className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.first_name ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
-                  }`}
+                className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${
+                  errors.first_name
+                    ? "border-red-500 ring-1 ring-red-500"
+                    : "border-gray-300"
+                }`}
               />
             </div>
             {(errors.last_name || errors.first_name) && (
@@ -179,10 +179,15 @@ export default function AddUserInfoPage() {
               type="date"
               onChange={handleChangeValue}
               onFocus={handleFocus}
-              className={`w-full px-4 py-2 border rounded-lg text-gray-700 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.dob ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
-                }`}
+              className={`w-full px-4 py-2 border rounded-lg text-gray-700 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${
+                errors.dob
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : "border-gray-300"
+              }`}
             />
-            {errors.dob && <div className="text-red-500 text-sm mt-1">{errors.dob}</div>}
+            {errors.dob && (
+              <div className="text-red-500 text-sm mt-1">{errors.dob}</div>
+            )}
           </div>
 
           {/* SĐT */}
@@ -196,11 +201,16 @@ export default function AddUserInfoPage() {
               placeholder="+84-XXX-XXX-XXX"
               onChange={handleChangeValue}
               onFocus={handleFocus}
-              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${errors.phoneNum ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"
-                }`}
+              className={`w-full px-4 py-2 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-[#2bf0b5] focus:outline-none ${
+                errors.phoneNum
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : "border-gray-300"
+              }`}
             />
             {errors.phoneNum && (
-              <div className="text-red-500 text-sm mt-1">{errors.phoneNum}</div>
+              <div className="text-red-500 text-sm mt-1">
+                {errors.phoneNum}
+              </div>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -219,15 +229,15 @@ export default function AddUserInfoPage() {
             </label>
           </div>
 
-
           {/* Nút gửi */}
           <button
             type="submit"
             disabled={!agree || isSubmitting}
-            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${!agree || isSubmitting
+            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${
+              !agree || isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#2bf0b5] hover:bg-[#00ffc6] cursor-pointer"
-              }`}
+            }`}
           >
             {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
           </button>
@@ -243,6 +253,5 @@ export default function AddUserInfoPage() {
         </form>
       </div>
     </div>
-
   );
 }
