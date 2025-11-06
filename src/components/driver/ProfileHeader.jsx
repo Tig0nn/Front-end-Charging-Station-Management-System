@@ -102,7 +102,7 @@ const ProfileHeader = ({ user }) => {
                   border: "1px solid #e5e7eb",
                 }}
               >
-                Thành viên từ {formatMemberSince(user?.createdAt)}
+                Thành viên từ {formatMemberSince(user?.joinDate || user?.createdAt)}
               </Badge>
             </div>
           </div>
