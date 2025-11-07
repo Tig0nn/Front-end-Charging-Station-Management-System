@@ -4,7 +4,6 @@ import {
   Row,
   Col,
   Card,
-  Button,
   Spinner,
   Dropdown,
 } from "react-bootstrap";
@@ -52,12 +51,12 @@ const MainLayoutAdmin = ({ children }) => {
   // Navigation tabs
   const tabs = [
     { path: "/admin/reports", label: "Phân tích", icon: "bi-graph-up" },
-    { path: "/admin/stations", label: "Trạm sạc", icon: "bi-geo-alt" },
-    { path: "/admin/users", label: "Người dùng", icon: "bi-people" },
+    { path: "/admin/stations", label: "Trạm sạc", icon: "bi-geo-alt-fill" },
+    { path: "/admin/users", label: "Người dùng", icon: "bi-people-fill" },
     {
       path: "/admin/incidents",
       label: "Sự cố",
-      icon: "bi-exclamation-triangle",
+      icon: "bi-exclamation-triangle-fill",
     },
     {
       path: "/admin/qr-codes",
@@ -344,8 +343,10 @@ const MainLayoutAdmin = ({ children }) => {
           <Row className="mb-4">
             <Col>
               <div
-                className="d-inline-flex gap-2 p-2"
                 style={{
+                  display: "inline-flex",
+                  gap: "8px",
+                  padding: "8px",
                   backgroundColor: "#f8fafc",
                   borderRadius: "50px",
                   border: "1px solid #e2e8f0",
@@ -353,39 +354,51 @@ const MainLayoutAdmin = ({ children }) => {
                 }}
               >
                 {tabs.map((tab) => (
-                  <Button
+                  <button
                     key={tab.path}
-                    variant="link"
-                    className={`d-flex align-items-center gap-2 text-decoration-none border-0`}
+                    className="nav-pill-button"
                     style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
                       borderRadius: "50px",
-                      padding: "6px 20px",
-                      color: isActiveTab(tab.path) ? "#ffffff" : "#64748b",
-                      backgroundColor: isActiveTab(tab.path)
+                      padding: "8px 20px",
+                      fontSize: "14px",
+                      fontWeight: isActiveTab(tab.path) ? "600" : "500",
+                      border: "none",
+                      background: isActiveTab(tab.path)
                         ? "#22c55e"
                         : "transparent",
-                      fontWeight: isActiveTab(tab.path) ? "600" : "500",
-                      fontSize: "14px",
-                      boxShadow: isActiveTab(tab.path)
-                        ? "0 4px 6px rgba(34, 197, 94, 0.25), 0 2px 4px rgba(0,0,0,0.1)"
-                        : "none",
+                      color: isActiveTab(tab.path) ? "#ffffff" : "#64748b",
+                      cursor: "pointer",
                       transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                       transform: isActiveTab(tab.path)
                         ? "translateY(-1px)"
-                        : "translateY(0px)",
-                      minWidth: "fit-content",
+                        : "translateY(0)",
+                      boxShadow: isActiveTab(tab.path)
+                        ? "0 4px 6px rgba(34, 197, 94, 0.25)"
+                        : "none",
+                      whiteSpace: "nowrap",
+                      outline: "none",
+                      textDecoration: "none",
+                      WebkitTapHighlightColor: "transparent",
                     }}
                     onMouseEnter={(e) => {
                       if (!isActiveTab(tab.path)) {
-                        e.target.style.backgroundColor = "#e2e8f0";
-                        e.target.style.color = "#334155";
+                        e.currentTarget.style.backgroundColor = "#e2e8f0";
+                        e.currentTarget.style.color = "#334155";
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActiveTab(tab.path)) {
-                        e.target.style.backgroundColor = "transparent";
-                        e.target.style.color = "#64748b";
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = "#64748b";
                       }
+                    }}
+                    onMouseDown={(e) => {
+                      e.currentTarget.style.color = isActiveTab(tab.path)
+                        ? "#ffffff"
+                        : "#64748b";
                     }}
                     onClick={() => navigate(tab.path)}
                   >
@@ -394,7 +407,7 @@ const MainLayoutAdmin = ({ children }) => {
                       style={{ fontSize: "16px" }}
                     ></i>
                     <span>{tab.label}</span>
-                  </Button>
+                  </button>
                 ))}
               </div>
             </Col>

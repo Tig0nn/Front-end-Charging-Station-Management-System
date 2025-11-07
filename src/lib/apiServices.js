@@ -92,7 +92,7 @@ const apiServices = {
   // 🚉 Stations API Services
   // =========================
   stations: {
-    getAllDetails: () => api.get("/api/stations"),
+    getAllDetails: () => api.get("/api/stations?view=detail"),
     create: (stationData) => api.post("/api/stations", stationData),
     update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),
     delete: (stationId) => api.delete(`/api/stations/${stationId}`),

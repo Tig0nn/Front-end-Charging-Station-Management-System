@@ -38,7 +38,7 @@ export default function EVChargingLanding() {
     const fetchPlans = async () => {
       try {
         setLoading(true);
-        const response = await plansAPI.getPlans();
+        const response = await plansAPI.getAll();
         setPlans(response.data?.result || response.data || []);
         setError(null);
       } catch (err) {
@@ -168,12 +168,12 @@ export default function EVChargingLanding() {
             </h1>
 
             <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Bạn có xe điện? Chúng tôi có trạm sạc! Hãy tin tưởng vào T-GREEN.
+              Bạn có xe điện? Chúng tôi có trạm sạc! Hãy tin tưởng vào
+              T-GREEN.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <button
-                onClick={() => navigate("/signup")}
+              <button  onClick={() => navigate("/signup")}
                 className="font-bold !rounded-2xl transition-[background_0.4s_ease,box-shadow_0.4s_ease,transform_0.1s_ease] group px-8 py-4 
               bg-gradient-to-r from-[#2bf0b5] to-[#00ffc6] text-white hover:scale-105 hover: bg-gradient-to-r from-[#5fffd4] to-[#2bf0b5]
               hover:shadow-[0_0_8px_#00ffc6,0_0_16px_#00ffc6,0_0_24px_#00ffc6] flex items-center"
