@@ -282,6 +282,7 @@ export const AuthProvider = ({ children }) => {
 
       // Clear ALL localStorage keys to prevent old data from persisting
       localStorage.removeItem("user");
+      localStorage.removeItem("staff");
       localStorage.removeItem("users");
       localStorage.removeItem("role");
       localStorage.removeItem("authToken");

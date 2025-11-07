@@ -116,7 +116,7 @@ function Login() {
       <div className="w-full lg:w-2/5 bg-white flex flex-col px-8 sm:px-12 lg:px-16 py-8 relative z-10">
         {/* Logo và tên ở góc trái trên cùng */}
         <div className="flex items-center gap-4 mb-8 -ml-2">
-          <img src={logo} alt="Logo" className="h-28 object-contain" />
+          <img src={logo} alt="Logo" className="h-28 object-contain cursor-pointer"  onClick={() => navigate("/")}/>
           <span className="text-3xl font-bold text-gray-900">T-Green</span>
         </div>
 

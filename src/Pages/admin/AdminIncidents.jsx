@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Container,
   Row,
@@ -56,8 +58,8 @@ const AdminIncidents = () => {
       console.error("❌ Error loading incidents:", err);
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Không thể tải danh sách báo cáo sự cố"
+        err.message ||
+        "Không thể tải danh sách báo cáo sự cố"
       );
     } finally {
       setLoading(false);
@@ -77,7 +79,21 @@ const AdminIncidents = () => {
     };
     setStats(stats);
   };
-
+  const handleSubmit = async (status, incidentId) => {
+    try {
+      const response = await adminAPI.updateIncidentStatus(status, incidentId);
+      console.log("Submit report response:", response.data);
+      const inci = await adminAPI.getAllIncidents();
+      const data = inci?.data?.result || inci?.data || [];
+      setIncidents(data);
+      setFilteredIncidents(data);
+      calculateStats(data);
+      toast.success("Thao tác thành công!");
+    } catch (err) {
+      console.error("Lỗi khi gửi báo cáo sự cố:", err);
+      toast.error("Duyệt thất bại! Vui lòng thử lại.");
+    }
+  };
   // Filter incidents
   useEffect(() => {
     let filtered = [...incidents];
@@ -112,15 +128,19 @@ const AdminIncidents = () => {
   const getSeverityBadge = (severity) => {
     switch (severity) {
       case "CRITICAL":
-        return "danger";
+        return <Badge bg="dark">Nghiêm trọng</Badge>;
       case "HIGH":
-        return "warning";
+        return <Badge bg="danger">Cao</Badge>;
       case "MEDIUM":
-        return "info";
+        return (
+          <Badge bg="warning" text="dark">
+            Trung bình
+          </Badge>
+        );
       case "LOW":
-        return "secondary";
+        return <Badge bg="info">Thấp</Badge>;
       default:
-        return "secondary";
+        return <Badge bg="secondary">{severity}</Badge>;
     }
   };
 
@@ -204,6 +224,7 @@ const AdminIncidents = () => {
 
   return (
     <Container fluid className="p-4">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -312,63 +333,48 @@ const AdminIncidents = () => {
               <Table hover className="mb-0">
                 <thead className="bg-light">
                   <tr>
-                    <th className="border-0">ID</th>
-                    <th className="border-0">Trạm</th>
-                    <th className="border-0">Trụ sạc</th>
-                    <th className="border-0">Mô tả</th>
+                    <th className="border-0">Trạm/Trụ sạc</th>
                     <th className="border-0">Mức độ</th>
-                    <th className="border-0">Trạng thái</th>
                     <th className="border-0">Người báo cáo</th>
-                    <th className="border-0">Thời gian</th>
+                    <th className="border-0">Thời gian báo cáo</th>
+                    <th className="border-0">Trạng thái</th>
                     <th className="border-0">Hành động</th>
+
                   </tr>
                 </thead>
                 <tbody>
                   {filteredIncidents.map((incident) => (
                     <tr key={incident.incidentId}>
                       <td className="align-middle">
-                        <small className="font-monospace">
-                          {incident.incidentId?.substring(0, 8)}...
-                        </small>
+                        {incident.stationName || "-"}
+                        {incident.chargingPointName ? (
+                          <div className="text-muted small">{incident.chargingPointName}</div>
+                        ) : null}
                       </td>
-                      <td className="align-middle">
-                        {incident.stationName || "N/A"}
-                      </td>
-                      <td className="align-middle">
-                        <Badge bg="secondary">
-                          {incident.chargingPointName || "N/A"}
-                        </Badge>
-                      </td>
-                      <td className="align-middle">
-                        <div
-                          style={{
-                            maxWidth: "200px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {incident.description}
-                        </div>
-                      </td>
-                      <td className="align-middle">
-                        <Badge bg={getSeverityBadge(incident.severity)}>
-                          {getSeverityText(incident.severity)}
-                        </Badge>
-                      </td>
-                      <td className="align-middle">
-                        <Badge bg={getStatusBadge(incident.status)}>
-                          {getStatusText(incident.status)}
-                        </Badge>
-                      </td>
+                      <td className="align-middle">{getSeverityBadge(incident.severity)}</td>
                       <td className="align-middle">
                         {incident.reporterName || "N/A"}
                       </td>
                       <td className="align-middle">
                         <small>{formatDate(incident.reportedAt)}</small>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap align-middle">
+                        {incident.status === "WAITING" ? (
+                          <span className="text-red-600 font-medium">
+                            Đang chờ xét duyệt
+                          </span>
+                        ) : incident.status === "WORKING" ? (
+                          <span className="text-yellow-600 font-medium">
+                            Đang giải quyết
+                          </span>
+                        ) : (
+                          <span className="text-green-600 font-medium">
+                            Đã xử lý
+                          </span>
+                        )}
+                      </td>
                       <td className="align-middle">
-                        <Button
+                        <Button className="me-3"
                           variant="outline-primary"
                           size="sm"
                           onClick={() => viewIncidentDetails(incident)}
@@ -376,6 +382,24 @@ const AdminIncidents = () => {
                           <i className="bi bi-eye me-1"></i>
                           Chi tiết
                         </Button>
+                        {incident.status === "WAITING" ? (
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleSubmit("WORKING", incident.incidentId)}
+                          >
+                            Duyệt
+                          </Button>
+                        ) : incident.status === "WORKING" ? (
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleSubmit("DONE", incident.incidentId)}
+                          >
+                            Hoàn thành
+                          </Button>
+                        ) : " "}
+
                       </td>
                     </tr>
                   ))}
