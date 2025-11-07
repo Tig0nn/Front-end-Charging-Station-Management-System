@@ -30,11 +30,11 @@ const UsersList = () => {
   // SỬA 1: Cập nhật state của form plan theo API spec
   const [planFormData, setPlanFormData] = useState({
     name: "",
-    price: "", // (Đây là monthlyFee)
-    benefits: "", // (Đây là description)
+    monthlyFee: "", // Phí hàng tháng
+    pricePerKwh: "", // Giá mỗi kWh
+    pricePerMinute: "", // Giá mỗi phút
+    benefits: "", // Mô tả quyền lợi
     billingType: "MONTHLY_SUBSCRIPTION",
-    discountPercent: "", // Thêm field discount
-    freeChargingMinutes: "", // Phút sạc miễn phí
   });
 
   // Tách hàm fetchPlans ra
@@ -61,6 +61,9 @@ const UsersList = () => {
       const transformedPlans = plansData.map((plan, index) => {
         console.log(`Plan ${index}:`, plan);
         console.log(`  → benefits: "${plan.benefits}"`);
+        console.log(
+          `  → pricePerKwh: ${plan.pricePerKwh}, pricePerMinute: ${plan.pricePerMinute}`
+        );
 
         return {
           id: plan.planId || plan.id,
@@ -69,11 +72,10 @@ const UsersList = () => {
           price: plan.monthlyFee || 0,
           period: plan.billingType === "PAY_AS_YOU_GO" ? "lượt" : "tháng",
           billingType: plan.billingType,
-          discountPercent: plan.discountPercent || 0,
-          freeChargingMinutes: plan.freeChargingMinutes || 0,
+          pricePerKwh: plan.pricePerKwh || 0,
+          pricePerMinute: plan.pricePerMinute || 0,
           // Backend CHỈ HỖ TRỢ field "benefits", không có "description"
           benefits: plan.benefits || "",
-          isPopular: index === 1,
         };
       });
 
@@ -115,11 +117,11 @@ const UsersList = () => {
       setEditingPlan(plan);
       const formData = {
         name: plan.name,
-        price: (plan.monthlyFee || plan.price || 0).toString(),
-        benefits: plan.benefits || "", // description từ backend
+        monthlyFee: (plan.monthlyFee || 0).toString(),
+        pricePerKwh: (plan.pricePerKwh || 0).toString(),
+        pricePerMinute: (plan.pricePerMinute || 0).toString(),
+        benefits: plan.benefits || "",
         billingType: plan.billingType || "MONTHLY_SUBSCRIPTION",
-        discountPercent: (plan.discountPercent || 0).toString(),
-        freeChargingMinutes: (plan.freeChargingMinutes || 0).toString(),
       };
       console.log("📋 Form data set to:", formData);
       setPlanFormData(formData);
@@ -129,11 +131,11 @@ const UsersList = () => {
       setEditingPlan(null);
       setPlanFormData({
         name: "",
-        price: "",
+        monthlyFee: "0",
+        pricePerKwh: "0",
+        pricePerMinute: "0",
         benefits: "",
         billingType: "MONTHLY_SUBSCRIPTION",
-        discountPercent: "0",
-        freeChargingMinutes: "0",
       });
     }
     setShowPlanModal(true);
@@ -153,34 +155,30 @@ const UsersList = () => {
     }));
   };
 
-  // SỬA 5: CHỈ GỬI FIELD BENEFITS (backend chỉ hỗ trợ benefits)
+  // SỬA 5: GỬI ĐÚNG CẤU TRÚC BACKEND
   const handlePlanSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Prepare data - Backend chỉ lưu vào field "benefits", KHÔNG phải "description"
+      // Prepare data - Khớp 100% với backend API
       const planData = {
         name: planFormData.name,
         billingType: planFormData.billingType,
-        monthlyFee: parseFloat(planFormData.price) || 0,
-        discountPercent: parseFloat(planFormData.discountPercent) || 0,
-        freeChargingMinutes: parseInt(planFormData.freeChargingMinutes) || 0,
-        benefits: planFormData.benefits || "", // CHỈ GỬI benefits
+        monthlyFee: parseFloat(planFormData.monthlyFee) || 0,
+        pricePerKwh: parseFloat(planFormData.pricePerKwh) || 0,
+        pricePerMinute: parseFloat(planFormData.pricePerMinute) || 0,
+        benefits: planFormData.benefits || "",
       };
+
+      console.log("📤 Sending to backend:", planData);
 
       if (editingPlan) {
         console.log("🔄 Updating plan:", editingPlan.id);
-        console.log("📤 Update data:", planData);
         const response = await plansAPI.update(editingPlan.id, planData);
         console.log("✅ Update response:", response);
-        console.log(
-          "✅ Updated result:",
-          response?.data?.result || response?.result
-        );
         alert("Cập nhật gói dịch vụ thành công!");
       } else {
         console.log("➕ Creating new plan");
-        console.log("📤 Create data:", planData);
         const response = await plansAPI.create(planData);
         console.log("✅ Create response:", response);
         alert("Tạo gói dịch vụ thành công!");
@@ -538,43 +536,51 @@ const UsersList = () => {
                   <Form.Label>Phí hàng tháng (VNĐ) *</Form.Label>
                   <Form.Control
                     type="number"
-                    name="price"
-                    value={planFormData.price}
+                    name="monthlyFee"
+                    value={planFormData.monthlyFee}
                     onChange={handlePlanInputChange}
                     required
                     min="0"
+                    step="0.01"
                   />
                   <Form.Text>Nhập 0 nếu là gói "Trả theo lượt".</Form.Text>
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Giảm giá (%)</Form.Label>
+                  <Form.Label>Giá mỗi kWh (VNĐ) *</Form.Label>
                   <Form.Control
                     type="number"
-                    name="discountPercent"
-                    value={planFormData.discountPercent}
+                    name="pricePerKwh"
+                    value={planFormData.pricePerKwh}
                     onChange={handlePlanInputChange}
+                    required
                     min="0"
-                    max="100"
-                    step="0.1"
+                    step="0.01"
                   />
-                  <Form.Text>Phần trăm giảm giá (0-100)</Form.Text>
+                  <Form.Text>Giá điện mỗi kWh (VD: 3800)</Form.Text>
                 </Form.Group>
               </Col>
             </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Phút sạc miễn phí</Form.Label>
-              <Form.Control
-                type="number"
-                name="freeChargingMinutes"
-                value={planFormData.freeChargingMinutes}
-                onChange={handlePlanInputChange}
-                min="0"
-              />
-              <Form.Text>Số phút sạc miễn phí mỗi tháng</Form.Text>
-            </Form.Group>
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Giá mỗi phút (VNĐ)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="pricePerMinute"
+                    value={planFormData.pricePerMinute}
+                    onChange={handlePlanInputChange}
+                    min="0"
+                    step="0.01"
+                  />
+                  <Form.Text>
+                    Phí tính theo thời gian sạc (thường = 0)
+                  </Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
 
             <Form.Group className="mb-3">
               <Form.Label>Mô tả và quyền lợi *</Form.Label>
