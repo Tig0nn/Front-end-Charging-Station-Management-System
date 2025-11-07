@@ -11,7 +11,7 @@ import {
 import { useNavigate, useLocation } from "react-router";
 import { Toaster } from "react-hot-toast";
 import Header from "./Header";
-import { systemOverviewAPI } from "../../lib/apiServices.js";
+import { systemOverviewAPI, usersAPI } from "../../lib/apiServices.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const MainLayoutAdmin = ({ children }) => {
@@ -19,6 +19,27 @@ const MainLayoutAdmin = ({ children }) => {
   const location = useLocation();
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [adminProfile, setAdminProfile] = useState(null);
+
+  // Fetch admin profile
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      try {
+        const res = await usersAPI.getProfile();
+        console.log("📋 Admin profile response:", res);
+
+        // Backend trả về: { code: 1000, result: { role: "ADMIN", adminProfile: {...} } }
+        const resultData = res.data?.result || res.result;
+        const profileData = resultData?.adminProfile || resultData;
+
+        console.log("👤 Admin profile data:", profileData);
+        setAdminProfile(profileData);
+      } catch (err) {
+        console.error("❌ Fetch admin profile failed:", err);
+      }
+    };
+    fetchAdminProfile();
+  }, []);
 
   // Fetch overview data
   useEffect(() => {
@@ -36,12 +57,6 @@ const MainLayoutAdmin = ({ children }) => {
     };
     fetchOverview();
   }, []);
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount || 0);
-  };
 
   // Format number - default 0 nếu chưa có data
   const formatNumber = (num) => {
@@ -126,7 +141,8 @@ const MainLayoutAdmin = ({ children }) => {
                       fontSize: "14px",
                     }}
                   >
-                    Quản trị trung tâm EVCharge - Lê Quang Cường
+                    Quản trị trung tâm EVCharge -{" "}
+                    {adminProfile?.fullName || "Admin"}
                   </p>
                 </div>
               </div>
@@ -328,11 +344,10 @@ const MainLayoutAdmin = ({ children }) => {
                           lineHeight: "1",
                         }}
                       >
-                        {overview?.currentMonthRevenue >= 1000000
-                          ? `${(overview.currentMonthRevenue / 1000000).toFixed(
-                              1
-                            )}M`
-                          : formatCurrency(overview?.currentMonthRevenue)}
+                        {Math.trunc(
+                          Number(overview?.currentMonthRevenue || 0)
+                        ).toLocaleString("vi-VN")}
+                        ₫
                       </h2>
                     </div>
                   </Card.Body>

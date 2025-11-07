@@ -15,7 +15,7 @@ const ProfileLayout = () => {
     try {
       setLoading(true);
       console.log("📞 Fetching driver info from API...");
-      const response = await usersAPI.getDriverInfo();
+      const response = await usersAPI.getProfile();
 
       const responseData =
         response.data?.result || response.result || response.data;

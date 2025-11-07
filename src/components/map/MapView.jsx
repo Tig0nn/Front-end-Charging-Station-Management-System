@@ -116,26 +116,109 @@ const MapView = ({
               },
             }}
           >
-            <Popup className="custom-popup">
+            <Popup className="custom-popup" maxWidth={300}>
               <div className="popup-content-inner">
                 <h3 className="popup-title">{station.stationName}</h3>
                 <div className="popup-content">
                   <p>
-                    <strong>Địa chỉ:</strong> {station.address}
+                    <strong>
+                      <i
+                        className="bi bi-geo-alt-fill"
+                        style={{ marginRight: "6px" }}
+                      ></i>
+                      Địa chỉ:
+                    </strong>{" "}
+                    {station.address}
                   </p>
                   <p>
-                    <strong>Hotline:</strong> {station.hotline || "N/A"}
+                    <strong>
+                      <i
+                        className="bi bi-telephone-fill"
+                        style={{ marginRight: "6px" }}
+                      ></i>
+                      Hotline:
+                    </strong>{" "}
+                    {station.hotline || "N/A"}
                   </p>
                   <p>
-                    <strong>Trạng thái:</strong>{" "}
+                    <strong>
+                      <i
+                        className="bi bi-tags-fill"
+                        style={{ marginRight: "6px" }}
+                      ></i>
+                      Trạng thái:
+                    </strong>{" "}
                     <span className={statusDisplay.className}>
                       {statusDisplay.text}
                     </span>
                   </p>
+
+                  {/* Trụ sạc sẵn sàng */}
+                  <p>
+                    <strong>
+                      <i
+                        className="bi bi-lightning-charge-fill"
+                        style={{ marginRight: "6px", color: "#10b981" }}
+                      ></i>
+                      Trụ đang rảnh:
+                    </strong>{" "}
+                    <span
+                      style={{
+                        color:
+                          (station.availableChargingPoints || 0) > 0
+                            ? "#10b981"
+                            : "#ef4444",
+                        fontWeight: "600",
+                        fontSize: "16px",
+                      }}
+                    >
+                      {station.availableChargingPoints || 0}
+                    </span>
+                  </p>
+
+                  {/* 2. Dòng hiển thị tổng số trụ */}
+                  <p>
+                    <strong>
+                      {/* Bạn có thể dùng icon khác nếu muốn, ví dụ: bi-hdd-stack-fill */}
+                      <i
+                        className="bi bi-diagram-3-fill"
+                        style={{ marginRight: "6px", color: "#6b7280" }}
+                      ></i>
+                      Tổng số trụ:
+                    </strong>{" "}
+                    <span
+                      style={{
+                        fontWeight: "600",
+                        fontSize: "16px",
+                      }}
+                    >
+                      {/* Dùng logic này để lấy tổng số trụ chính xác:
+                    Ưu tiên totalChargingPoints, nếu nó = 0 (như trong log) thì dùng chargingPointsCount 
+                  */}
+                      {(station.totalChargingPoints > 0
+                        ? station.totalChargingPoints
+                        : station.chargingPointsCount) || 0}
+                    </span>
+                  </p>
+
+                  {/* Nhân viên phụ trách */}
+                  {station.staffName && (
+                    <p>
+                      <strong>
+                        <i
+                          className="bi bi-person-fill"
+                          style={{ marginRight: "6px" }}
+                        ></i>
+                        Nhân viên:
+                      </strong>{" "}
+                      {station.staffName}
+                    </p>
+                  )}
                 </div>
                 <button
                   className="popup-button"
                   onClick={() => onShowDirections(station)}
+                  style={{ marginTop: "12px" }}
                 >
                   <MapIcon className="icon-btn" />
                   Chỉ đường

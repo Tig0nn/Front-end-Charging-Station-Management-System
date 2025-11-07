@@ -66,12 +66,11 @@ const PlanCard = ({
           </span>
         </div>
       )}
-
       {/* Header: Tên và giá */}
       <div className="text-center mb-4">
         <h3 className="text-xl font-bold text-gray-800 mb-2">{plan.name}</h3>
         <p className="text-4xl font-extrabold text-gray-900 mb-2">
-          {formatPrice(plan.monthlyFee || plan.price || 0)}
+          {formatPrice(plan.monthlyFee)}
         </p>
 
         {/* Billing Type Badge */}
@@ -83,34 +82,26 @@ const PlanCard = ({
           </div>
         )}
       </div>
-
-      {/* Thông tin chi tiết giá - LUÔN HIỂN THỊ ngay cả khi = 0 */}
       <div className="bg-gray-50 rounded-lg p-3 mb-4">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center text-green-600">
-            <FaClock className="w-4 h-4 mr-2" />
-            <span className="font-medium">Phút sạc miễn phí</span>
+            <span className="font-medium">Giá Mỗi Phút</span>
           </div>
           <span className="font-bold text-green-600">
-            {plan.freeChargingMinutes || 0} phút
+            {`${Number(plan.pricePerMinute || 0).toLocaleString("vi-VN")}đ`}
           </span>
         </div>
       </div>
-
-      {/* Giảm giá - LUÔN HIỂN THỊ */}
       <div className="bg-gray-50 rounded-lg p-3 mb-4">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center text-green-600">
-            <FaPercent className="w-4 h-4 mr-2" />
-            <span className="font-medium">Giảm giá</span>
+            <span className="font-medium">Giá Mỗi KWh</span>
           </div>
           <span className="font-bold text-green-600">
-            {plan.discountPercent || 0}%
+            {`${Number(plan.pricePerKwh || 0).toLocaleString("vi-VN")}đ`}
           </span>
         </div>
       </div>
-
-      {/* Quyền lợi - hiển thị dạng bullet list */}
       {plan.benefits && (
         <div className="mb-6 flex-grow">
           <ul className="space-y-3">
@@ -141,7 +132,6 @@ const PlanCard = ({
           </ul>
         </div>
       )}
-
       {/* Action button - chỉ hiển thị khi mode = driver */}
       {mode === "driver" && onSelect && (
         <button

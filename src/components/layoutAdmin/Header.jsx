@@ -2,19 +2,31 @@ import React, { useEffect, useState } from "react";
 import { Navbar, Container, Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth.jsx";
+import { usersAPI } from "../../lib/apiServices.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Header = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const [userName, setUserName] = useState("");
+  const [adminProfile, setAdminProfile] = useState(null);
 
   useEffect(() => {
-    // Lấy tên user từ localStorage hoặc context
-    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-    const name =
-      userInfo.name || userInfo.fullName || userInfo.username || "Admin";
-    setUserName(name);
+    const fetchAdminProfile = async () => {
+      try {
+        const res = await usersAPI.getProfile();
+        console.log("📋 Admin header profile response:", res);
+
+        // Backend trả về: { code: 1000, result: { role: "ADMIN", adminProfile: {...} } }
+        const resultData = res.data?.result || res.result;
+        const profileData = resultData?.adminProfile || resultData;
+
+        console.log("👤 Admin header profile data:", profileData);
+        setAdminProfile(profileData);
+      } catch (err) {
+        console.error("❌ Fetch admin profile failed:", err);
+      }
+    };
+    fetchAdminProfile();
   }, []);
 
   const handleLogout = () => {
@@ -59,8 +71,28 @@ const Header = () => {
 
         {/* Right Side - User Info & Logout */}
         <div className="d-flex align-items-center gap-3">
-          {/* User Name */}
-          <span className="text-muted fw-medium">{userName} (Quản trị)</span>
+          {/* User Avatar & Name */}
+          <div className="d-flex align-items-center gap-2">
+            <div
+              className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white"
+              style={{
+                width: "36px",
+                height: "36px",
+                fontSize: "14px",
+                fontWeight: "600",
+              }}
+            >
+              {adminProfile?.fullName?.charAt(0).toUpperCase() || "A"}
+            </div>
+            <div className="d-flex flex-column">
+              <span className="fw-semibold" style={{ fontSize: "14px" }}>
+                {adminProfile?.fullName || "Admin"}
+              </span>
+              <span className="text-muted" style={{ fontSize: "12px" }}>
+                Quản trị viên
+              </span>
+            </div>
+          </div>
 
           {/* Logout Button */}
           <Button

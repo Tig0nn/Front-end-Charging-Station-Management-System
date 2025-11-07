@@ -74,7 +74,7 @@ export default function AddUserInfoPage() {
       });
 
       // Get fresh user info from API
-      const prof = await usersAPI.getDriverInfo();
+      const prof = await usersAPI.getProfile();
       const updatedUser = prof?.data?.result;
 
       if (!updatedUser) {

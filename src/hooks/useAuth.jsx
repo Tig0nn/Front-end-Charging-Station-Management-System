@@ -62,9 +62,15 @@ export const AuthProvider = ({ children }) => {
 
       if (role === "DRIVER") {
         usersAPI
-          .getDriverInfo()
+          .getProfile()
           .then((response) => {
-            const userData = response.data.result || response.data;
+            const resultData = response.data.result || response.data;
+
+            // Flatten structure: nếu có driverProfile thì merge vào root level
+            const userData = resultData.driverProfile
+              ? { ...resultData.driverProfile, role: resultData.role }
+              : resultData;
+
             setUser(userData);
             setIsAuthenticated(true);
             localStorage.setItem("user", JSON.stringify(userData));
@@ -163,7 +169,7 @@ export const AuthProvider = ({ children }) => {
       // 5) Nếu là DRIVER, gọi getDriverInfo để lấy thông tin đầy đủ
       if (role === "DRIVER") {
         try {
-          const userInfoResponse = await usersAPI.getDriverInfo();
+          const userInfoResponse = await usersAPI.getProfile();
           console.log("Driver info response:", userInfoResponse.data);
 
           const responseData =

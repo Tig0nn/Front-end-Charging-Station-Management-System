@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "./MapPage.css";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices.js";
 import ChargerSelectionModal from "../../components/ChargerSelectionModal";
-import ChargingPanel from "../../components/ChargingPanel";
+
 import {
   StationList,
   MapView,
@@ -99,13 +99,10 @@ export default function MapPage() {
   const fetchStations = async () => {
     try {
       setLoading(true);
-      // Call API to get all stations (backend returns OPERATIONAL by default)
       const response = await stationsAPI.getAllDetails();
       console.log("📍 Stations API response:", response);
 
       let stationsData = [];
-
-      // Backend returns structure: { code, message, result: [...] }
       if (response.data?.result && Array.isArray(response.data.result)) {
         stationsData = response.data.result;
       } else if (response.result && Array.isArray(response.result)) {
@@ -115,43 +112,79 @@ export default function MapPage() {
       }
 
       console.log("📍 Parsed stations data:", stationsData);
+      if (stationsData.length > 0) {
+        console.log("🔍 RAW first station from API:", stationsData[0]);
+      }
 
-      // Map backend fields to frontend fields
-      const mappedStations = stationsData.map((station) => ({
-        stationId: station.stationId,
-        stationName: station.name, // Backend uses 'name'
-        address: station.address,
-        latitude: station.latitude,
-        longitude: station.longitude,
-        status: station.status, // OPERATIONAL, MAINTENANCE, OUT_OF_SERVICE, CLOSED
+      // --- 💡 HELPER FUNCTION ĐỂ LẤY TỔNG SỐ TRỤ TỪ CHUỖI SUMMARY ---
+      // Ví dụ: "T:8 | H:8 | Đ:0 | B:0" -> trả về 8
+      const getTotalFromSummary = (summary) => {
+        if (!summary) return 0;
+        const totalMatch = summary.match(/T:(\d+)/); // Tìm chuỗi "T:" theo sau là số
+        if (totalMatch && totalMatch[1]) {
+          return parseInt(totalMatch[1], 10) || 0;
+        }
+        return 0;
+      };
+      // -----------------------------------------------------------
 
-        // Thông tin charging points từ API mới
-        totalChargingPoints: station.totalChargingPoints || 0,
-        activeChargingPoints: station.activeChargingPoints || 0,
-        offlineChargingPoints: station.offlineChargingPoints || 0,
-        maintenanceChargingPoints: station.maintenanceChargingPoints || 0,
-        chargingPointsSummary: station.chargingPointsSummary || "",
+      const mappedStations = stationsData.map((station) => {
+        // --- 💡 LOGIC LẤY TỔNG SỐ TRỤ MỚI ---
+        let realTotal = 0;
+        if (station.totalChargingPoints > 0) {
+          // 1. Ưu tiên totalChargingPoints nếu nó đúng (lớn hơn 0)
+          realTotal = station.totalChargingPoints;
+        } else if (station.chargingPointsCount > 0) {
+          // 2. Ưu tiên chargingPointsCount nếu nó đúng
+          realTotal = station.chargingPointsCount;
+        } else {
+          // 3. Phương án cuối: Lấy từ chuỗi summary "T:8"
+          realTotal = getTotalFromSummary(station.chargingPointsSummary);
+        }
+        // -----------------------------------
 
-        // Tính số trạm khả dụng (AVAILABLE)
-        totalChargers: station.totalChargingPoints || 0,
-        availableChargers: station.activeChargingPoints || 0,
+        // Map backend fields to frontend fields
+        return {
+          stationId: station.stationId,
+          stationName: station.name,
+          address: station.address,
+          latitude: station.latitude,
+          longitude: station.longitude,
+          status: station.status,
 
-        // Thông tin bổ sung
-        revenue: station.revenue || 0,
-        usagePercent: station.usagePercent || 0,
-        staffId: station.staffId,
-        staffName: station.staffName,
+          // --- 💡 ÁP DỤNG GIÁ TRỊ "realTotal" ĐÚNG VÀO ĐÂY ---
+          chargingPointsCount: realTotal,
+          totalChargingPoints: realTotal,
+          availableChargingPoints: station.availableChargingPoints || 0, // Trụ trống (đã trừ trụ đang sạc)
+          activeChargingPoints: station.activeChargingPoints || 0, // Trụ hoạt động (trừ bảo trì, offline)
+          // -------------------------------------------------
 
-        // Thông tin liên hệ (fallback)
-        pricePerKwh: "3,500đ/kWh",
-        hotline: station.contactPhone || "N/A",
-        contactPhone: station.contactPhone,
-        operatorName: station.operatorName,
-        email: station.operatorName
-          ? `${station.operatorName}@email.com`
-          : "N/A",
-      }));
+          offlineChargingPoints: station.offlineChargingPoints || 0,
+          maintenanceChargingPoints: station.maintenanceChargingPoints || 0,
+          chargingPointsSummary: station.chargingPointsSummary || "",
 
+          // Legacy fields (cũng cập nhật luôn)
+          totalChargers: realTotal,
+          availableChargers: station.availableChargingPoints || 0, // Sử dụng availableChargingPoints
+
+          // Thông tin bổ sung
+          revenue: station.revenue || 0,
+          usagePercent: station.usagePercent || 0,
+          staffId: station.staffId,
+          staffName: station.staffName,
+
+          // Thông tin liên hệ
+          pricePerKwh: "3,500đ/kWh",
+          hotline: station.contactPhone || "N/A",
+          contactPhone: station.contactPhone,
+          operatorName: station.operatorName,
+          email: station.operatorName
+            ? `${station.operatorName}@email.com`
+            : "N/A",
+        };
+      });
+
+      console.log("🔍 First station mapping example:", mappedStations[0]);
       setStations(mappedStations);
       setError(null);
 
@@ -184,6 +217,13 @@ export default function MapPage() {
   };
 
   const handleStationClick = (station) => {
+    console.log("🖱️ Station clicked:", {
+      name: station.stationName,
+      availableChargingPoints: station.availableChargingPoints,
+      activeChargingPoints: station.activeChargingPoints,
+      chargingPointsCount: station.chargingPointsCount,
+      totalChargingPoints: station.totalChargingPoints,
+    });
     setSelectedStation(station);
     if (station.latitude && station.longitude) {
       setMapCenter([station.latitude, station.longitude]);

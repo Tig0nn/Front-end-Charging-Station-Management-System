@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices";
 import { QRCodeSVG } from "qrcode.react";
-import { Download, Printer, Search, MapPin, Zap } from "lucide-react";
+import { Download, Search, MapPin, Zap } from "lucide-react";
 
 /**
  * Trang Admin: Quản lý và in QR Code cho tất cả trụ sạc
@@ -138,64 +138,6 @@ const QRCodeManager = () => {
       btoa(unescape(encodeURIComponent(svgData)));
   };
 
-  // Print all QR codes for a station
-  const printStationQRs = (station) => {
-    const printWindow = window.open("", "_blank");
-    const qrCodes = station.chargingPoints
-      .map((point) => {
-        const qrUrl = `${window.location.origin}/driver/start-charging?pointId=${point.pointId}`;
-        return `
-        <div style="page-break-after: always; padding: 40px; text-align: center;">
-          <h2 style="margin-bottom: 10px;">${station.stationName}</h2>
-          <h3 style="margin-bottom: 20px; color: #666;">${
-            point.name || `Trụ ${point.pointId}`
-          }</h3>
-          <div style="margin: 20px auto; width: 300px; height: 300px;">
-            <img src="${generateQRDataURL(
-              qrUrl
-            )}" style="width: 100%; height: 100%;" />
-          </div>
-          <p style="font-size: 18px; margin-top: 20px;"><strong>Công suất:</strong> ${
-            point.chargingPower || "N/A"
-          }</p>
-          <p style="font-size: 14px; color: #666;">ID: ${point.pointId}</p>
-          <p style="margin-top: 30px; font-size: 16px; border: 2px solid #000; padding: 15px; display: inline-block;">
-            <strong>📱 Quét mã QR để bắt đầu sạc</strong>
-          </p>
-        </div>
-      `;
-      })
-      .join("");
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>QR Codes - ${station.stationName}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 0; }
-            @media print {
-              @page { size: A4; margin: 0; }
-            }
-          </style>
-        </head>
-        <body>${qrCodes}</body>
-      </html>
-    `);
-    printWindow.document.close();
-    setTimeout(() => printWindow.print(), 250);
-  };
-
-  // Generate QR as data URL (for printing) - placeholder
-  const generateQRDataURL = () => {
-    const canvas = document.createElement("canvas");
-    const size = 300;
-    canvas.width = size;
-    canvas.height = size;
-    // Simple placeholder for printing
-    return canvas.toDataURL();
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -286,19 +228,6 @@ const QRCodeManager = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Printer className="text-purple-600" size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Sẵn sàng in</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {filteredStations.length}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Stations List */}
@@ -320,13 +249,6 @@ const QRCodeManager = () => {
                       {station.address}
                     </p>
                   </div>
-                  <button
-                    onClick={() => printStationQRs(station)}
-                    className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2"
-                  >
-                    <Printer size={18} />
-                    In tất cả
-                  </button>
                 </div>
               </div>
 

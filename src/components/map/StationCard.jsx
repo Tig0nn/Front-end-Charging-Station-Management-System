@@ -82,11 +82,11 @@ const StationCard = ({
       <div className="station-info">
         <span className="info-item">
           <BoltIcon className="icon-sm" />
-          {station.totalChargers || 0} sạc
+          {station.chargingPointsCount || station.totalChargingPoints || 0} sạc
         </span>
         <span className="info-item">
           <CircleStackIcon className="icon-sm" />
-          {station.availableChargers || 0} trống
+          {station.availableChargingPoints || 0} trống
         </span>
       </div>
       <div className="station-card-actions">

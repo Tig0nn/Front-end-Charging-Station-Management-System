@@ -104,7 +104,7 @@ const MainLayoutDriver = ({ children }) => {
     const fetchDriverInfo = async () => {
       try {
         console.log("📞 MainLayoutDriver: Fetching driver info...");
-        const response = await usersAPI.getDriverInfo();
+        const response = await usersAPI.getProfile();
 
         const responseData =
           response.data?.result || response.result || response.data;

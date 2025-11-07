@@ -13,7 +13,7 @@ const apiServices = {
 
   users: {
     register: (userData) => api.post("/api/users", userData),
-    getDriverInfo: () => api.get("/api/users/profile"),
+    getProfile: () => api.get("/api/users/profile"),
     updateDriverInfo: (driverData) =>
       api.patch("/api/users/profile", driverData),
     getStaff: () => api.get("/api/users/staffs"),

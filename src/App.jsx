@@ -25,10 +25,12 @@ import QRCodeManager from "./Pages/admin/QRCodeManager";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./Pages/AddUserInfoPage";
 import { useEffect } from "react";
+import { useAuth } from "./hooks/useAuth.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
   const loc = useLocation();
+  const { user, loading } = useAuth(); // ✅ Dùng user từ AuthContext thay vì localStorage
 
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
@@ -56,16 +58,22 @@ function RequireDriverInfo({ children }) {
     return <Navigate to="/login" state={{ from: loc }} replace />;
   }
 
-  //Kiểm tra phone từ localStorage
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    user = null;
+  // ✅ Đợi loading xong mới check phone
+  if (loading) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "100vh" }}
+      >
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
   }
 
   const role = String(user?.role || "").toUpperCase();
-  const phone = user?.phone || user?.phoneNum || user?.phoneNumber;
+  const phone = user?.phone;
 
   // Check nếu phone tồn tại và không phải null/undefined/empty
   const hasPhone =
@@ -74,17 +82,11 @@ function RequireDriverInfo({ children }) {
     String(phone).trim() !== "" &&
     String(phone).trim() !== "null";
 
-  //Nếu là DRIVER và không có phone → redirect về add-info
+  // Nếu là DRIVER và không có phone → redirect về add-info
   if (role === "DRIVER" && !hasPhone) {
-    console.log(
-      "❌ No valid phone found, redirecting to add-info. Phone value:",
-      phone
-    );
     return <Navigate to="/driver/add-info" replace />;
   }
 
-  //Có phone hoặc không phải DRIVER → cho qua
-  console.log("Allowing access to:", loc.pathname);
   return children;
 }
 

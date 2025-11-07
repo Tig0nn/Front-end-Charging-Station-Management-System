@@ -32,7 +32,7 @@ const GoogleCallback = () => {
         setAuthToken(token);
         console.log("🔵 Calling API to get driver info...");
         // Sử dụng apiServices thay vì fetch thủ công
-        const response = await apiServices.users.getDriverInfo();
+        const response = await apiServices.users.getProfile();
         console.log("✅ User info response:", response.data);
 
         const responseData = response.data.result || response.data;
