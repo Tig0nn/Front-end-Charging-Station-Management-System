@@ -114,6 +114,28 @@
 }
 
 /* Custom styles for components */
+.nav-pill-button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.nav-pill-button:active {
+  outline: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.nav-pill-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.nav-pill-button:focus-visible {
+  outline: none !important;
+}
+
 .logout-button {
   display: flex;
   align-items: center;
