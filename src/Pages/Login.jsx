@@ -215,7 +215,7 @@ function Login() {
                 <span className="text-gray-600">Chưa có tài khoản? </span>
                 <Link
                   to="/signup"
-                  className="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors"
+                  className="!text-emerald-600 !hover:text-emerald-700 !font-semibold !transition-colors !no-underline cursor-pointer"
                 >
                   Đăng ký ngay
                 </Link>

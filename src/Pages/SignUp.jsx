@@ -239,20 +239,7 @@ export default function Signup() {
                   htmlFor="agree-checkbox"
                   className="text-sm text-gray-700 select-none cursor-pointer"
                 >
-                  Tôi đồng ý với{" "}
-                  <a
-                    href="#"
-                    className="text-emerald-600 hover:text-emerald-700 transition-colors"
-                  >
-                    điều khoản dịch vụ
-                  </a>{" "}
-                  và{" "}
-                  <a
-                    href="#"
-                    className="text-emerald-600 hover:text-emerald-700 transition-colors"
-                  >
-                    chính sách bảo mật
-                  </a>
+                  Tôi đồng ý với điều khoản dịch vụ và chính sách bảo mật.
                 </label>
               </div>
 
@@ -280,7 +267,7 @@ export default function Signup() {
                 <span className="text-gray-600">Đã có tài khoản? </span>
                 <Link
                   to="/login"
-                  className="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors"
+                  className="!text-emerald-600 !hover:text-emerald-700 !font-semibold !transition-colors !no-underline cursor-pointer"
                 >
                   Đăng nhập ngay
                 </Link>
