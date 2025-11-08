@@ -110,11 +110,8 @@ export default function StationOverview() {
 
   // --- 💡 HÀM FETCH ĐÃ ĐƯỢC CẬP NHẬT HOÀN TOÀN ---
   const fetchChargingPoints = async (showLoading = true) => {
-    if (!stationId) {
-      setError("Không xác định được ID của trạm sạc.");
-      setLoading(false);
-      return;
-    }
+    const staff = JSON.parse(localStorage.getItem("staff") || "{}");
+    const stationId = staff?.stationId;
     try {
       if (showLoading) setLoading(true);
       setError(null);
@@ -171,7 +168,7 @@ export default function StationOverview() {
     }
   };
 
-  // --- 💡 USEEFFECT ĐÃ ĐƯỢC CẬP NHẬT ĐỂ POLLING ---
+
   useEffect(() => {
     fetchChargingPoints(true); // Tải lần đầu
 
@@ -305,14 +302,14 @@ export default function StationOverview() {
               </Button>
               {(selectedPoint?.status === "OUT_OF_SERVICE" ||
                 selectedPoint?.status === "MAINTENANCE") && (
-                <Button
-                  variant="primary"
-                  className="w-50"
-                  onClick={() => handleUpdateStatus("AVAILABLE")}
-                >
-                  Kích hoạt
-                </Button>
-              )}
+                  <Button
+                    variant="primary"
+                    className="w-50"
+                    onClick={() => handleUpdateStatus("AVAILABLE")}
+                  >
+                    Kích hoạt
+                  </Button>
+                )}
             </div>
           )}
         </Modal.Body>

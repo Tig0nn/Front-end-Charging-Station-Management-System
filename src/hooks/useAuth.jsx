@@ -211,7 +211,6 @@ export const AuthProvider = ({ children }) => {
         // 7) Nếu là STAFF, gọi staffAPI.getStaffProfile để lấy thông tin đầy đủ
         try {
           const userInfoResponse = await staffAPI.getStaffProfile();
-          console.log("Staff info response:", userInfoResponse.data);
           const staffData =
             userInfoResponse.data?.result || userInfoResponse.data;
 
@@ -288,6 +287,7 @@ export const AuthProvider = ({ children }) => {
 
       // Clear ALL localStorage keys to prevent old data from persisting
       localStorage.removeItem("user");
+      localStorage.removeItem("staff");
       localStorage.removeItem("users");
       localStorage.removeItem("role");
       localStorage.removeItem("authToken");
@@ -344,7 +344,7 @@ export const withAuth = (Component) => {
       return (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <Spinner className="mx-auto text-gray-900" />
             <p className="mt-2 text-gray-600">Loading...</p>
           </div>
         </div>

@@ -10,25 +10,25 @@ const ProfileTabs = () => {
   const tabs = [
     {
       id: "info",
-      path: "/driver/profile/info",
+      path: "info",
       label: "Thông tin cá nhân",
       icon: "bi-person",
     },
     {
       id: "vehicle",
-      path: "/driver/profile/vehicle",
+      path: "vehicle",
       label: "Thông tin xe",
       icon: "bi-car-front",
     },
     {
       id: "payment",
-      path: "/driver/profile/payment",
+      path: "payment",
       label: "Thanh toán",
       icon: "bi-credit-card",
     },
     {
       id: "notification",
-      path: "/driver/profile/notification",
+      path: "notification",
       label: "Thông báo",
       icon: "bi-bell",
     },
@@ -42,39 +42,74 @@ const ProfileTabs = () => {
     <div
       className="mb-4"
       style={{
-        background: "white",
-        borderRadius: "16px",
-        padding: "8px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        background: "#f8fafc",
+        borderRadius: "40px",
+        padding: "4px 6px", // giảm padding tổng thể
+        border: "1px solid #e2e8f0",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+        display: "inline-flex", // thu gọn khung theo nội dung
       }}
     >
-      <div className="d-flex gap-2">
+      <div className="d-flex gap-1 flex-wrap justify-content-center">
         {tabs.map((tab) => (
           <Button
             key={tab.id}
             variant="link"
-            className={`d-flex align-items-center gap-2 text-decoration-none border-0 ${
-              isActiveTab(tab.path) ? "bg-light" : ""
-            }`}
+            className="d-flex align-items-center gap-2 text-decoration-none border-0"
             style={{
-              borderRadius: "10px",
-              padding: "12px 20px",
-              color: isActiveTab(tab.path) ? "#111827" : "#6b7280",
-              fontWeight: isActiveTab(tab.path) ? "600" : "500",
+              borderRadius: "40px",
+              padding: "8px 16px", // giảm padding ngang
               fontSize: "14px",
-              transition: "all 0.2s ease",
-              flex: 1,
-              justifyContent: "center",
+              fontWeight: isActiveTab(`/driver/profile/${tab.path}`) ? "600" : "500",
+              color: isActiveTab(`/driver/profile/${tab.path}`) ? "#ffffff" : "#64748b",
+              backgroundColor: isActiveTab(`/driver/profile/${tab.path}`)
+                ? "#22c55e"
+                : "transparent",
+              boxShadow: isActiveTab(`/driver/profile/${tab.path}`)
+                ? "0 4px 6px rgba(34, 197, 94, 0.25)"
+                : "none",
+              transform: isActiveTab(`/driver/profile/${tab.path}`)
+                ? "translateY(-1px)"
+                : "translateY(0)",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+              outline: "none",
+              WebkitTapHighlightColor: "transparent",
             }}
-            onClick={() => navigate(tab.path)}
+            onMouseEnter={(e) => {
+              if (!isActiveTab(`/driver/profile/${tab.path}`)) {
+                e.currentTarget.style.backgroundColor = "#e2e8f0";
+                e.currentTarget.style.color = "#334155";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActiveTab(`/driver/profile/${tab.path}`)) {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.color = "#64748b";
+              }
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+            onMouseUp={(e) => {
+              if (isActiveTab(`/driver/profile/${tab.path}`)) {
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 6px rgba(34, 197, 94, 0.25)";
+              }
+            }}
+            onClick={() => navigate(`/driver/profile/${tab.path}`)}
           >
-            <i className={`bi ${tab.icon}`} style={{ fontSize: "18px" }}></i>
+            <i className={`bi ${tab.icon}`} style={{ fontSize: "16px" }}></i>
             <span>{tab.label}</span>
           </Button>
         ))}
       </div>
     </div>
   );
+
 };
 
 export default ProfileTabs;

@@ -36,21 +36,6 @@ function RequireDriverInfo({ children }) {
   const isAuthenticated = !!localStorage.getItem("authToken");
 
   useEffect(() => {
-    // ⚠️ DISABLED: MainLayoutDriver and ProfileLayout already fetch driver info
-    // This prevents duplicate API calls (3-4x per page load)
-    // If needed in future, enable this and disable API calls in layout components
-    /*
-    const syncDriverInfo = async () => {
-      // Chỉ sync nếu đã đăng nhập và không ở trang add-info
-      if (!isAuthenticated || loc.pathname.startsWith("/driver/add-info")) {
-        return;
-      }
-
-      // ... rest of code
-    };
-
-    syncDriverInfo();
-    */
   }, [isAuthenticated, loc.pathname]);
 
   //Chưa đăng nhập → về login

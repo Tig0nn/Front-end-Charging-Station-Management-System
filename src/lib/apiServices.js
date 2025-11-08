@@ -28,6 +28,8 @@ const apiServices = {
   admin: {
     // Get all incidents from all stations (Admin only)
     getAllIncidents: () => api.get("/api/incidents"),
+    updateIncidentStatus: (status, incidentId) =>
+      api.patch(`/api/incidents/${incidentId}`, { status }),
   },
 
   dashboard: {
