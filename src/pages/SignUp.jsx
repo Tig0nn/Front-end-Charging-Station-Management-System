@@ -140,7 +140,7 @@ export default function Signup() {
   };
   return (
     <div className="min-h-screen flex">
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer  position="top-right" autoClose={3000} />
       {/* Left Side - Register Form */}
       <div className="w-full lg:w-2/5 bg-white flex flex-col px-8 sm:px-12 lg:px-16 py-8 relative z-10">
         {/* Logo và tên ở góc trái trên cùng */}

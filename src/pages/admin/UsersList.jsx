@@ -414,7 +414,7 @@ const UsersList = () => {
       {/* Plans Grid */}
       {plansLoading ? (
         <div className="text-center py-5">
-          <Spinner animation="border" variant="primary" />
+          <LoadingSpinner />
           <p className="mt-3 text-muted">Đang tải danh sách gói dịch vụ...</p>
         </div>
       ) : (

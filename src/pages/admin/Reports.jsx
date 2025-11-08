@@ -321,14 +321,14 @@ const Reports = () => {
                   <option value="yearly">Theo năm</option>
                 </Form.Select>
                 <button
-                  className="btn btn-outline-primary btn-sm"
+                  className="btn btn-outline-success btn-sm "
                   onClick={() => loadReportsData(period)}
                   disabled={loading}
                 >
                   {loading ? (
-                    <LoadingSpinner />
+                    <Spinner size="sm" animation="border" variant="success" />
                   ) : (
-                    <i className="bi bi-arrow-clockwise"></i>
+                    <i className="bi bi-arrow-clockwise variant-success"></i>
                   )}
                 </button>
               </div>

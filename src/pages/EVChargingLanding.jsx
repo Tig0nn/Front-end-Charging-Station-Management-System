@@ -64,13 +64,6 @@ export default function EVChargingLanding() {
     fetchPlans();
   }, []);
 
-  useEffect(() => {
-    if (plans.length === 0) return;
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % plans.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [plans.length]);
 
   // Hàm helper để định dạng tiền tệ
   const formatCurrency = (amount) => {

@@ -42,7 +42,10 @@ const formatDateTime = (iso) => {
 
 const formatDuration = (mins) => {
   const m = Number(mins || 0);
-  if (m < 60) return `${m} phút`;
+  if (m < 60) {
+    const min = Math.floor(m);
+    return `${min} phút`;
+  }
   const h = Math.floor(m / 60);
   const r = Math.floor(m % 60);
   return `${h} giờ ${r} phút`;
@@ -261,10 +264,12 @@ const TransactionHistory = () => {
                   <span className="text-yellow-600 font-medium">
                     Đang xử lý
                   </span>
-                ) : (
+                ) : s.paymentStatus === "PAID" ? (
                   <span className="text-green-600 font-medium">
                     Đã thanh toán
                   </span>
+                ) : (
+                  <span className="text-gray-600 font-medium">-</span>
                 )}
               </td>
             </tr>

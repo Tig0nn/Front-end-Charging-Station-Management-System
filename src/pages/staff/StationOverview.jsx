@@ -253,7 +253,6 @@ export default function StationOverview() {
         throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
       }
     } catch (err) {
-      console.error("❌ LỖI khi bắt đầu phiên sạc:", err);
       alert(err.message || "Đã xảy ra lỗi không mong muốn.");
     } finally {
       setLoading(false); // Luôn tắt loading

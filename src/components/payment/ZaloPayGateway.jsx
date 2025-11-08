@@ -26,7 +26,7 @@ const ZaloPayGateway = ({ show, onHide, sessionId, amount }) => {
       if (paymentUrl) {
         console.log("🔗 Redirecting to ZaloPay:", paymentUrl);
         // Redirect to ZaloPay payment gateway
-        window.location.href = paymentUrl;
+        window.open(paymentUrl, "_blank");
       } else {
         throw new Error("Không nhận được URL thanh toán từ ZaloPay");
       }

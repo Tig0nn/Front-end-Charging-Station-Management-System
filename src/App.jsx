@@ -105,11 +105,10 @@ function App() {
             <MainLayoutAdmin>
               <Routes>
                 {/* Default route - Phân tích */}
-                <Route path="/" element={<Reports />} />
+                <Route index element={<Navigate to="/admin/reports" replace />} />
 
                 {/* Reports Routes - Trang phân tích */}
                 <Route path="/reports" element={<Reports />} />
-                <Route path="/reports/*" element={<Reports />} />
 
                 {/* Stations Routes */}
                 <Route path="/stations" element={<StationsList />} />
@@ -136,23 +135,23 @@ function App() {
         element={
           <RequireRole allowedRoles={["STAFF"]}>
           // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
-          <MainLayoutStaff>
-            <Routes>
-              {/* Route mặc định sẽ là trang trạm sạc */}
-              <Route index element={<Navigate to="/staff/station" replace />} />
-              <Route path="/station" element={<StationOverview />} />
+            <MainLayoutStaff>
+              <Routes>
+                {/* Route mặc định sẽ là trang trạm sạc */}
+                <Route index element={<Navigate to="/staff/station" replace />} />
+                <Route path="/station" element={<StationOverview />} />
 
-              {/* Các route khác cho Staff */}
-              <Route
-                path="/payment-requests"
-                element={<StaffPaymentRequests />}
-              />
-              <Route path="/reports" element={<StaffReports />} />
+                {/* Các route khác cho Staff */}
+                <Route
+                  path="/payment-requests"
+                  element={<StaffPaymentRequests />}
+                />
+                <Route path="/reports" element={<StaffReports />} />
 
-              {/* 404 Page for Staff section */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </MainLayoutStaff>
+                {/* 404 Page for Staff section */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayoutStaff>
           </RequireRole>
         }
       />

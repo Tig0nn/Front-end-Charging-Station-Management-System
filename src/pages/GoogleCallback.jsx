@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { setAuthToken } from "../lib/api";
 import apiServices from "../lib/apiServices";
+import LoadingSpinner from "../components/loading_spins/LoadingSpinner";
 
 const GoogleCallback = () => {
   const [searchParams] = useSearchParams();
@@ -135,12 +136,8 @@ const GoogleCallback = () => {
         color: "white",
       }}
     >
-      <div
-        className="spinner-border text-primary"
-        role="status"
-        style={{ width: "3rem", height: "3rem" }}
-      >
-        <span className="visually-hidden">Loading...</span>
+      <div>
+        <LoadingSpinner />
       </div>
       <h2>Đang xử lý đăng nhập Google...</h2>
       <p style={{ color: "#7f8c8d" }}>Vui lòng đợi trong giây lát</p>
