@@ -15,6 +15,7 @@ import {
   Modal,
 } from "react-bootstrap";
 import { adminAPI } from "../../lib/apiServices.js";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 const AdminIncidents = () => {
   const [incidents, setIncidents] = useState([]);
@@ -169,7 +170,7 @@ const AdminIncidents = () => {
     return (
       <Container fluid className="p-4">
         <div className="text-center py-5">
-          <Spinner animation="border" variant="primary" />
+          <LoadingSpinner />
           <p className="mt-2 text-muted">Đang tải báo cáo sự cố...</p>
         </div>
       </Container>

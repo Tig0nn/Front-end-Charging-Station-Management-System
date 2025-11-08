@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, Search, MapPin, Zap } from "lucide-react";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 /**
  * Trang Admin: Quản lý và in QR Code cho tất cả trụ sạc
@@ -142,7 +143,7 @@ const QRCodeManager = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <LoadingSpinner />
           <p className="text-gray-600">Đang tải dữ liệu...</p>
         </div>
       </div>

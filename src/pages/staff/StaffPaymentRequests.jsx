@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Card, Table, Button, Badge } from "react-bootstrap";
 import { staffAPI } from "../../lib/apiServices";
 import { Modal } from "react-bootstrap";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 const formatCurrency = (value) => {
   const rounded = Math.round((value || 0) / 100) * 100; // làm tròn đến 100
@@ -105,7 +106,7 @@ const StaffPaymentRequests = () => {
               className="d-flex justify-content-center align-items-center"
               style={{ height: "50vh" }}
             >
-              <div className="spinner-border text-primary" />
+              <LoadingSpinner />
             </div>
           ) : error ? (
             <div className="alert alert-danger" role="alert">

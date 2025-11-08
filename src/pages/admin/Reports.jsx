@@ -14,6 +14,7 @@ import {
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 import { revenueAPI } from "../../lib/apiServices.js";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 // Đăng ký các thành phần cần thiết cho Chart.js
 ChartJS.register(
@@ -325,7 +326,7 @@ const Reports = () => {
                   disabled={loading}
                 >
                   {loading ? (
-                    <Spinner size="sm" animation="border" />
+                    <LoadingSpinner />
                   ) : (
                     <i className="bi bi-arrow-clockwise"></i>
                   )}
@@ -369,7 +370,7 @@ const Reports = () => {
                 {loading ? (
                   <div className="d-flex justify-content-center align-items-center h-100">
                     <div className="text-center">
-                      <Spinner animation="border" variant="primary" />
+                      <LoadingSpinner />
                       <p className="mt-2 text-muted">Đang tải dữ liệu...</p>
                     </div>
                   </div>

@@ -15,6 +15,7 @@ import {
   Line,
 } from "recharts";
 import { chargingSessionsAPI, paymentsAPI } from "../../lib/apiServices";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 // Helpers
 const formatCurrency = (value) => {
@@ -129,7 +130,7 @@ const TransactionHistory = () => {
         className="d-flex justify-content-center align-items-center"
         style={{ height: "50vh" }}
       >
-        <div className="spinner-border text-[#2bf0b5]" />
+        <LoadingSpinner />
       </div>
     );
 
@@ -283,7 +284,7 @@ const TransactionHistory = () => {
 // 2) PHÂN TÍCH
 const CostAnalysis = () => {
   const { data: sessions, loading, error, reload } = useMySessions();
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) return <LoadingSpinner />;
 
   if (error) {
     return (
@@ -436,7 +437,7 @@ const CostAnalysis = () => {
 // 3) THÓI QUEN (kèm 2 bảng yêu cầu)
 const ChargingHabits = () => {
   const { data: sessions, loading, error, reload } = useMySessions();
-  if (loading) return <div>Đang tải...</div>;
+  if (loading) return <LoadingSpinner />;
 
   if (error) {
     return (

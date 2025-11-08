@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 // IMPORT API SERVICE MỚI
 import { plansAPI } from "../lib/apiServices";
+import LoadingSpinner from "../components/loading_spins/LoadingSpinner";
 
 export default function EVChargingLanding() {
   const navigate = useNavigate();
@@ -247,12 +248,6 @@ export default function EVChargingLanding() {
                 description:
                   "Đảm bảo an toàn thông tin và giao dịch của người dùng",
               },
-              {
-                icon: Wifi,
-                title: "Kết nối Realtime",
-                description:
-                  "Giám sát và điều khiển hệ thống theo thời gian thực",
-              },
             ].map((feature, index) => (
               <div
                 key={index}
@@ -287,7 +282,7 @@ export default function EVChargingLanding() {
           </p>
         </div>
         {loading && (
-          <div className="text-center text-white">Đang tải các gói...</div>
+          <div><LoadingSpinner /></div>
         )}
         {error && <div className="text-center text-red-400 px-4">{error}</div>}
         {!loading && !error && plans.length > 0 && (

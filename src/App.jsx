@@ -26,6 +26,7 @@ import QRCodeManager from "./pages/admin/QRCodeManager";
 import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
+import RequireRole from "./components/RequireRole.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
@@ -85,7 +86,14 @@ function App() {
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
       {/* Trang bổ sung thông tin: để ngoài guard */}
-      <Route path="/driver/add-info" element={<AddUserInfoPage />} />
+      <Route
+        path="/driver/add-info"
+        element={
+          <RequireRole allowedRoles={["DRIVER"]}>
+            <AddUserInfoPage />
+          </RequireRole>
+        }
+      />
 
       {/* Legacy Admin Route */}
 
@@ -93,37 +101,40 @@ function App() {
       <Route
         path="/admin/*"
         element={
-          <MainLayoutAdmin>
-            <Routes>
-              {/* Default route - Phân tích */}
-              <Route path="/" element={<Reports />} />
+          <RequireRole allowedRoles={["ADMIN"]}>
+            <MainLayoutAdmin>
+              <Routes>
+                {/* Default route - Phân tích */}
+                <Route path="/" element={<Reports />} />
 
-              {/* Reports Routes - Trang phân tích */}
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/reports/*" element={<Reports />} />
+                {/* Reports Routes - Trang phân tích */}
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/reports/*" element={<Reports />} />
 
-              {/* Stations Routes */}
-              <Route path="/stations" element={<StationsList />} />
-              <Route path="/stations/add" element={<AddStation />} />
+                {/* Stations Routes */}
+                <Route path="/stations" element={<StationsList />} />
+                <Route path="/stations/add" element={<AddStation />} />
 
-              {/* Users Routes */}
-              <Route path="/users" element={<UsersList />} />
+                {/* Users Routes */}
+                <Route path="/users" element={<UsersList />} />
 
-              {/* Incidents */}
-              <Route path="/incidents" element={<AdminIncidents />} />
+                {/* Incidents */}
+                <Route path="/incidents" element={<AdminIncidents />} />
 
-              {/* QR Code Manager */}
-              <Route path="/qr-codes" element={<QRCodeManager />} />
+                {/* QR Code Manager */}
+                <Route path="/qr-codes" element={<QRCodeManager />} />
 
-              {/* 404 Page */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </MainLayoutAdmin>
+                {/* 404 Page */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayoutAdmin>
+          </RequireRole>
         }
       />
       <Route
         path="/staff/*"
         element={
+          <RequireRole allowedRoles={["STAFF"]}>
           // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
           <MainLayoutStaff>
             <Routes>
@@ -142,39 +153,42 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </MainLayoutStaff>
+          </RequireRole>
         }
       />
 
       <Route
         path="/driver/*"
         element={
-          <RequireDriverInfo>
-            <MainLayoutDriver>
-              <Routes>
-                {/* Route mặc định sẽ là trang bản đồ */}
-                <Route index element={<Navigate to="/driver/map" replace />} />
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/session" element={<ChargingSessionPage />} />
-                <Route
-                  path="/session/:sessionId"
-                  element={<ChargingSessionPage />}
-                />
-                <Route path="/history/*" element={<HistoryPage />} />
+          <RequireRole allowedRoles={["DRIVER"]}>
+            <RequireDriverInfo>
+              <MainLayoutDriver>
+                <Routes>
+                  {/* Route mặc định sẽ là trang bản đồ */}
+                  <Route index element={<Navigate to="/driver/map" replace />} />
+                  <Route path="/map" element={<MapPage />} />
+                  <Route path="/session" element={<ChargingSessionPage />} />
+                  <Route
+                    path="/session/:sessionId"
+                    element={<ChargingSessionPage />}
+                  />
+                  <Route path="/history/*" element={<HistoryPage />} />
 
-                {/* Profile Routes with nested routes */}
-                <Route path="/profile/*" element={<ProfileLayout />}>
-                  <Route index element={<Navigate to="info" replace />} />
-                  <Route path="info" element={<ProfileInfoPage />} />
-                  <Route path="vehicle" element={<VehicleInfoPage />} />
-                  <Route path="payment" element={<PaymentPage />} />
-                  <Route path="notification" element={<NotificationPage />} />
-                </Route>
+                  {/* Profile Routes with nested routes */}
+                  <Route path="/profile/*" element={<ProfileLayout />}>
+                    <Route index element={<Navigate to="info" replace />} />
+                    <Route path="info" element={<ProfileInfoPage />} />
+                    <Route path="vehicle" element={<VehicleInfoPage />} />
+                    <Route path="payment" element={<PaymentPage />} />
+                    <Route path="notification" element={<NotificationPage />} />
+                  </Route>
 
-                {/* 404 Page for Driver section */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </MainLayoutDriver>
-          </RequireDriverInfo>
+                  {/* 404 Page for Driver section */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MainLayoutDriver>
+            </RequireDriverInfo>
+          </RequireRole>
         }
       />
       {/* Catch all other routes */}

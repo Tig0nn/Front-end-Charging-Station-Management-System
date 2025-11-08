@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { stationsAPI, staffAPI } from "../../lib/apiServices";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 const StationsList = () => {
   const [stations, setStations] = useState([]);
@@ -170,7 +171,7 @@ const StationsList = () => {
   if (loading) {
     return (
       <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
+        <LoadingSpinner />
         <div className="mt-2 text-muted">Đang tải danh sách trạm...</div>
       </div>
     );

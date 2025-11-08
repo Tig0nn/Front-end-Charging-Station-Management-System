@@ -11,6 +11,7 @@ import {
   ArrowUturnLeftIcon,
   TruckIcon,
 } from "@heroicons/react/24/solid";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 export default function ChargingSessionPage() {
   const { sessionId } = useParams();
@@ -283,7 +284,7 @@ export default function ChargingSessionPage() {
 
               {loadingVehicle ? (
                 <div className="flex justify-center items-center h-40">
-                  <Spinner animation="border" size="sm" variant="secondary" />
+                  <LoadingSpinner />
                   <span className="ml-2 text-gray-500">
                     Đang tải thông tin xe...
                   </span>

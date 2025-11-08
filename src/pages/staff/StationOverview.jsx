@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 // Giả sử bạn có file này
 import { vehiclesAPI, chargingPointsAPI } from "../../lib/apiServices.js";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 // Hàm định dạng công suất từ "POWER_22KW" thành "22kW"
 const formatPower = (powerString) => {
@@ -262,7 +263,7 @@ export default function StationOverview() {
   if (loading && chargingPoints.length === 0) {
     return (
       <Container className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
+        <LoadingSpinner />
         <p className="mt-2">Đang tải dữ liệu trạm sạc...</p>
       </Container>
     );

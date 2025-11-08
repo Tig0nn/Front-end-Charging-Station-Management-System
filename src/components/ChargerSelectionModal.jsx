@@ -10,6 +10,7 @@ import {
   TruckIcon, // Icon cho xe
   ChevronLeftIcon, // Icon cho nút quay lại
 } from "@heroicons/react/24/solid";
+import LoadingSpinner from "./loading_spins/LoadingSpinner.jsx";
 
 export default function ChargerSelectionModal({
   station,
@@ -191,8 +192,7 @@ export default function ChargerSelectionModal({
       <div className="flex-1 overflow-y-auto px-8 py-7 modal-body-scroll">
         {chargerLoading ? (
           <div className="text-center py-10">
-            <ArrowPathIcon className="w-10 h-10 text-emerald-500 animate-spin mx-auto" />
-            <p>Đang tải trụ sạc...</p>
+            <LoadingSpinner />
           </div>
         ) : error ? (
           <div className="text-center py-10">

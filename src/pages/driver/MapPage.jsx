@@ -12,6 +12,7 @@ import {
   MapControls,
   RouteInfoPanel,
 } from "../../components/map";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 export default function MapPage() {
   const navigate = useNavigate();
@@ -359,8 +360,8 @@ export default function MapPage() {
     return (
       <div className="loading-container">
         <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p className="loading-text">⚡ Đang tải bản đồ trạm sạc...</p>
+          <LoadingSpinner />
+          <p className="loading-text"> Đang tải bản đồ trạm sạc...</p>
         </div>
       </div>
     );

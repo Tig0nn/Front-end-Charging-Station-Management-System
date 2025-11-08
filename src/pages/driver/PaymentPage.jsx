@@ -7,6 +7,7 @@ import PlanCard from "../../components/PlanCard";
 import PaymentMethodItem from "../../components/PaymentMethodItem";
 import UpgradeSummary from "../../components/UpgradeSummary";
 import ZaloPayGateway from "../../components/payment/ZaloPayGateway";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -333,12 +334,7 @@ export default function PaymentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải dữ liệu từ server...</p>
-        </div>
-      </div>
+      <LoadingSpinner />
     );
   }
 

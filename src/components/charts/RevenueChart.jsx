@@ -11,6 +11,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import LoadingSpinner from "../loading_spins/LoadingSpinner";
 
 // Register Chart.js components
 ChartJS.register(
@@ -167,9 +168,7 @@ const RevenueChart = ({ data, period = "monthly", loading = false }) => {
           {loading ? (
             <div className="d-flex justify-content-center align-items-center h-100">
               <div className="text-center">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
+                <LoadingSpinner />
                 <p className="mt-2 text-muted">Đang tải dữ liệu...</p>
               </div>
             </div>

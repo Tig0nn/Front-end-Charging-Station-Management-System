@@ -3,6 +3,7 @@ import { Card, Button, Form, Row, Col, Spinner, Alert } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useAuth } from "../../hooks/useAuth.jsx";
 import { usersAPI } from "../../lib/apiServices.js";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 const ProfileInfoPage = () => {
   const { user, updateUser } = useAuth();
@@ -191,9 +192,8 @@ const ProfileInfoPage = () => {
         const updatedUser = responseData.result || {
           ...user,
           ...updateData,
-          fullName: `${updateData.firstName || user?.firstName || ""} ${
-            updateData.lastName || user?.lastName || ""
-          }`.trim(),
+          fullName: `${updateData.firstName || user?.firstName || ""} ${updateData.lastName || user?.lastName || ""
+            }`.trim(),
         };
         updateUser(updatedUser);
 
@@ -406,10 +406,10 @@ const ProfileInfoPage = () => {
                     isEditMode
                       ? formData.dateOfBirth
                       : formData.dateOfBirth
-                      ? new Date(formData.dateOfBirth).toLocaleDateString(
+                        ? new Date(formData.dateOfBirth).toLocaleDateString(
                           "vi-VN"
                         )
-                      : "Chưa cập nhật"
+                        : "Chưa cập nhật"
                   }
                   onChange={handleChange}
                   readOnly={!isEditMode}
@@ -490,14 +490,7 @@ const ProfileInfoPage = () => {
                   >
                     {isUpdating ? (
                       <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                          className="me-2"
-                        />
+                        <LoadingSpinner />
                         Đang lưu...
                       </>
                     ) : (

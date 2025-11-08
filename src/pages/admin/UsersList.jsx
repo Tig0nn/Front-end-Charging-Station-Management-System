@@ -15,6 +15,7 @@ import {
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { BiEdit } from "react-icons/bi";
 import PlanCard from "../../components/PlanCard"; // Sử dụng PlanCard thống nhất
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 const UsersList = () => {
   const [users, setUsers] = useState([]);
@@ -335,7 +336,7 @@ const UsersList = () => {
               {loading ? (
                 <tr>
                   <td colSpan="8" className="text-center py-4">
-                    <Spinner animation="border" variant="primary" />
+                    <LoadingSpinner />
                     <p className="mt-2 text-muted">
                       Đang tải danh sách người dùng...
                     </p>

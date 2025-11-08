@@ -16,6 +16,8 @@ import {
 import "bootstrap-icons/font/bootstrap-icons.css";
 import toast from "react-hot-toast";
 import { vehiclesAPI } from "../../lib/apiServices.js";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
+
 
 const VehicleInfoPage = () => {
   // Vehicle data state
@@ -477,8 +479,7 @@ const VehicleInfoPage = () => {
   if (loading && vehicles.length === 0) {
     return (
       <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
-        <p className="mt-2 text-muted">Đang tải danh sách xe...</p>
+        <LoadingSpinner />
       </div>
     );
   }
