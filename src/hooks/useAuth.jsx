@@ -205,7 +205,6 @@ export const AuthProvider = ({ children }) => {
         // 7) Nếu là STAFF, gọi staffAPI.getStaffProfile để lấy thông tin đầy đủ
         try {
           const userInfoResponse = await staffAPI.getStaffProfile();
-          console.log("Staff info response:", userInfoResponse.data);
           const staffData =
             userInfoResponse.data?.result || userInfoResponse.data;
 

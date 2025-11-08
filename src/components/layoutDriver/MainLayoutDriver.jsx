@@ -182,7 +182,7 @@ const MainLayoutDriver = ({ children }) => {
       icon: "bi-clock-history",
     },
     {
-      path: "/driver/profile/info",
+      path: "/driver/profile",
       label: "Hồ sơ",
       icon: "bi-person-circle",
     },

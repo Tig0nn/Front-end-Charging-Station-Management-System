@@ -144,53 +144,7 @@ const AdminIncidents = () => {
     }
   };
 
-  // Get status badge variant
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "OPEN":
-        return "danger";
-      case "IN_PROGRESS":
-        return "warning";
-      case "RESOLVED":
-        return "success";
-      case "CLOSED":
-        return "secondary";
-      default:
-        return "secondary";
-    }
-  };
 
-  // Get status text in Vietnamese
-  const getStatusText = (status) => {
-    switch (status) {
-      case "OPEN":
-        return "Mở";
-      case "IN_PROGRESS":
-        return "Đang xử lý";
-      case "RESOLVED":
-        return "Đã giải quyết";
-      case "CLOSED":
-        return "Đã đóng";
-      default:
-        return status;
-    }
-  };
-
-  // Get severity text in Vietnamese
-  const getSeverityText = (severity) => {
-    switch (severity) {
-      case "CRITICAL":
-        return "Nghiêm trọng";
-      case "HIGH":
-        return "Cao";
-      case "MEDIUM":
-        return "Trung bình";
-      case "LOW":
-        return "Thấp";
-      default:
-        return severity;
-    }
-  };
 
   // Format date
   const formatDate = (dateString) => {
@@ -454,31 +408,38 @@ const AdminIncidents = () => {
               <Row className="mb-3">
                 <Col md={6}>
                   <small className="text-muted d-block">Mức độ</small>
-                  <Badge
-                    bg={getSeverityBadge(selectedIncident.severity)}
-                    className="mt-1"
-                  >
-                    {getSeverityText(selectedIncident.severity)}
-                  </Badge>
+                  <td className="align-middle">{getSeverityBadge(selectedIncident.severity)}</td>
                 </Col>
                 <Col md={6}>
                   <small className="text-muted d-block">Trạng thái</small>
-                  <Badge
-                    bg={getStatusBadge(selectedIncident.status)}
-                    className="mt-1"
-                  >
-                    {getStatusText(selectedIncident.status)}
-                  </Badge>
+                  {selectedIncident.status === "WAITING" ? (
+                    <span className="text-red-600 font-medium">
+                      Đang chờ xét duyệt
+                    </span>
+                  ) : selectedIncident.status === "WORKING" ? (
+                    <span className="text-yellow-600 font-medium">
+                      Đang giải quyết
+                    </span>
+                  ) : (
+                    <span className="text-green-600 font-medium">
+                      Đã xử lý
+                    </span>
+                  )}
                 </Col>
               </Row>
 
               <Row className="mb-3">
-                <Col md={12}>
+                <Col md={6}>
                   <small className="text-muted d-block">Người báo cáo</small>
                   <strong>{selectedIncident.reporterName || "N/A"}</strong>
                 </Col>
+                <Col md={6}>
+                  <small className="text-muted d-block">
+                    Thời gian giải quyết
+                  </small>
+                  <strong>{formatDate(selectedIncident.resolvedAt)}</strong>
+                </Col>
               </Row>
-
               <Row className="mb-3">
                 <Col md={12}>
                   <small className="text-muted d-block">Mô tả chi tiết</small>
@@ -488,22 +449,7 @@ const AdminIncidents = () => {
                 </Col>
               </Row>
 
-              {selectedIncident.assignedStaffName && (
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <small className="text-muted d-block">
-                      Nhân viên xử lý
-                    </small>
-                    <strong>{selectedIncident.assignedStaffName}</strong>
-                  </Col>
-                  <Col md={6}>
-                    <small className="text-muted d-block">
-                      Thời gian giải quyết
-                    </small>
-                    <strong>{formatDate(selectedIncident.resolvedAt)}</strong>
-                  </Col>
-                </Row>
-              )}
+
             </div>
           )}
         </Modal.Body>

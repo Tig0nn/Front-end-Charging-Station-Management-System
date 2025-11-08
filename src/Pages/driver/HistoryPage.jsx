@@ -43,7 +43,7 @@ const formatDuration = (mins) => {
   const m = Number(mins || 0);
   if (m < 60) return `${m} phút`;
   const h = Math.floor(m / 60);
-  const r = m % 60;
+  const r = Math.floor(m % 60);
   return `${h} giờ ${r} phút`;
 };
 
@@ -510,7 +510,7 @@ const ChargingHabits = () => {
   // Thống kê khác
   const avgMins = Math.round(
     sessions.reduce((sum, s) => sum + Number(s.durationMin || 0), 0) /
-      (sessions.length || 1)
+    (sessions.length || 1)
   );
 
   const hourBins = Array(12).fill(0);
@@ -583,10 +583,24 @@ export default function HistoryPage() {
   const totalSessions = sessions.length;
   const avgCostPerKw = totalEnergy ? Math.round(totalCost / totalEnergy) : 0;
   const tabs = [
-    { path: "transactions", label: "Giao dịch" },
-    { path: "analysis", label: "Phân tích" },
-    { path: "habits", label: "Thói quen" },
+    {
+      path: "transactions",
+      label: "Giao dịch",
+      icon: "bi bi-coin",
+    },
+    {
+      path: "analysis",
+      label: "Phân tích",
+      icon: "bi-clipboard-data-fill",
+    },
+    {
+      path: "habits",
+      label: "Thói quen",
+      icon: "bi-person-arms-up",
+    },
   ];
+
+
   useEffect(
     () => async () => {
       try {
@@ -647,23 +661,37 @@ export default function HistoryPage() {
       </div>
 
       {/* Thanh Header Tabs */}
-      <div className="flex gap-3 mb-4">
+      <div
+        className="inline-flex gap-2 p-2 mb-4"
+        style={{
+          backgroundColor: "#f8fafc",
+          borderRadius: "50px",
+          border: "1px solid #e2e8f0",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+        }}
+      >
         {tabs.map((tab) => (
           <NavLink
             key={`/driver/history/${tab.path}`}
             to={`/driver/history/${tab.path}`}
             className={({ isActive }) =>
-              `px-4 py-2 rounded-full text-sm font-medium transition !no-underline ${
-                isActive
-                  ? "bg-gray-900 !text-white shadow"
-                  : "bg-gray-200 !text-gray-700 hover:bg-gray-300"
+              `inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ease-in-out !no-underline select-none ${isActive
+                ? "!bg-green-500 !text-white !shadow-md !-translate-y-[1px]"
+                : "!bg-transparent !text-slate-500 hover:!bg-slate-200 hover:!text-slate-700"
               }`
             }
+            style={{
+              border: "none",
+              outline: "none",
+              WebkitTapHighlightColor: "transparent",
+            }}
           >
-            {tab.label}
+            <i className={`bi ${tab.icon}`} style={{ fontSize: "16px" }}></i>
+            <span>{tab.label}</span>
           </NavLink>
         ))}
       </div>
+
       <Routes>
         <Route index element={<Navigate to="transactions" replace />} />
         <Route path="transactions" element={<TransactionHistory />} />

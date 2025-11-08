@@ -53,7 +53,7 @@ const ProfileHeader = ({ user }) => {
               width: "80px",
               height: "80px",
               borderRadius: "16px",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

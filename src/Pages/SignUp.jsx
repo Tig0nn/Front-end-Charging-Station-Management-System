@@ -1,11 +1,12 @@
 //**Phần code này do Nguyễn Vũ Trường Huy thực hiện
 //Khai báo, import thư viện
 import React, { useState } from "react";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Link, useNavigate } from "react-router-dom";
 import { usersAPI } from "../lib/apiServices";
 import logo from "../assets/image/logo.png";
+import { Alert } from "react-bootstrap";
 
 export default function Signup() {
   // Khai báo state 'form' để lưu trữ dữ liệu người dùng nhập vào các ô input.
@@ -100,10 +101,8 @@ export default function Signup() {
 
         // Check response
         if (response.data?.code === 1000) {
-          alert("Đăng ký thành công!");
-          console.log("User created:", response.data.result);
-          // chuyển sang trang login
-          navigate("/login", { replace: true });
+          toast.success("Đăng kí thành công!");
+          e.target.reset();
         } else {
           //ném lỗi
           throw new Error(response.data?.message || "Đăng ký thất bại");
@@ -141,11 +140,12 @@ export default function Signup() {
   };
   return (
     <div className="min-h-screen flex">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Left Side - Register Form */}
       <div className="w-full lg:w-2/5 bg-white flex flex-col px-8 sm:px-12 lg:px-16 py-8 relative z-10">
         {/* Logo và tên ở góc trái trên cùng */}
         <div className="flex items-center gap-4 mb-8 -ml-2">
-          <img src={logo} alt="Logo" className="h-28 object-contain cursor-pointer"  onClick={() => navigate("/")} />
+          <img src={logo} alt="Logo" className="h-28 object-contain cursor-pointer" onClick={() => navigate("/")} />
           <span className="text-3xl font-bold text-gray-900">T-Green</span>
         </div>
 
@@ -172,11 +172,10 @@ export default function Signup() {
                   placeholder="example123@gmail.com"
                   onFocus={handleFocus}
                   onChange={handleChangeValue}
-                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
-                    errors.email
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${errors.email
                       ? "border-red-500 ring-2 ring-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                 />
                 {errors.email && (
                   <div className="text-red-500 text-sm">{errors.email}</div>
@@ -194,11 +193,10 @@ export default function Signup() {
                   placeholder="Mật khẩu từ 6 - 20 ký tự"
                   onFocus={handleFocus}
                   onChange={handleChangeValue}
-                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
-                    errors.password
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${errors.password
                       ? "border-red-500 ring-2 ring-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                 />
                 {errors.password && (
                   <div className="text-red-500 text-sm">{errors.password}</div>
@@ -216,11 +214,10 @@ export default function Signup() {
                   placeholder="Nhập lại mật khẩu"
                   onFocus={handleFocus}
                   onChange={handleChangeValue}
-                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
-                    errors.confirmed_password
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${errors.confirmed_password
                       ? "border-red-500 ring-2 ring-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                 />
                 {errors.confirmed_password && (
                   <div className="text-red-500 text-sm">
@@ -261,20 +258,19 @@ export default function Signup() {
 
               {/* Form Error */}
               {errors.form && (
-                <div className="text-center text-red-500 text-sm">
+                <Alert variant="danger" className="text-sm py-2">
                   {errors.form}
-                </div>
+                </Alert>
               )}
 
               {/* Register Button */}
               <button
                 type="submit"
                 disabled={!agree || isSubmitting}
-                className={`w-full h-12 text-white font-semibold rounded-lg transition-all duration-200 ${
-                  !agree || isSubmitting
+                className={`w-full h-12 text-white font-semibold rounded-lg transition-all duration-200 ${!agree || isSubmitting
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-600/50"
-                }`}
+                  }`}
               >
                 {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
               </button>

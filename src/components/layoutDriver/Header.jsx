@@ -39,7 +39,7 @@ const Header = () => {
               fontSize: "25px",
               lineHeight: "normal",
               marginTop: "4px",
-              color: "#2bf0b5",
+              color: "#22c55e",
               fontWeight: "bold",
             }}
           >

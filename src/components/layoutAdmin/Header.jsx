@@ -49,11 +49,11 @@ const Header = () => {
               fontSize: "25px",
               lineHeight: "normal",
               marginTop: "4px",
-              color: "var(--primary-2)",
-              fontWeight: "normal",
+              color: "#22c55e",
+              fontWeight: "bold",
             }}
           >
-            Juudensha
+            T-Green
           </span>
         </Navbar.Brand>
 
