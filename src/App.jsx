@@ -19,7 +19,6 @@ import AddStation from "./pages/admin/AddStation";
 import StaffReports from "./pages/staff/StaffReports";
 import StaffPaymentRequests from "./pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./pages/driver/ProfileLayout";
-import NotificationPage from "./pages/driver/NotificationPage";
 import AdminIncidents from "./pages/admin/AdminIncidents";
 import QRCodeManager from "./pages/admin/QRCodeManager";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
@@ -27,23 +26,22 @@ import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import RequireRole from "./components/RequireRole.jsx";
+import BookingPage from "./pages/driver/BookingPage.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
   const loc = useLocation();
-  const { user, loading } = useAuth(); 
+  const { user, loading } = useAuth();
 
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
 
-  useEffect(() => {
-  }, [isAuthenticated, loc.pathname]);
+  useEffect(() => {}, [isAuthenticated, loc.pathname]);
 
   //Chưa đăng nhập → về login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: loc }} replace />;
   }
-
 
   if (loading) {
     return (
@@ -105,7 +103,10 @@ function App() {
             <MainLayoutAdmin>
               <Routes>
                 {/* Default route - Phân tích */}
-                <Route index element={<Navigate to="/admin/reports" replace />} />
+                <Route
+                  index
+                  element={<Navigate to="/admin/reports" replace />}
+                />
 
                 {/* Reports Routes - Trang phân tích */}
                 <Route path="/reports" element={<Reports />} />
@@ -134,11 +135,14 @@ function App() {
         path="/staff/*"
         element={
           <RequireRole allowedRoles={["STAFF"]}>
-          // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
+            // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
             <MainLayoutStaff>
               <Routes>
                 {/* Route mặc định sẽ là trang trạm sạc */}
-                <Route index element={<Navigate to="/staff/station" replace />} />
+                <Route
+                  index
+                  element={<Navigate to="/staff/station" replace />}
+                />
                 <Route path="/station" element={<StationOverview />} />
 
                 {/* Các route khác cho Staff */}
@@ -164,7 +168,10 @@ function App() {
               <MainLayoutDriver>
                 <Routes>
                   {/* Route mặc định sẽ là trang bản đồ */}
-                  <Route index element={<Navigate to="/driver/map" replace />} />
+                  <Route
+                    index
+                    element={<Navigate to="/driver/map" replace />}
+                  />
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/session" element={<ChargingSessionPage />} />
                   <Route
@@ -179,7 +186,7 @@ function App() {
                     <Route path="info" element={<ProfileInfoPage />} />
                     <Route path="vehicle" element={<VehicleInfoPage />} />
                     <Route path="payment" element={<PaymentPage />} />
-                    <Route path="notification" element={<NotificationPage />} />
+                    <Route path="booking" element={<BookingPage />} />
                   </Route>
 
                   {/* 404 Page for Driver section */}

@@ -27,10 +27,10 @@ const ProfileTabs = () => {
       icon: "bi-credit-card",
     },
     {
-      id: "notification",
-      path: "notification",
-      label: "Thông báo",
-      icon: "bi-bell",
+      id: "booking",
+      path: "booking",
+      label: "Đặt chỗ",
+      icon: "bi-calendar-check",
     },
   ];
 
@@ -60,8 +60,12 @@ const ProfileTabs = () => {
               borderRadius: "40px",
               padding: "8px 16px", // giảm padding ngang
               fontSize: "14px",
-              fontWeight: isActiveTab(`/driver/profile/${tab.path}`) ? "600" : "500",
-              color: isActiveTab(`/driver/profile/${tab.path}`) ? "#ffffff" : "#64748b",
+              fontWeight: isActiveTab(`/driver/profile/${tab.path}`)
+                ? "600"
+                : "500",
+              color: isActiveTab(`/driver/profile/${tab.path}`)
+                ? "#ffffff"
+                : "#64748b",
               backgroundColor: isActiveTab(`/driver/profile/${tab.path}`)
                 ? "#22c55e"
                 : "transparent",
@@ -109,7 +113,6 @@ const ProfileTabs = () => {
       </div>
     </div>
   );
-
 };
 
 export default ProfileTabs;

@@ -96,6 +96,7 @@ const apiServices = {
     create: (stationData) => api.post("/api/stations", stationData),
     update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),
     delete: (stationId) => api.delete(`/api/stations/${stationId}`),
+    getStation: () => api.get(`/api/stations?view=basic`),
   },
   chargingPoints: {
     // Lấy danh sách trụ sạc của một trạm
@@ -134,6 +135,23 @@ const apiServices = {
   chargingSessions: {
     // Lịch sử sạc của driver hiện tại
     getMySessions: () => api.get("/api/sessions"),
+  },
+
+  // Booking API
+  bookings: {
+    // Check availability before creating booking
+    checkAvailability: (chargingPointId, bookingTime, vehicleId) =>
+      api.get(
+        `/api/bookings/availability?chargingPointId=${chargingPointId}&bookingTime=${bookingTime}&vehicleId=${vehicleId}`
+      ),
+    // Create a new booking
+    createBooking: (bookingData) => api.post("/api/bookings", bookingData),
+    // Get all bookings for current user
+    getMyBookings: () => api.get("/api/bookings"),
+    // Get booking by ID
+    getBookingById: (bookingId) => api.get(`/api/bookings/${bookingId}`),
+    // Cancel booking
+    cancelBooking: (bookingId) => api.delete(`/api/bookings/${bookingId}`),
   },
 
   // ZaloPay payment integration
@@ -177,6 +195,7 @@ export const stationsAPI = apiServices.stations;
 export const vehiclesAPI = apiServices.vehicles;
 export const chargingPointsAPI = apiServices.chargingPoints;
 export const chargingSessionsAPI = apiServices.chargingSessions;
+export const bookingsAPI = apiServices.bookings;
 export const zalopayAPI = apiServices.zalopay;
 
 // Export default

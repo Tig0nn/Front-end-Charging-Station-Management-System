@@ -1,0 +1,157 @@
+/* --- BỐ CỤC CHUNG --- */
+.calendar-page-wrapper {
+  background: white;
+  flex: 1;
+  height: 100vh; /* 👈 Chiếm toàn bộ chiều cao màn hình */
+  padding: 0 16px 16px 16px;
+  margin: 0;
+  box-sizing: border-box; /* 👈 Thêm box-sizing */
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-container {
+  background: white;
+  border-radius: 12px; /* 👈 Tăng độ bo góc */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 👈 Shadow đẹp hơn */
+  width: 100%;
+  flex: 1; /* 👈 Cho phép co giãn đầy đủ */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e0e0; /* 👈 Thêm viền nhẹ */
+}
+
+.rbc-calendar {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.rbc-calendar * {
+  box-sizing: border-box;
+}
+
+/* --- LOGIC CSS MỚI TỪ dayPropGetter --- */
+.rbc-day-disabled {
+  background-color: #fafafa !important; /* 👈 Dùng !important để ghi đè */
+  cursor: not-allowed !important;
+}
+.rbc-day-disabled .rbc-button-link {
+  color: #b0b0b0 !important; /* 👈 Làm mờ số của ngày */
+}
+
+/* --- HEADER CỦA LỊCH (Thứ, Ngày) --- */
+.rbc-month-view {
+  border: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.rbc-month-view .rbc-month-header {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  border-bottom: 1px solid #e5e5e5; /* 👈 Viền cho header */
+}
+
+.rbc-header {
+  background: #fafafa;
+  border-bottom: none; /* 👈 Bỏ viền bottom mặc định */
+  padding: 12px 4px; /* 👈 Tăng padding */
+  font-weight: 600;
+  font-size: 0.75rem; /* 👈 Chữ to hơn 1 chút */
+  color: #777;
+  text-transform: uppercase;
+  text-align: center;
+  height: auto; /* 👈 Bỏ height cứng */
+  line-height: 1;
+  margin: 0;
+}
+
+.rbc-header + .rbc-header {
+  border-left: 1px solid #e5e5e5; /* 👈 Viền ngăn cách các thứ */
+}
+
+/* --- CÁC Ô NGÀY --- */
+.rbc-month-row {
+  border: none;
+  overflow: visible;
+  flex: 1;
+  margin: 0;
+}
+
+.rbc-row-content {
+  flex: 1;
+  margin: 0;
+}
+
+.rbc-row {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+}
+
+.rbc-day-bg {
+  border-left: 1px solid #e5e5e5;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.rbc-day-bg:first-child {
+  border-left: none;
+}
+
+.rbc-off-range-bg {
+  background: #fdfdfd; /* 👈 Màu cho ngày ngoài tháng */
+}
+
+.rbc-today {
+  background: #e3f2fd; /* 👈 Màu highlight cho hôm nay */
+}
+
+.rbc-date-cell {
+  padding: 8px;
+  text-align: left;
+  margin: 0;
+}
+
+.rbc-button-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333; /* 👈 Màu số đậm hơn */
+  margin: 0;
+}
+
+.rbc-off-range .rbc-button-link {
+  color: #adb5bd;
+}
+
+.rbc-today .rbc-button-link {
+  background: #0099ff;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* --- EVENTS --- */
+.rbc-row-segment {
+  padding: 0 4px; /* 👈 Thêm padding cho events */
+}
+
+.rbc-event {
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin: 2px 0px; /* 👈 Giảm margin ngang */
+}
+
+.rbc-show-more {
+  color: #0099ff;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  margin: 2px 4px;
+}
