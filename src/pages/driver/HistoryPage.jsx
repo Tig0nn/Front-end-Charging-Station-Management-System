@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Routes, Route, Navigate, NavLink } from "react-router-dom";
 import PopUpPayment from "../../components/layoutDriver/PopUpPayment";
+import toast from "react-hot-toast";
 import {
   BarChart,
   Bar,
@@ -140,7 +141,17 @@ const TransactionHistory = () => {
   if (error) {
     return (
       <div className="overflow-x-auto">
-        <h2 className="text-2xl font-semibold mb-4">Lịch sử Giao dịch</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">Lịch sử Giao dịch</h2>
+          <button
+            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            onClick={reload}
+          >
+            <i className="bi bi-arrow-clockwise" />
+            <span>Làm mới</span>
+          </button>
+        </div>
+
         <EmptyState
           icon="bi-exclamation-triangle"
           title="Không thể tải lịch sử sạc"
@@ -151,6 +162,28 @@ const TransactionHistory = () => {
             Thử lại
           </button>
         </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!sessions.length) {
+    return (
+      <div className="overflow-x-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">Lịch sử Giao dịch</h2>
+          <button
+            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            onClick={reload}
+          >
+            <i className="bi bi-arrow-clockwise" />
+            <span>Làm mới</span>
+          </button>
+        </div>
+        <EmptyState
+          icon="bi-lightning-charge"
+          message="Hiện tại chưa có lịch sử sạc"
+        />
       </div>
     );
   }
@@ -166,19 +199,19 @@ const TransactionHistory = () => {
     setSelectedSession(null); // Xóa session đã chọn
   };
 
-  const handleProcessPayment = async (sessionId, method) => {
-    console.log(`Đang xử lý thanh toán ${method} cho ${sessionId}`);
-
-    alert(`Đã chọn thanh toán ${method} cho phiên ${sessionId}.`);
+  const handleProcessPayment = async (sessionId) => {
     try {
       const res = await paymentsAPI.askForPayment(sessionId);
       console.log("Kết quả yêu cầu thanh toán:", res);
+      toast.success("Yêu cầu thanh toán đã được gửi.");
     } catch (e) {
       console.error("Lỗi khi yêu cầu thanh toán:", e);
+      toast.error(getErrorMessage(e));
+    } finally {
+      // Đóng modal và tải lại dữ liệu để cập nhật trạng thái
+      handleCloseModal();
+      reload();
     }
-    // Đóng modal và tải lại dữ liệu để cập nhật trạng thái
-    handleCloseModal();
-    reload();
   };
 
   const headers = [
@@ -191,22 +224,19 @@ const TransactionHistory = () => {
     "Thanh Toán",
   ];
 
-  // Empty state
-  if (!sessions.length) {
-    return (
-      <div className="overflow-x-auto">
-        <h2 className="text-2xl font-semibold mb-4">Lịch sử Giao dịch</h2>
-        <EmptyState
-          icon="bi-lightning-charge"
-          message="Hiện tại chưa có lịch sử sạc"
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="overflow-x-auto">
-      <h2 className="text-2xl font-semibold mb-4">Lịch sử Giao dịch</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-semibold">Lịch sử Giao dịch</h2>
+        <button
+          className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+          onClick={reload}
+        >
+          <i className="bi bi-arrow-clockwise" />
+          <span>Làm mới</span>
+        </button>
+      </div>
+
       <table className="min-w-full bg-white rounded-lg shadow">
         <thead className="bg-gray-100">
           <tr>
@@ -255,7 +285,7 @@ const TransactionHistory = () => {
               <td className="px-6 py-4 whitespace-nowrap">
                 {s.paymentStatus === "UNPAID" && s.status === "COMPLETED" ? (
                   <button
-                    className="px-3 py-1 bg-[#2bf0b5] text-white font-bold rounded hover:bg-[#00ffc6]"
+                    className="px-3 py-1 !bg-[#10B981] text-white font-bold rounded hover:bg-[#00ffc6]"
                     onClick={() => handleOpenPaymentModal(s)}
                   >
                     Thanh toán
@@ -280,7 +310,7 @@ const TransactionHistory = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         session={selectedSession}
-        onProcessPayment={handleProcessPayment} // Truyền hàm xử lý vào
+        onProcessPayment={handleProcessPayment}
       />
     </div>
   );
@@ -295,12 +325,18 @@ const CostAnalysis = () => {
     return (
       <div className="flex flex-col gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold mb-4">Chi phí theo tháng</h2>
-          <EmptyState
-            icon="bi-exclamation-triangle"
-            title="Không thể tải dữ liệu"
-            message={error}
-          />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold">Chi phí theo tháng</h2>
+            <button
+              className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+              onClick={reload}
+            >
+              <i className="bi bi-arrow-clockwise" />
+              <span>Làm mới</span>
+            </button>
+          </div>
+
+          <EmptyState icon="bi-exclamation-triangle" title="Không thể tải dữ liệu" message={error} />
           <div className="mt-3">
             <button className="px-3 py-2 border rounded" onClick={reload}>
               Thử lại
@@ -311,16 +347,21 @@ const CostAnalysis = () => {
     );
   }
 
-  // Empty state cho toàn bộ biểu đồ
   if (!sessions.length) {
     return (
       <div className="flex flex-col gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold mb-4">Chi phí theo tháng</h2>
-          <EmptyState
-            icon="bi-graph-up"
-            message="Chưa có dữ liệu để theo dõi và tính toán"
-          />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold">Chi phí theo tháng</h2>
+            <button
+              className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+              onClick={reload}
+            >
+              <i className="bi bi-arrow-clockwise" />
+              <span>Làm mới</span>
+            </button>
+          </div>
+          <EmptyState icon="bi-graph-up" message="Chưa có dữ liệu để theo dõi và tính toán" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow">
@@ -447,12 +488,18 @@ const ChargingHabits = () => {
   if (error) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold mb-4">Thói quen Sạc theo Giờ</h2>
-        <EmptyState
-          icon="bi-exclamation-triangle"
-          title="Không thể tải dữ liệu"
-          message={error}
-        />
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">Thói quen Sạc theo Giờ</h2>
+          <button
+            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            onClick={reload}
+          >
+            <i className="bi bi-arrow-clockwise" />
+            <span>Làm mới</span>
+          </button>
+        </div>
+
+        <EmptyState icon="bi-exclamation-triangle" title="Không thể tải dữ liệu" message={error} />
         <div className="mt-3">
           <button className="px-3 py-2 border rounded" onClick={reload}>
             Thử lại
@@ -462,15 +509,21 @@ const ChargingHabits = () => {
     );
   }
 
-  // Empty state cho biểu đồ + 2 bảng
   if (!sessions.length) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold mb-4">Thói quen Sạc theo Giờ</h2>
-        <EmptyState
-          icon="bi-clock-history"
-          message="Chưa có dữ liệu để theo dõi và tính toán"
-        />
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">Thói quen Sạc theo Giờ</h2>
+          <button
+            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            onClick={reload}
+          >
+            <i className="bi bi-arrow-clockwise" />
+            <span>Làm mới</span>
+          </button>
+        </div>
+
+        <EmptyState icon="bi-clock-history" message="Chưa có dữ liệu để theo dõi và tính toán" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div className="border rounded p-4">
             <h3 className="font-semibold mb-3">Trạm sạc yêu thích</h3>

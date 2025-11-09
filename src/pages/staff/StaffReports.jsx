@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { staffAPI } from "../../lib/apiServices";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import toast from "react-hot-toast";
 import { Modal } from "react-bootstrap";
 import {
   Container,
@@ -51,30 +50,44 @@ const StaffReports = () => {
   const [reports, setReports] = useState([]);
   const [error, setError] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [submitting, setSubmitting] = useState(false); // Trạng thái đang submit
+
   const OpenModal = (report) => {
     setSelectedReport(report);
     setShowModal(true);
   };
-  useEffect(() => {
-    // hàm gọi API lấy danh sách báo cáo
-    const fetchReports = async () => {
-      try {
-        const response = await staffAPI.getStaffReport();
-        console.log("Fetched reports:", response.data);
-        setReports(response.data?.result || response.data || []);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch reports:", err);
 
-        // Hiển thị lỗi rõ ràng
-        if (err?.response?.status === 401) {
-          setError("Không thể tải được các báo cáo. Vui lòng thử lại sau.");
-        }
-        setReports([]);
+  // Hàm fetch reports (dùng chung cho useEffect và nút Làm mới)
+  const fetchReports = async () => {
+    setLoading(true);
+    try {
+      const response = await staffAPI.getStaffReport();
+      console.log("Fetched reports:", response.data);
+      setReports(response.data?.result || response.data || []);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+      if (err?.response?.status === 401) {
+        setError("Không thể tải được các báo cáo. Vui lòng thử lại sau.");
       }
-    };
+      setReports([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchReports();
   }, []);
+
+  // Lọc reports theo filterStatus
+  const filteredReports = reports.filter((r) => {
+    if (filterStatus === "ALL") return true;
+    return r.status === filterStatus;
+  });
+
   const staff = JSON.parse(localStorage.getItem("staff")); // Lấy object user ra
   const stationId = staff?.stationId; // Lấy field stationId
   const [report, setReport] = useState({
@@ -92,6 +105,7 @@ const StaffReports = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const response = await staffAPI.submitReport(report);
       console.log("Submit report response:", response.data);
@@ -111,6 +125,8 @@ const StaffReports = () => {
     } catch (err) {
       console.error("Lỗi khi gửi báo cáo sự cố:", err);
       toast.error("Lỗi khi gửi báo cáo sự cố, vui lòng thử lại!");
+    } finally {
+      setSubmitting(false);
     }
   };
   useEffect(() => {
@@ -127,7 +143,6 @@ const StaffReports = () => {
 
   return (
     <Container fluid className="p-4">
-      <ToastContainer position="top-right" autoClose={3000} />
       {/* Form Báo cáo sự cố */}
       <Card className="shadow-sm mb-4">
         <Card.Body className="p-4">
@@ -178,8 +193,13 @@ const StaffReports = () => {
               />
             </Form.Group>
 
-            <Button variant="dark" type="submit" className="w-100 py-2">
-              Gửi báo cáo
+            <Button
+              variant="success"
+              type="submit"
+              className="w-100 py-2"
+              disabled={submitting}
+            >
+              {submitting ? "Đang xử lý..." : "Gửi báo cáo"}
             </Button>
           </Form>
         </Card.Body>
@@ -188,13 +208,83 @@ const StaffReports = () => {
       {/* Danh sách Sự cố gần đây */}
       <Card className="shadow-sm">
         <Card.Body className="p-4">
-          <Card.Title as="h5" className="mb-3">
-            Báo cáo sự cố đã gửi
-          </Card.Title>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <Card.Title as="h5" className="mb-0">
+              Báo cáo sự cố đã gửi
+            </Card.Title>
+            <Button
+              variant="success"
+              onClick={fetchReports}
+              disabled={loading}
+              className="d-flex align-items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  <span>Đang tải...</span>
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-arrow-clockwise"></i>
+                  <span>Làm mới</span>
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Bộ lọc trạng thái */}
+          <ButtonGroup className="mb-3 w-100">
+            <Button
+              variant={filterStatus === "ALL" ? "success" : "outline-success"}
+              onClick={() => setFilterStatus("ALL")}
+              style={{ fontWeight: "bold" }}
+            >
+              Tất cả ({reports.length})
+            </Button>
+            <Button
+              variant={filterStatus === "WAITING" ? "success" : "outline-success"}
+              onClick={() => setFilterStatus("WAITING")}
+              style={{ fontWeight: "bold" }}
+            >
+              Đang chờ (
+              {reports.filter((r) => r.status === "WAITING").length})
+            </Button>
+            <Button
+              variant={filterStatus === "WORKING" ? "success" : "outline-success"}
+              onClick={() => setFilterStatus("WORKING")}
+              style={{ fontWeight: "bold" }}
+            >
+              Đang giải quyết (
+              {reports.filter((r) => r.status === "WORKING").length})
+            </Button>
+            <Button
+              variant={filterStatus === "RESOLVED" ? "success" : "outline-success"}
+              onClick={() => setFilterStatus("RESOLVED")}
+              style={{ fontWeight: "bold" }}
+            >
+              Đã xử lý (
+              {reports.filter((r) => r.status === "RESOLVED").length})
+            </Button>
+          </ButtonGroup>
+
           {error ? (
             <p className="text-danger mb-0">{error}</p>
-          ) : reports.length === 0 ? (
-            <p className="text-muted mb-0">Không có báo cáo sự cố nào.</p>
+          ) : filteredReports.length === 0 ? (
+            <p className="text-muted mb-0">
+              {filterStatus === "ALL"
+                ? "Không có báo cáo sự cố nào."
+                : `Không có báo cáo nào ở trạng thái "${
+                    filterStatus === "WAITING"
+                      ? "Đang chờ"
+                      : filterStatus === "WORKING"
+                      ? "Đang giải quyết"
+                      : "Đã xử lý"
+                  }".`}
+            </p>
           ) : (
             <div className="table-responsive">
               <table className="table align-middle table-hover">
@@ -208,8 +298,12 @@ const StaffReports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.map((incident) => (
-                    <tr key={incident.incidentId} onClick={() => OpenModal(incident)}>
+                  {filteredReports.map((incident) => (
+                    <tr
+                      key={incident.incidentId}
+                      onClick={() => OpenModal(incident)}
+                      style={{ cursor: "pointer" }}
+                    >
                       <td>
                         {formatDateTime(incident.reportedAt).date} <br />
                         <div className="text-muted small">
@@ -219,7 +313,9 @@ const StaffReports = () => {
                       <td>
                         {incident.stationName || "-"}
                         {incident.chargingPointName ? (
-                          <div className="text-muted small">{incident.chargingPointName}</div>
+                          <div className="text-muted small">
+                            {incident.chargingPointName}
+                          </div>
                         ) : null}
                       </td>
                       <td>{getSeverityBadge(incident.severity)}</td>
@@ -239,18 +335,20 @@ const StaffReports = () => {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {(incident.status === "WAITING" || incident.resolvedAt == null || incident.status === "WORKING") ? (
-                          <span className="text-red-600 font-medium">
-                            Chưa có
-                          </span>
-                        ) : (
-                          <span className="text-green-600 font-medium">
-                            {formatDateTime(incident.resolvedAt).date} <br />
-                            <div className="text-muted small">
-                              {formatDateTime(incident.resolvedAt).time}
-                            </div>
-                          </span>
-                        )}
+                        {
+                          (incident.status === "WAITING" ||
+                            incident.resolvedAt == null ||
+                            incident.status === "WORKING") ? (
+                            <span className="text-red-600 font-medium">Chưa có</span>
+                          ) : (
+                            <span className="text-green-600 font-medium">
+                              {formatDateTime(incident.resolvedAt).date} <br />
+                              <div className="text-muted small">
+                                {formatDateTime(incident.resolvedAt).time}
+                              </div>
+                            </span>
+                          )
+                        }
                       </td>
                     </tr>
                   ))}
@@ -260,6 +358,8 @@ const StaffReports = () => {
           )}
         </Card.Body>
       </Card>
+
+      {/* Modal chi tiết */}
       <Modal
         show={showModal}
         onHide={() => setShowModal(false)}

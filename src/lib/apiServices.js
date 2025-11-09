@@ -66,7 +66,7 @@ const apiServices = {
 
     //cần sửa
     askForPayment: (sessionId) =>
-      api.post(`/api/cash-payments/request/${sessionId}`),
+      api.post(`/api/payments/cash/request`, { sessionId }),
   },
 
   revenue: {

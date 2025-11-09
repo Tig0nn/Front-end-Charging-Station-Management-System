@@ -31,7 +31,7 @@ import RequireRole from "./components/RequireRole.jsx";
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
   const loc = useLocation();
-  const { user, loading } = useAuth(); // ✅ Dùng user từ AuthContext thay vì localStorage
+  const { user, loading } = useAuth(); 
 
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
@@ -44,7 +44,7 @@ function RequireDriverInfo({ children }) {
     return <Navigate to="/login" state={{ from: loc }} replace />;
   }
 
-  // ✅ Đợi loading xong mới check phone
+
   if (loading) {
     return (
       <div

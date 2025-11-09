@@ -10,6 +10,7 @@ import {
   Form,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { stationsAPI, staffAPI } from "../../lib/apiServices";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
@@ -52,7 +53,7 @@ const StationsList = () => {
       };
 
       await stationsAPI.update(editingId, dataToSend);
-      alert("Cập nhật thành công!");
+      toast.success("Cập nhật trạm sạc thành công!");
 
       setStations((prev) =>
         prev.map((s) => (s.stationId === editingId ? dataToSend : s))
@@ -60,7 +61,7 @@ const StationsList = () => {
       setEditingId(null);
     } catch (err) {
       console.error("Lỗi khi cập nhật:", err);
-      alert("Không thể cập nhật trạm sạc!");
+      toast.error("Không thể cập nhật trạm sạc. Vui lòng thử lại.");
     }
   };
 
@@ -72,16 +73,15 @@ const StationsList = () => {
 
   // Gọi api xóa trạm
   const handleDelete = async (stationId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa trạm sạc này không?"))
-      return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa trạm sạc này không?")) return;
 
     try {
       await stationsAPI.delete(stationId);
-      alert(" Xóa trạm sạc thành công!");
+      toast.success("Xóa trạm sạc thành công!");
       setStations((prev) => prev.filter((s) => s.stationId !== stationId));
     } catch (err) {
       console.error(" Lỗi khi xóa trạm:", err);
-      alert("Không thể xóa trạm sạc. Vui lòng thử lại!");
+      toast.error("Không thể xóa trạm sạc. Vui lòng thử lại.");
     }
   };
 
@@ -128,7 +128,7 @@ const StationsList = () => {
         setStations(data);
       } catch (err) {
         console.error(" Lỗi tải trạm sạc:", err);
-        setError("Không thể tải danh sách trạm sạc.");
+        toast.error("Không thể tải danh sách trạm sạc.");
       } finally {
         setLoading(false);
       }
@@ -199,7 +199,8 @@ const StationsList = () => {
       </div>
 
       {/* Error */}
-      {error && <div className="alert alert-danger">{error}</div>}
+      {/* {error && <div className="alert alert-danger">{error}</div>} */}
+      {/* Lỗi hiển thị bằng toast (react-hot-toast) */}
 
       {/* Bảng trạm sạc */}
       <Card className="border-0 shadow-sm">

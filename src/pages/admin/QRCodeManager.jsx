@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices";
 import { QRCodeSVG } from "qrcode.react";
+import toast from "react-hot-toast";
 import { Download, Search, MapPin, Zap } from "lucide-react";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
@@ -88,7 +89,7 @@ const QRCodeManager = () => {
     const svg = document.getElementById(`qr-${point.pointId}`);
     if (!svg) {
       console.error("Cannot find SVG element:", `qr-${point.pointId}`);
-      alert("Không thể tải mã QR. Vui lòng thử lại.");
+      toast.error("Không thể tải mã QR. Vui lòng thử lại.");
       return;
     }
 
@@ -131,7 +132,7 @@ const QRCodeManager = () => {
 
     img.onerror = () => {
       console.error("Failed to load SVG as image");
-      alert("Không thể tạo file ảnh. Vui lòng thử lại.");
+      toast.error("Không thể tạo file ảnh. Vui lòng thử lại.");
     };
 
     img.src =
@@ -309,7 +310,7 @@ const QRCodeManager = () => {
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText(qrUrl);
-                                alert("Đã sao chép link!");
+                                toast.success("Đã sao chép link!");
                               }}
                               className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors"
                               title="Copy link"

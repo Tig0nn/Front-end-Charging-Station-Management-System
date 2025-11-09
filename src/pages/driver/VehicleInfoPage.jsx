@@ -47,8 +47,6 @@ const VehicleInfoPage = () => {
   const [validated, setValidated] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
 
-  // ===== API Methods =====
-  // Fetch all vehicles
   const fetchVehicles = async () => {
     try {
       setLoading(true);
@@ -57,12 +55,11 @@ const VehicleInfoPage = () => {
       const vehicleData = response?.data?.result || response?.data || [];
       setVehicles(vehicleData);
     } catch (err) {
-      console.error("❌ Error fetching vehicles:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
         "Không thể tải danh sách xe";
-      toast.error(` ${errorMessage}`);
+      toast.error(`${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -77,7 +74,6 @@ const VehicleInfoPage = () => {
         model: vehicleData.model,
       };
 
-      const loadingToast = toast.loading("Đang thêm xe mới...");
 
       const response = await vehiclesAPI.createVehicle(processedData);
       const newVehicle =
@@ -87,11 +83,9 @@ const VehicleInfoPage = () => {
         setVehicles((prev) => [...prev, newVehicle]);
       }
 
-      toast.dismiss(loadingToast);
-      toast.success("✅ Xe đã được thêm thành công!");
+      toast.success("Xe đã được thêm thành công!");
       return { success: true, data: newVehicle };
     } catch (err) {
-      console.error("❌ Error creating vehicle:", err);
       let errorMessage = "Không thể tạo xe mới";
 
       if (err.response?.data?.code === 5002) {
@@ -102,7 +96,7 @@ const VehicleInfoPage = () => {
         errorMessage = err.message;
       }
 
-      toast.error(`❌ ${errorMessage}`);
+      toast.error(`${errorMessage}`);
       return { success: false, error: errorMessage };
     } finally {
       setFormLoading(false);
@@ -121,7 +115,6 @@ const VehicleInfoPage = () => {
         processedData.model = vehicleData.model;
       }
 
-      const loadingToast = toast.loading("Đang cập nhật thông tin xe...");
 
       const response = await vehiclesAPI.updateVehicle(
         vehicleId,
@@ -139,11 +132,10 @@ const VehicleInfoPage = () => {
         setSelectedVehicle(updatedVehicle);
       }
 
-      toast.dismiss(loadingToast);
-      toast.success("✅ Thông tin xe đã được cập nhật thành công!");
+
+      toast.success("Thông tin xe đã được cập nhật thành công!");
       return { success: true, data: updatedVehicle };
     } catch (err) {
-      console.error("❌ Error updating vehicle:", err);
       let errorMessage = "Không thể cập nhật thông tin xe";
 
       if (err.response?.data?.code === 5001) {
@@ -158,7 +150,7 @@ const VehicleInfoPage = () => {
         errorMessage = err.message;
       }
 
-      toast.error(`❌ ${errorMessage}`);
+      toast.error(`${errorMessage}`);
       return { success: false, error: errorMessage };
     } finally {
       setFormLoading(false);
@@ -169,7 +161,6 @@ const VehicleInfoPage = () => {
     try {
       setFormLoading(true);
 
-      const loadingToast = toast.loading("Đang xóa xe...");
 
       await vehiclesAPI.deleteVehicle(vehicleId);
 
@@ -181,11 +172,9 @@ const VehicleInfoPage = () => {
         setSelectedVehicle(null);
       }
 
-      toast.dismiss(loadingToast);
-      toast.success("✅ Xe đã được xóa thành công!");
+      toast.success("Xe đã được xóa thành công!");
       return { success: true };
     } catch (err) {
-      console.error("❌ Error deleting vehicle:", err);
       let errorMessage = "Không thể xóa xe";
 
       if (err.response?.data?.code === 5001) {
@@ -208,17 +197,12 @@ const VehicleInfoPage = () => {
           "Không thể xóa xe này vì đang có phiên sạc liên quan. Vui lòng hoàn thành hoặc hủy các phiên sạc trước khi xóa xe.";
       }
 
-      toast.error(`❌ ${errorMessage}`);
+      toast.error(`${errorMessage}`);
       return { success: false, error: errorMessage };
     } finally {
       setFormLoading(false);
     }
   };
-  // Clear messages
-  const clearMessages = () => {
-    // No longer needed with toast
-  };
-
   // Load vehicles on mount
   useEffect(() => {
     fetchVehicles();
@@ -320,7 +304,6 @@ const VehicleInfoPage = () => {
 
     try {
       setFormLoading(true);
-      clearMessages();
 
       const result = await createVehicle(formData);
 
@@ -348,7 +331,6 @@ const VehicleInfoPage = () => {
 
     try {
       setFormLoading(true);
-      clearMessages();
 
       const result = await updateVehicle(selectedVehicle.vehicleId, formData);
 
@@ -369,7 +351,6 @@ const VehicleInfoPage = () => {
 
     try {
       setFormLoading(true);
-      clearMessages();
 
       const result = await deleteVehicle(vehicleToDelete.vehicleId);
 
@@ -494,10 +475,34 @@ const VehicleInfoPage = () => {
             Quản lý danh sách xe điện của bạn ({vehicles.length} xe)
           </p>
         </div>
-        <Button variant="dark" onClick={openAddModal} disabled={loading}>
-          <i className="bi bi-plus-circle me-2"></i>
-          Thêm xe mới
-        </Button>{" "}
+        <div className="d-flex gap-2">
+          <Button
+            variant="success"
+            onClick={fetchVehicles}
+            disabled={loading}
+            className="d-flex align-items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                />
+                <span>Đang tải...</span>
+              </>
+            ) : (
+              <>
+                <i className="bi bi-arrow-clockwise"></i>
+                <span>Làm mới</span>
+              </>
+            )}
+          </Button>
+          <Button variant="dark" onClick={openAddModal} disabled={loading}>
+            <i className="bi bi-plus-circle me-2"></i>
+            Thêm xe mới
+          </Button>
+        </div>
       </div>
       {/* Vehicles Grid */}
       {vehicles.length === 0 ? (
@@ -566,7 +571,7 @@ const VehicleInfoPage = () => {
                 onChange={handleBrandChange}
                 disabled={loadingBrands}
               >
-                <option value="">-- Chọn hãng xe --</option>
+                <option value=""> Chọn hãng xe </option>
                 {brands.map((brand) => (
                   <option key={brand.brand} value={brand.brand}>
                     {brand.displayName} ({brand.country})
@@ -598,7 +603,7 @@ const VehicleInfoPage = () => {
                       value={formData.model}
                       onChange={handleModelChange}
                     >
-                      <option value="">-- Chọn model xe --</option>
+                      <option value=""> Chọn model xe </option>
                       {models.map((model) => (
                         <option key={model.model} value={model.model}>
                           {model.modelName} ({model.batteryCapacityKwh} kWh,{" "}
@@ -627,7 +632,7 @@ const VehicleInfoPage = () => {
                                       (m) => m.model === formData.model
                                     ).batteryCapacityKwh
                                   }{" "}
-                                  kWh
+                                  kW
                                 </strong>
                               </small>
                               <small>
@@ -856,7 +861,7 @@ const VehicleInfoPage = () => {
                 </small>
               </div>
               <p className="text-danger mt-2 mb-0">
-                <small>⚠️ Hành động này không thể hoàn tác!</small>
+                <small>Hành động này không thể hoàn tác!</small>
               </p>
             </div>
           )}

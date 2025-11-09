@@ -3,6 +3,7 @@ import { Card, Button, Form, Row, Col, Spinner, Alert } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useAuth } from "../../hooks/useAuth.jsx";
 import { usersAPI } from "../../lib/apiServices.js";
+import toast from "react-hot-toast";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 const ProfileInfoPage = () => {
@@ -177,7 +178,6 @@ const ProfileInfoPage = () => {
         updateData.dateOfBirth = null;
       }
 
-      console.log("📝 Sending update data:", updateData);
 
       // Gọi API update trực tiếp
       setIsUpdating(true);
@@ -189,27 +189,30 @@ const ProfileInfoPage = () => {
       const responseData = response.data;
       if (responseData && responseData.code === 1000) {
         // Cập nhật user trong AuthContext
-        const updatedUser = responseData.result || {
-          ...user,
-          ...updateData,
+        const mergedUser = {
+          ...user,                // Giữ lại dữ liệu cũ (role, phone, token, ...)
+          ...responseData.result, // Gộp dữ liệu mới từ API
+          ...updateData,          // Gộp dữ liệu người dùng nhập
           fullName: `${updateData.firstName || user?.firstName || ""} ${updateData.lastName || user?.lastName || ""
             }`.trim(),
         };
-        updateUser(updatedUser);
+
+        updateUser(mergedUser);
+        localStorage.setItem("user", JSON.stringify(mergedUser)); // đồng bộ lại localStorage
 
         setSuccessMessage("Thông tin tài xế đã được cập nhật thành công!");
+        toast.success(successMessage);
         setIsEditMode(false);
-        setTimeout(() => setSuccessMessage(""), 5000);
       } else {
         throw new Error(responseData?.message || "Cập nhật thất bại");
       }
     } catch (err) {
-      console.error("❌ Lỗi cập nhật thông tin:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
         "Không thể cập nhật thông tin. Vui lòng thử lại.";
       setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
     }
@@ -268,25 +271,6 @@ const ProfileInfoPage = () => {
           </div>
         )}
       </div>
-
-      {/* Thông báo Lỗi hoặc Thành công */}
-      {successMessage && (
-        <Alert
-          variant="success"
-          onClose={() => setSuccessMessage("")}
-          dismissible
-        >
-          <i className="bi bi-check-circle me-2"></i>
-          {successMessage}
-        </Alert>
-      )}
-      {error && (
-        <Alert variant="danger" onClose={() => setError(null)} dismissible>
-          <i className="bi bi-exclamation-triangle me-2"></i>
-          {error}
-        </Alert>
-      )}
-
       {/* Form thông tin */}
       <Card className="border-0 shadow-sm">
         <Card.Body className="p-4">
@@ -490,7 +474,6 @@ const ProfileInfoPage = () => {
                   >
                     {isUpdating ? (
                       <>
-                        <LoadingSpinner />
                         Đang lưu...
                       </>
                     ) : (

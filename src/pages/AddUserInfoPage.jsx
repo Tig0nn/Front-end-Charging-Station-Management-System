@@ -42,13 +42,13 @@ export default function AddUserInfoPage() {
     const newErrors = {};
 
     if (!last_name.trim()) newErrors.last_name = "Vui lòng điền đầy đủ họ tên.";
-    else if (last_name.trim().length < 1 || last_name.trim().length > 20)
-      newErrors.last_name = "Họ giới hạn từ 1-20 kí tự.";
+    else if (last_name.trim().length < 2 || last_name.trim().length > 20)
+      newErrors.last_name = "Họ giới hạn từ 2-20 kí tự.";
 
     if (!first_name.trim())
       newErrors.first_name = "Vui lòng điền đầy đủ họ tên.";
-    else if (first_name.trim().length < 1 || first_name.trim().length > 10)
-      newErrors.first_name = "Tên giới hạn từ 1-10 kí tự.";
+    else if (first_name.trim().length < 2 || first_name.trim().length > 10)
+      newErrors.first_name = "Tên giới hạn từ 2-10 kí tự.";
 
     if (!gender) newErrors.gender = "Vui lòng chọn giới tính";
     if (!dob) newErrors.dob = "Vui lòng chọn ngày sinh";

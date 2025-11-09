@@ -2,7 +2,7 @@
 // Thêm 'useRef' và 'useCallback' để quản lý polling (setInterval)
 // và xử lý state một cách chính xác, ổn định.
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Spinner } from "react-bootstrap";
+import toast from "react-hot-toast";
 import { chargingPointsAPI, vehiclesAPI } from "../../lib/apiServices.js";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
@@ -209,9 +209,8 @@ export default function ChargingSessionPage() {
     if (!sessionId) return;
     setIsStopping(true);
     try {
-      console.log("Gửi yêu cầu dừng phiên sạc:", sessionId);
       await chargingPointsAPI.stopCharging(sessionId);
-      console.log("Đã dừng phiên sạc thành công, đang cập nhật UI...");
+      toast.success("Đã dừng phiên sạc thành công.");
 
       // 1. Dừng polling ngay lập tức
       if (timerRef.current) {
@@ -234,7 +233,7 @@ export default function ChargingSessionPage() {
       await fetchSession();
     } catch (err) {
       console.error("Lỗi khi dừng phiên sạc:", err);
-      alert("Không thể dừng phiên sạc, vui lòng thử lại.");
+      toast.error("Không thể dừng phiên sạc, vui lòng thử lại.");
       setIsStopping(false); // Chỉ tắt loading khi lỗi
     }
     // Không cần finally ở đây vì đã xử lý trong logic thành công
@@ -348,8 +347,8 @@ export default function ChargingSessionPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <Spinner animation="border" variant="primary" />
-        <span className="ml-2 text-gray-700">
+        <LoadingSpinner />
+        <br /><span className="ml-2 text-gray-700">
           Đang tải dữ liệu phiên sạc...
         </span>
       </div>

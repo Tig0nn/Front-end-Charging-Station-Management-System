@@ -190,7 +190,7 @@ export default function MainLayoutStaff({ children }) {
                 <button
                   className="d-flex align-items-center gap-2"
                   style={{
-                    backgroundColor: "#212529",
+                    backgroundColor: "#22c55e",
                     color: "white",
                     border: "none",
                     borderRadius: "8px",

@@ -12,6 +12,7 @@ import {
   Modal,
   Form,
 } from "react-bootstrap";
+import toast from "react-hot-toast";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { BiEdit } from "react-icons/bi";
 import PlanCard from "../../components/PlanCard"; // Sử dụng PlanCard thống nhất
@@ -177,12 +178,12 @@ const UsersList = () => {
         console.log("🔄 Updating plan:", editingPlan.id);
         const response = await plansAPI.update(editingPlan.id, planData);
         console.log("✅ Update response:", response);
-        alert("Cập nhật gói dịch vụ thành công!");
+        toast.success("Cập nhật gói dịch vụ thành công!");
       } else {
         console.log("➕ Creating new plan");
         const response = await plansAPI.create(planData);
         console.log("✅ Create response:", response);
-        alert("Tạo gói dịch vụ thành công!");
+        toast.success("Tạo gói dịch vụ thành công!");
       }
 
       // Đóng modal TRƯỚC
@@ -200,7 +201,7 @@ const UsersList = () => {
       console.error("❌ Error response:", err.response?.data);
       const errorMsg =
         err.response?.data?.message || err.response?.data?.error || err.message;
-      alert(`Có lỗi xảy ra khi lưu gói dịch vụ:\n${errorMsg}`);
+      toast.error(`Có lỗi xảy ra khi lưu gói dịch vụ: ${errorMsg}`);
     }
   };
 
@@ -217,11 +218,11 @@ const UsersList = () => {
     try {
       console.log("Deleting plan:", plan.id);
       await plansAPI.delete(plan.id);
-      alert("Xóa gói dịch vụ thành công!");
+      toast.success("Xóa gói dịch vụ thành công!");
       fetchPlans(); // Reload danh sách
     } catch (err) {
       console.error("Error deleting plan:", err);
-      alert(
+      toast.error(
         "Có lỗi xảy ra khi xóa gói dịch vụ. Có thể gói này đang có người đăng ký."
       );
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
+import toast from "react-hot-toast";
 import { staffAPI, stationsAPI } from "../../lib/apiServices";
 
 const AddStation = () => {
@@ -109,7 +110,7 @@ const AddStation = () => {
     const coordinates = await getCoordinatesFromAddress(formData.address);
 
     if (!coordinates) {
-      alert("Không thể lấy tọa độ từ địa chỉ. Vui lòng kiểm tra lại địa chỉ.");
+      toast.error("Không thể lấy tọa độ từ địa chỉ. Vui lòng kiểm tra lại địa chỉ.");
       return;
     }
 
@@ -121,8 +122,8 @@ const AddStation = () => {
       powerOutput: formData.powerOutput,
       operatorName: formData.operatorName,
       contactPhone: formData.contactPhone,
-      latitude: coordinates.latitude, // ✅ Tọa độ mới
-      longitude: coordinates.longitude, // ✅ Tọa độ mới
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
       staffId: formData.staff || "",
     };
 
@@ -130,13 +131,13 @@ const AddStation = () => {
       console.log("📤 Đang gửi dữ liệu tạo station:", payload);
       const response = await stationsAPI.create(payload);
       console.log("✅ Response:", response);
-      alert("Tạo trạm sạc mới thành công!");
+      toast.success("Tạo trạm sạc mới thành công!");
       navigate("/admin/stations");
     } catch (err) {
       console.error("❌ Lỗi khi tạo trạm:", err);
       console.error("❌ Error response:", err.response?.data);
       const errorMsg = err.response?.data?.message || err.message;
-      alert(`Không thể tạo trạm sạc: ${errorMsg}`);
+      toast.error(`Không thể tạo trạm sạc: ${errorMsg}`);
     }
   };
   //  Xử lý thay đổi input
