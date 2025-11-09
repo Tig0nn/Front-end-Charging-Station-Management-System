@@ -160,7 +160,9 @@ const QRCodeManager = () => {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={loadStationsData}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-2 text-white rounded-lg"
+            style={{ backgroundColor: "#22c55e" }}
+
           >
             Thử lại
           </button>
@@ -174,12 +176,36 @@ const QRCodeManager = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Quản lý mã QR trụ sạc
-          </h1>
-          <p className="text-gray-600">
-            Tạo và in mã QR để dán lên các trụ sạc thực tế
-          </p>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Quản lý mã QR trụ sạc
+              </h1>
+              <p className="text-gray-600">
+                Tạo và in mã QR để dán lên các trụ sạc thực tế
+              </p>
+            </div>
+            <button
+              onClick={loadStationsData}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg font-semibold transition-colors"
+              style={{ backgroundColor: "#22c55e" }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = "#16a34a")}
+              onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = "#22c55e")}
+            >
+              {loading ? (
+                <>
+                  <span className="animate-spin">⟳</span>
+                  <span>Đang tải...</span>
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-arrow-clockwise"></i>
+                  <span>Làm mới</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -194,7 +220,7 @@ const QRCodeManager = () => {
               placeholder="Tìm trạm sạc..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22c55e] focus:border-transparent"
             />
           </div>
         </div>
@@ -203,8 +229,8 @@ const QRCodeManager = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <MapPin className="text-blue-600" size={24} />
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <MapPin className="text-[#22c55e]" size={24} />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Tổng trạm</p>
@@ -240,13 +266,13 @@ const QRCodeManager = () => {
               className="bg-white rounded-xl shadow-lg overflow-hidden"
             >
               {/* Station Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+              <div className="bg-gradient-to-r from-[#22c55e] to-[#16a34a] text-white p-6">
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="text-2xl font-bold mb-2">
                       {station.stationName}
                     </h2>
-                    <p className="text-blue-100 flex items-center gap-2">
+                    <p className="text-green-100 flex items-center gap-2">
                       <MapPin size={16} />
                       {station.address}
                     </p>
@@ -270,7 +296,7 @@ const QRCodeManager = () => {
                       return (
                         <div
                           key={point.pointId}
-                          className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-500 transition-colors"
+                          className="border-2 border-gray-200 rounded-lg p-4 hover:border-[#22c55e] transition-colors"
                         >
                           {/* QR Code */}
                           <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
@@ -302,7 +328,10 @@ const QRCodeManager = () => {
                               onClick={() =>
                                 downloadQR(point, station.stationName)
                               }
-                              className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                              className="flex-1 px-3 py-2 text-white text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                              style={{ backgroundColor: "#22c55e" }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#16a34a"}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#22c55e"}
                             >
                               <Download size={16} />
                               Tải xuống
@@ -315,7 +344,7 @@ const QRCodeManager = () => {
                               className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors"
                               title="Copy link"
                             >
-                              📋
+                              <i className="bi bi-clipboard2-fill"></i>
                             </button>
                           </div>
                         </div>

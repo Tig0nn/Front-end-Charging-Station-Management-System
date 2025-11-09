@@ -249,7 +249,11 @@ const ProfileInfoPage = () => {
         </div>
         {!isEditMode ? (
           <Button
-            variant="primary"
+            style={{
+              backgroundColor: "#22c55e",
+              borderColor: "#22c55e",
+              color: "white"
+            }}
             onClick={() => setIsEditMode(true)}
             className="d-flex align-items-center"
           >
@@ -467,10 +471,14 @@ const ProfileInfoPage = () => {
               <div className="d-flex justify-content-between align-items-center mt-4">
                 <div className="d-flex gap-2">
                   <Button
-                    variant="primary"
                     type="submit"
                     disabled={isUpdating}
                     className="px-4"
+                    style={{
+                      backgroundColor: "#22c55e",
+                      borderColor: "#22c55e",
+                      color: "white"
+                    }}
                   >
                     {isUpdating ? (
                       <>

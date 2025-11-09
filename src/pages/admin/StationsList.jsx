@@ -30,6 +30,23 @@ const StationsList = () => {
   const [staffs, setStaffs] = useState([]); // toàn bộ danh sách nhân viên
   const [selectedStaffId, setSelectedStaffId] = useState(""); // nhân viên được chọn
 
+  // Hàm tải lại danh sách trạm
+  const fetchStations = async () => {
+    try {
+      setLoading(true);
+      const res = await stationsAPI.getAllDetails();
+      console.log("API raw response:", res.data);
+      const data = res.data.result;
+      console.log("Danh sách trạm sạc:", data);
+      setStations(data);
+    } catch (err) {
+      console.error(" Lỗi tải trạm sạc:", err);
+      toast.error("Không thể tải danh sách trạm sạc.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Khi bấm nút "Chỉnh sửa"
   const handleEditClick = (station) => {
     setEditingId(station.stationId);
@@ -117,22 +134,6 @@ const StationsList = () => {
 
   //  Gọi API lấy danh sách trạm khi component mount
   useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        setLoading(true);
-        const res = await stationsAPI.getAllDetails();
-        console.log("API raw response:", res.data);
-        // Nếu backend trả về dạng {data: [...]}
-        const data = res.data.result;
-        console.log("Danh sách trạm sạc:", data);
-        setStations(data);
-      } catch (err) {
-        console.error(" Lỗi tải trạm sạc:", err);
-        toast.error("Không thể tải danh sách trạm sạc.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStations();
   }, []);
 
@@ -187,15 +188,39 @@ const StationsList = () => {
             Theo dõi và quản lý tất cả trạm sạc trong hệ thống
           </p>
         </div>
-        <Button
-          as={Link}
-          to="/admin/stations/add"
-          variant="primary"
-          className="d-flex align-items-center gap-2"
-        >
-          <i className="bi bi-plus-lg"></i>
-          Thêm trạm sạc
-        </Button>
+        <div className="d-flex gap-2">
+          <Button
+            onClick={fetchStations}
+            disabled={loading}
+            className="d-flex align-items-center gap-2"
+            style={{
+              backgroundColor: "#22c55e",
+              borderColor: "#22c55e",
+              color: "white",
+            }}
+          >
+            {loading ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" />
+                <span>Đang tải...</span>
+              </>
+            ) : (
+              <>
+                <i className="bi bi-arrow-clockwise"></i>
+                <span>Làm mới</span>
+              </>
+            )}
+          </Button>
+          <Button
+            as={Link}
+            to="/admin/stations/add"
+            variant="dark"
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="bi bi-plus-lg"></i>
+            Thêm trạm sạc
+          </Button>
+        </div>
       </div>
 
       {/* Error */}

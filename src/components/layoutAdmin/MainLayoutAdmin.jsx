@@ -140,7 +140,7 @@ const MainLayoutAdmin = ({ children }) => {
                       fontSize: "14px",
                     }}
                   >
-                    Quản trị trung tâm EVCharge -{" "}
+                    Quản trị T-Green -{" "}
                     {adminProfile?.fullName || "Admin"}
                   </p>
                 </div>
@@ -189,7 +189,7 @@ const MainLayoutAdmin = ({ children }) => {
                         className="bi bi-geo-alt"
                         style={{
                           fontSize: "22px",
-                          color: "#3b82f6",
+                          color: "#22c55e",
                           marginTop: "2px",
                         }}
                       ></i>
@@ -232,7 +232,7 @@ const MainLayoutAdmin = ({ children }) => {
                         className="bi bi-lightning-charge-fill"
                         style={{
                           fontSize: "22px",
-                          color: "#10b981",
+                          color: "#22c55e",
                           marginTop: "2px",
                         }}
                       ></i>
@@ -276,7 +276,7 @@ const MainLayoutAdmin = ({ children }) => {
                         className="bi bi-people-fill"
                         style={{
                           fontSize: "22px",
-                          color: "#a855f7",
+                          color: "#22c55e",
                           marginTop: "2px",
                         }}
                       ></i>
@@ -319,7 +319,7 @@ const MainLayoutAdmin = ({ children }) => {
                         className="bi bi-currency-dollar"
                         style={{
                           fontSize: "22px",
-                          color: "#10b981",
+                          color: "#22c55e",
                           marginTop: "2px",
                         }}
                       ></i>
@@ -339,7 +339,7 @@ const MainLayoutAdmin = ({ children }) => {
                         style={{
                           fontSize: "42px",
                           fontWeight: "700",
-                          color: "#10b981",
+                          color: "#22c55e",
                           lineHeight: "1",
                         }}
                       >

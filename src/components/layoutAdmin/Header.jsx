@@ -73,17 +73,6 @@ const Header = () => {
         <div className="d-flex align-items-center gap-3">
           {/* User Avatar & Name */}
           <div className="d-flex align-items-center gap-2">
-            <div
-              className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white"
-              style={{
-                width: "36px",
-                height: "36px",
-                fontSize: "14px",
-                fontWeight: "600",
-              }}
-            >
-              {adminProfile?.fullName?.charAt(0).toUpperCase() || "A"}
-            </div>
             <div className="d-flex flex-column">
               <span className="fw-semibold" style={{ fontSize: "14px" }}>
                 {adminProfile?.fullName || "Admin"}

@@ -198,6 +198,12 @@ const StaffReports = () => {
               type="submit"
               className="w-100 py-2"
               disabled={submitting}
+              style={{
+                backgroundColor: filterStatus === "ALL" ? "#22c55e" : "transparent",
+                borderColor: "#22c55e",
+                color: filterStatus === "ALL" ? "white" : "#22c55e",
+                fontWeight: "bold"
+              }}
             >
               {submitting ? "Đang xử lý..." : "Gửi báo cáo"}
             </Button>
@@ -213,7 +219,12 @@ const StaffReports = () => {
               Báo cáo sự cố đã gửi
             </Card.Title>
             <Button
-              variant="success"
+              style={{
+                backgroundColor: "#22c55e",
+                borderColor: "#22c55e",
+                color: "white",
+                fontWeight: "bold"
+              }}
               onClick={fetchReports}
               disabled={loading}
               className="d-flex align-items-center gap-2"
@@ -239,32 +250,48 @@ const StaffReports = () => {
           {/* Bộ lọc trạng thái */}
           <ButtonGroup className="mb-3 w-100">
             <Button
-              variant={filterStatus === "ALL" ? "success" : "outline-success"}
+              style={{
+                backgroundColor: filterStatus === "ALL" ? "#22c55e" : "transparent",
+                borderColor: "#22c55e",
+                color: filterStatus === "ALL" ? "white" : "#22c55e",
+                fontWeight: "bold"
+              }}
               onClick={() => setFilterStatus("ALL")}
-              style={{ fontWeight: "bold" }}
             >
               Tất cả ({reports.length})
             </Button>
             <Button
-              variant={filterStatus === "WAITING" ? "success" : "outline-success"}
+              style={{
+                backgroundColor: filterStatus === "WAITING" ? "#22c55e" : "transparent",
+                borderColor: "#22c55e",
+                color: filterStatus === "WAITING" ? "white" : "#22c55e",
+                fontWeight: "bold"
+              }}
               onClick={() => setFilterStatus("WAITING")}
-              style={{ fontWeight: "bold" }}
             >
               Đang chờ (
               {reports.filter((r) => r.status === "WAITING").length})
             </Button>
             <Button
-              variant={filterStatus === "WORKING" ? "success" : "outline-success"}
+              style={{
+                backgroundColor: filterStatus === "WORKING" ? "#22c55e" : "transparent",
+                borderColor: "#22c55e",
+                color: filterStatus === "WORKING" ? "white" : "#22c55e",
+                fontWeight: "bold"
+              }}
               onClick={() => setFilterStatus("WORKING")}
-              style={{ fontWeight: "bold" }}
             >
               Đang giải quyết (
               {reports.filter((r) => r.status === "WORKING").length})
             </Button>
             <Button
-              variant={filterStatus === "RESOLVED" ? "success" : "outline-success"}
+              style={{
+                backgroundColor: filterStatus === "RESOLVED" ? "#22c55e" : "transparent",
+                borderColor: "#22c55e",
+                color: filterStatus === "RESOLVED" ? "white" : "#22c55e",
+                fontWeight: "bold"
+              }}
               onClick={() => setFilterStatus("RESOLVED")}
-              style={{ fontWeight: "bold" }}
             >
               Đã xử lý (
               {reports.filter((r) => r.status === "RESOLVED").length})
@@ -277,13 +304,12 @@ const StaffReports = () => {
             <p className="text-muted mb-0">
               {filterStatus === "ALL"
                 ? "Không có báo cáo sự cố nào."
-                : `Không có báo cáo nào ở trạng thái "${
-                    filterStatus === "WAITING"
-                      ? "Đang chờ"
-                      : filterStatus === "WORKING"
-                      ? "Đang giải quyết"
-                      : "Đã xử lý"
-                  }".`}
+                : `Không có báo cáo nào ở trạng thái "${filterStatus === "WAITING"
+                  ? "Đang chờ"
+                  : filterStatus === "WORKING"
+                    ? "Đang giải quyết"
+                    : "Đã xử lý"
+                }".`}
             </p>
           ) : (
             <div className="table-responsive">
@@ -442,7 +468,7 @@ const StaffReports = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </Container >
   );
 };
 

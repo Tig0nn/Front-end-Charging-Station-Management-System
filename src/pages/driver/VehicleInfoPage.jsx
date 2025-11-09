@@ -477,7 +477,11 @@ const VehicleInfoPage = () => {
         </div>
         <div className="d-flex gap-2">
           <Button
-            variant="success"
+            style={{
+              backgroundColor: "#22c55e",
+              borderColor: "#22c55e",
+              color: "white"
+            }}
             onClick={fetchVehicles}
             disabled={loading}
             className="d-flex align-items-center gap-2"

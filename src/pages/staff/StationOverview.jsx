@@ -180,10 +180,15 @@ export default function StationOverview() {
           </p>
         </div>
         <Button
-          variant="success"
           onClick={() => fetchChargingPoints(true)}
           disabled={loading}
           className="d-flex align-items-center gap-2"
+          style={{
+            backgroundColor: "#22c55e",
+            borderColor: "#22c55e",
+            color: "white",
+            fontWeight: "bold",
+          }}
         >
           {loading ? (
             <>

@@ -144,7 +144,8 @@ const TransactionHistory = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold">Lịch sử Giao dịch</h2>
           <button
-            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
+            style={{ backgroundColor: "#22c55e" }}
             onClick={reload}
           >
             <i className="bi bi-arrow-clockwise" />
@@ -173,7 +174,8 @@ const TransactionHistory = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold">Lịch sử Giao dịch</h2>
           <button
-            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
+            style={{ backgroundColor: "#22c55e" }}
             onClick={reload}
           >
             <i className="bi bi-arrow-clockwise" />
@@ -229,7 +231,8 @@ const TransactionHistory = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold">Lịch sử Giao dịch</h2>
         <button
-          className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+          className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
+          style={{ backgroundColor: "#22c55e" }}
           onClick={reload}
         >
           <i className="bi bi-arrow-clockwise" />
@@ -328,7 +331,8 @@ const CostAnalysis = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold">Chi phí theo tháng</h2>
             <button
-              className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+              className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
+              style={{ backgroundColor: "#22c55e" }}
               onClick={reload}
             >
               <i className="bi bi-arrow-clockwise" />
@@ -354,7 +358,8 @@ const CostAnalysis = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold">Chi phí theo tháng</h2>
             <button
-              className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+              className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
+              style={{ backgroundColor: "#22c55e" }}
               onClick={reload}
             >
               <i className="bi bi-arrow-clockwise" />
@@ -491,7 +496,8 @@ const ChargingHabits = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold">Thói quen Sạc theo Giờ</h2>
           <button
-            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
+            style={{ backgroundColor: "#22c55e" }}
             onClick={reload}
           >
             <i className="bi bi-arrow-clockwise" />
@@ -515,7 +521,8 @@ const ChargingHabits = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold">Thói quen Sạc theo Giờ</h2>
           <button
-            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
+            style={{ backgroundColor: "#22c55e" }}
             onClick={reload}
           >
             <i className="bi bi-arrow-clockwise" />

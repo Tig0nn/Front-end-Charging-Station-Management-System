@@ -186,7 +186,14 @@ const AdminIncidents = () => {
             Quản lý và theo dõi các báo cáo sự cố từ nhân viên
           </p>
         </div>
-        <Button variant="dark" onClick={loadIncidents}>
+        <Button 
+          style={{
+            backgroundColor: "#22c55e",
+            borderColor: "#22c55e",
+            color: "white"
+          }}
+          onClick={loadIncidents}
+        >
           <i className="bi bi-arrow-clockwise me-2"></i>
           Làm mới
         </Button>
@@ -337,17 +344,25 @@ const AdminIncidents = () => {
                         </Button>
                         {incident.status === "WAITING" ? (
                           <Button
-                            variant="success"
                             size="sm"
                             onClick={() => handleSubmit("WORKING", incident.incidentId)}
+                            style={{
+                              backgroundColor: "#22c55e",
+                              borderColor: "#22c55e",
+                              color: "white"
+                            }}
                           >
                             Duyệt
                           </Button>
                         ) : incident.status === "WORKING" ? (
                           <Button
-                            variant="success"
                             size="sm"
                             onClick={() => handleSubmit("DONE", incident.incidentId)}
+                            style={{
+                              backgroundColor: "#22c55e",
+                              borderColor: "#22c55e",
+                              color: "white"
+                            }}
                           >
                             Hoàn thành
                           </Button>
