@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import apiServices from "../../lib/apiServices";
 
+// URL hình ảnh hero - bạn có thể thay đổi bằng ảnh của dự án
+const HERO_IMAGE_URL =
+  "https://drive.google.com/file/d/1RKhdwBDSI8xy5iD_ARcnU4pxDeVF-h-C/view?usp=sharing";
+
 const BookingPage = () => {
   // States
   const [bookingTime, setBookingTime] = useState("");
@@ -13,13 +17,17 @@ const BookingPage = () => {
   const [selectedCharger, setSelectedCharger] = useState("");
   const [desiredPercentage, setDesiredPercentage] = useState(80);
 
+  // State mới để lưu % pin tối đa từ API
+  const [maxPercentage, setMaxPercentage] = useState(100);
+
   const [searchResults, setSearchResults] = useState(null);
   const [availabilityMessage, setAvailabilityMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Get minimum datetime (now)
+  // Lấy datetime tối thiểu (bây giờ + 1 phút)
   const getMinDateTime = () => {
     const now = new Date();
+    now.setMinutes(now.getMinutes() + 1);
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
@@ -28,25 +36,31 @@ const BookingPage = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  // Get maximum datetime (24 hours from now)
+  // Lấy datetime tối đa (đúng 24 giờ kể từ bây giờ)
   const getMaxDateTime = () => {
     const max = new Date();
-    max.setHours(max.getHours() + 24);
+    max.setHours(max.getHours() + 24); // Thêm 24 giờ
     const year = max.getFullYear();
     const month = String(max.getMonth() + 1).padStart(2, "0");
     const day = String(max.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}T23:59`;
+    const hours = String(max.getHours()).padStart(2, "0");
+    const minutes = String(max.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  // Load initial data
+  // Load initial data (vehicles, stations)
   useEffect(() => {
     loadVehicles();
     loadStations();
-    // Set default datetime to now + 1 hour
+    // Set default datetime (now + 1 giờ)
     const defaultTime = new Date();
     defaultTime.setHours(defaultTime.getHours() + 1);
-    const formatted = defaultTime.toISOString().slice(0, 16);
-    setBookingTime(formatted);
+    const year = defaultTime.getFullYear();
+    const month = String(defaultTime.getMonth() + 1).padStart(2, "0");
+    const day = String(defaultTime.getDate()).padStart(2, "0");
+    const hours = String(defaultTime.getHours()).padStart(2, "0");
+    const minutes = String(defaultTime.getMinutes()).padStart(2, "0");
+    setBookingTime(`${year}-${month}-${day}T${hours}:${minutes}`);
   }, []);
 
   const loadVehicles = async () => {
@@ -67,6 +81,7 @@ const BookingPage = () => {
     }
   };
 
+  // Load chargers khi chọn trạm
   const loadChargers = async (stationId) => {
     try {
       setLoading(true);
@@ -81,31 +96,37 @@ const BookingPage = () => {
     }
   };
 
+  // Xử lý khi đổi trạm
   const handleStationChange = (stationId) => {
     setSelectedStation(stationId);
-    setSelectedCharger("");
-    setChargers([]);
+    setSelectedCharger(""); // Reset trụ sạc
+    setChargers([]); // Xóa danh sách trụ cũ
+    setAvailabilityMessage(""); // Xóa thông báo
     if (stationId) {
       loadChargers(stationId);
     }
   };
 
+  // Xử lý khi nhấn nút "Tìm kiếm"
   const handleSearch = () => {
     if (!bookingTime || !selectedVehicle || !selectedStation) {
       alert("Vui lòng chọn đầy đủ: Ngày giờ, Xe, và Trạm sạc");
       return;
     }
-    setSearchResults({ searched: true });
+    setSearchResults({ searched: true }); // Hiển thị khu vực kết quả
+    setAvailabilityMessage(""); // Reset thông báo
+    setSelectedCharger(""); // Reset trụ sạc đã chọn
   };
 
+  // Kiểm tra tình trạng trụ sạc (gọi API)
   const checkAvailability = async () => {
     if (!selectedCharger || !bookingTime || !selectedVehicle) return;
 
     try {
       setLoading(true);
-      const bookingDateTime = new Date(bookingTime).toISOString();
+      // API yêu cầu format yyyy-MM-ddTHH:mm:ss
+      const bookingDateTime = bookingTime + ":00";
 
-      // Fix: Use string ID directly (no more uuidToHash)
       const response = await apiServices.bookings.checkAvailability(
         selectedCharger,
         bookingDateTime,
@@ -113,19 +134,32 @@ const BookingPage = () => {
       );
 
       if (response?.data?.available || response?.available) {
-        const message = response?.data?.message || response?.message || "";
-        setAvailabilityMessage(`✅ Trạm khả dụng! ${message}`);
+        const apiMessage = response?.data?.message || "Trạm khả dụng!";
+        const newMax = response?.data?.maxChargePercentage || 100;
+
+        setAvailabilityMessage(`✅ ${apiMessage}`); // Dùng message từ API
+        setMaxPercentage(newMax);
+
+        // Tự động giảm % pin nếu người dùng đang chọn cao hơn mức cho phép
+        if (desiredPercentage > newMax) {
+          setDesiredPercentage(newMax);
+        }
       } else {
-        setAvailabilityMessage("❌ Trạm đã được đặt trong thời gian này");
+        setAvailabilityMessage(
+          response?.data?.message || "❌ Trạm đã được đặt trong thời gian này"
+        );
+        setMaxPercentage(100); // Reset
       }
     } catch (err) {
       setAvailabilityMessage("❌ Không thể kiểm tra tình trạng");
+      setMaxPercentage(100); // Reset
       console.error("Error checking availability:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // Tự động check availability khi các thông tin thay đổi
   useEffect(() => {
     if (selectedCharger && bookingTime && selectedVehicle) {
       checkAvailability();
@@ -135,6 +169,7 @@ const BookingPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCharger, bookingTime, selectedVehicle]);
 
+  // Xử lý khi nhấn nút "Xác nhận đặt chỗ"
   const handleBooking = async () => {
     if (!selectedVehicle || !selectedCharger || !bookingTime) {
       alert("Vui lòng điền đầy đủ thông tin!");
@@ -142,7 +177,7 @@ const BookingPage = () => {
     }
 
     if (!availabilityMessage.includes("✅")) {
-      alert("Trạm không khả dụng!");
+      alert("Trạm không khả dụng hoặc thông tin không hợp lệ!");
       return;
     }
 
@@ -150,19 +185,20 @@ const BookingPage = () => {
       setLoading(true);
       const bookingData = {
         vehicleId: selectedVehicle,
-        chargingPointId: selectedCharger, // Now using string ID directly
-        bookingTime: new Date(bookingTime).toISOString(),
+        chargingPointId: selectedCharger,
+        bookingTime: bookingTime + ":00",
         desiredPercentage: parseInt(desiredPercentage),
       };
 
       await apiServices.bookings.createBooking(bookingData);
       alert("✅ Đặt chỗ thành công! Tiền cọc 50,000 VNĐ đã được trừ từ ví.");
 
-      // Reset form
+      // Reset form về trạng thái ban đầu
       setSearchResults(null);
       setSelectedCharger("");
       setAvailabilityMessage("");
       setDesiredPercentage(80);
+      setMaxPercentage(100);
     } catch (err) {
       console.error("Error creating booking:", err);
       const errorMsg =
@@ -174,224 +210,247 @@ const BookingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-600 to-blue-800">
-      {/* Hero Section - Booking.com style */}
-      <div className="text-white py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-3">Đặt chỗ sạc xe điện</h1>
-          <p className="text-xl">
-            Tìm và đặt trước trụ sạc tại các trạm trên toàn quốc
+    <div className="min-h-screen bg-gray-100">
+      {/* Hero Section với Hình Nền */}
+      <div
+        className="relative h-[50vh] min-h-[400px] bg-cover bg-center"
+        style={{ backgroundImage: `url(${HERO_IMAGE_URL})` }}
+      >
+        {/* Lớp phủ tối */}
+        <div className="absolute inset-0 bg-black/50"></div>
+
+        {/* Nội dung chữ trên Hero */}
+        <div className="relative z-10 flex flex-col justify-center h-full max-w-6xl mx-auto px-4 text-white">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">
+            Đặt chỗ sạc xe điện
+          </h1>
+          <p className="text-xl md:text-2xl">
+            Tìm và đặt trước trụ sạc (trong 24 giờ tới)
           </p>
         </div>
       </div>
 
-      {/* Search Bar - Booking.com style */}
-      <div className="max-w-6xl mx-auto px-4 -mt-6">
-        <div className="bg-yellow-400 rounded-lg shadow-2xl p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Date & Time */}
-            <div className="bg-white rounded p-3">
-              <label className="text-xs font-semibold text-gray-600 block mb-1">
-                <i className="bi bi-calendar3"></i> Ngày giờ đặt chỗ
-              </label>
-              <input
-                type="datetime-local"
-                className="w-full border-0 focus:outline-none text-sm"
-                value={bookingTime}
-                onChange={(e) => setBookingTime(e.target.value)}
-                min={getMinDateTime()}
-                max={getMaxDateTime()}
-              />
-            </div>
+      {/* Thanh Tìm Kiếm (Nổi lên trên) */}
+      <div className="relative z-20 -mt-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-xl p-4 md:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              {/* Date & Time */}
+              <div className="border border-gray-200 rounded p-3 hover:border-blue-500">
+                <label className="text-xs font-semibold text-gray-600 block mb-1">
+                  <i className="bi bi-calendar3"></i> Ngày giờ đặt chỗ
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full border-0 focus:outline-none focus:ring-0 text-sm p-0"
+                  value={bookingTime}
+                  onChange={(e) => setBookingTime(e.target.value)}
+                  min={getMinDateTime()}
+                  max={getMaxDateTime()}
+                />
+              </div>
 
-            {/* Vehicle */}
-            <div className="bg-white rounded p-3">
-              <label className="text-xs font-semibold text-gray-600 block mb-1">
-                <i className="bi bi-car-front"></i> Xe của bạn
-              </label>
-              <select
-                className="w-full border-0 focus:outline-none text-sm"
-                value={selectedVehicle}
-                onChange={(e) => setSelectedVehicle(e.target.value)}
+              {/* Vehicle */}
+              <div className="border border-gray-200 rounded p-3 hover:border-blue-500">
+                <label className="text-xs font-semibold text-gray-600 block mb-1">
+                  <i className="bi bi-car-front"></i> Xe của bạn
+                </label>
+                <select
+                  className="w-full border-0 focus:outline-none focus:ring-0 text-sm p-0"
+                  value={selectedVehicle}
+                  onChange={(e) => setSelectedVehicle(e.target.value)}
+                >
+                  <option value="">Chọn xe</option>
+                  {vehicles.map((v) => (
+                    <option key={v.vehicleId} value={v.vehicleId}>
+                      {v.licensePlate} - {v.model}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Station */}
+              <div className="border border-gray-200 rounded p-3 hover:border-blue-500">
+                <label className="text-xs font-semibold text-gray-600 block mb-1">
+                  <i className="bi bi-geo-alt"></i> Trạm sạc
+                </label>
+                <select
+                  className="w-full border-0 focus:outline-none focus:ring-0 text-sm p-0"
+                  value={selectedStation}
+                  onChange={(e) => handleStationChange(e.target.value)}
+                >
+                  <option value="">Chọn trạm</option>
+                  {stations.map((s) => (
+                    <option key={s.stationId} value={s.stationId}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Search Button */}
+              <button
+                onClick={handleSearch}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all text-lg h-[62px] md:h-auto md:py-3"
               >
-                <option value="">Chọn xe</option>
-                {vehicles.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.licensePlate} - {v.model}
-                  </option>
-                ))}
-              </select>
+                <i className="bi bi-search"></i> Tìm kiếm
+              </button>
             </div>
-
-            {/* Station */}
-            <div className="bg-white rounded p-3">
-              <label className="text-xs font-semibold text-gray-600 block mb-1">
-                <i className="bi bi-geo-alt"></i> Trạm sạc
-              </label>
-              <select
-                className="w-full border-0 focus:outline-none text-sm"
-                value={selectedStation}
-                onChange={(e) => handleStationChange(e.target.value)}
-              >
-                <option value="">Chọn trạm</option>
-                {stations.map((s) => (
-                  <option key={s.stationId} value={s.stationId}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Search Button */}
-            <button
-              onClick={handleSearch}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all text-lg"
-            >
-              <i className="bi bi-search"></i> Tìm kiếm
-            </button>
           </div>
         </div>
       </div>
 
       {/* Results Section */}
-      {searchResults && (
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              Chọn trụ sạc tại{" "}
-              {stations.find((s) => s.stationId === selectedStation)?.name}
-            </h2>
+      <div className="pt-12 pb-12">
+        {searchResults && (
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-bold mb-4">
+                Chọn trụ sạc tại{" "}
+                {stations.find((s) => s.stationId === selectedStation)?.name}
+              </h2>
 
-            {/* Chargers Grid */}
-            {chargers.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <i className="bi bi-inbox text-4xl"></i>
-                <p className="mt-2">Không có trụ sạc khả dụng</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {chargers.map((charger) => (
-                  <div
-                    key={charger.pointId}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedCharger === charger.pointId
-                        ? "border-blue-600 bg-blue-50"
-                        : "border-gray-200 hover:border-blue-300"
-                    }`}
-                    onClick={() => setSelectedCharger(charger.pointId)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-lg">{charger.name}</h3>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold ${
-                          charger.status === "AVAILABLE"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {charger.status}
-                      </span>
+              {/* Chargers Grid */}
+              {chargers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <i className="bi bi-inbox text-4xl"></i>
+                  <p className="mt-2">Không có trụ sạc tại trạm này</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {chargers.map((charger) => (
+                    <div
+                      key={charger.pointId}
+                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        selectedCharger === charger.pointId
+                          ? "border-blue-600 bg-blue-50"
+                          : "border-gray-200 hover:border-blue-300"
+                      }`}
+                      onClick={() => setSelectedCharger(charger.pointId)}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg">{charger.name}</h3>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-semibold ${
+                            charger.status === "AVAILABLE"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {charger.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        <i className="bi bi-lightning-charge"></i>{" "}
+                        {charger.chargingPower}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <i className="bi bi-plug"></i> {charger.connectorType}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      <i className="bi bi-lightning-charge"></i>{" "}
-                      {charger.chargingPower}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <i className="bi bi-plug"></i> {charger.connectorType}
-                    </p>
+                  ))}
+                </div>
+              )}
+
+              {/* Booking Form (chỉ hiện khi đã chọn trụ) */}
+              {selectedCharger && (
+                <div className="border-t pt-6">
+                  <h3 className="text-xl font-bold mb-4">Thông tin đặt chỗ</h3>
+
+                  {/* Availability Message */}
+                  {availabilityMessage && (
+                    <div
+                      className={`p-4 rounded-lg mb-4 ${
+                        availabilityMessage.includes("✅")
+                          ? "bg-green-50 text-green-800 border border-green-200"
+                          : "bg-red-50 text-red-800 border border-red-200"
+                      }`}
+                    >
+                      {availabilityMessage}
+                    </div>
+                  )}
+
+                  {/* Battery Percentage Slider */}
+                  <div className="mb-6">
+                    <label className="block font-semibold mb-2">
+                      Mức pin mong muốn: {desiredPercentage}%
+                      {availabilityMessage.includes("✅") && (
+                        <span className="text-gray-500 text-sm">
+                          {" "}
+                          (Tối đa: {Math.floor(maxPercentage)}%)
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      type="range"
+                      min="20"
+                      max={Math.floor(maxPercentage)}
+                      step="1"
+                      value={desiredPercentage}
+                      onChange={(e) => setDesiredPercentage(e.target.value)}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      disabled={!availabilityMessage.includes("✅")}
+                    />
+                    <div className="flex justify-between text-sm text-gray-600 mt-1">
+                      <span>20%</span>
+                      <span>{Math.floor(maxPercentage)}%</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
 
-            {/* Booking Form */}
-            {selectedCharger && (
-              <div className="border-t pt-6">
-                <h3 className="text-xl font-bold mb-4">Thông tin đặt chỗ</h3>
-
-                {/* Availability Message */}
-                {availabilityMessage && (
-                  <div
-                    className={`p-4 rounded-lg mb-4 ${
-                      availabilityMessage.includes("✅")
-                        ? "bg-green-50 text-green-800 border border-green-200"
-                        : "bg-red-50 text-red-800 border border-red-200"
-                    }`}
-                  >
-                    {availabilityMessage}
+                  {/* Deposit Info Box */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold mb-2">
+                      <i className="bi bi-info-circle"></i> Thông tin đặt cọc
+                    </h4>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>
+                        • Một khoản cọc <strong>50,000 VNĐ</strong> sẽ được trừ
+                        từ ví.
+                      </li>
+                      <li>
+                        • Cửa sổ check-in: <strong>±10 phút</strong> từ giờ đặt.
+                      </li>
+                      <li>• Quá giờ check-in (không sạc) sẽ mất cọc.</li>
+                      <li>• Tiền cọc sẽ được hoàn hoặc trừ vào hóa đơn sạc.</li>
+                    </ul>
                   </div>
-                )}
 
-                {/* Battery Percentage Slider */}
-                <div className="mb-6">
-                  <label className="block font-semibold mb-2">
-                    Mức pin mong muốn: {desiredPercentage}%
-                  </label>
-                  <input
-                    type="range"
-                    min="20"
-                    max="100"
-                    step="5"
-                    value={desiredPercentage}
-                    onChange={(e) => setDesiredPercentage(e.target.value)}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    disabled={!availabilityMessage.includes("✅")}
-                  />
-                  <div className="flex justify-between text-sm text-gray-600 mt-1">
-                    <span>20%</span>
-                    <span>100%</span>
+                  {/* Action Buttons */}
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setSearchResults(null)}
+                      className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      onClick={handleBooking}
+                      disabled={loading || !availabilityMessage.includes("✅")}
+                      className={`flex-1 px-6 py-3 rounded-lg font-bold text-white transition-all ${
+                        loading || !availabilityMessage.includes("✅")
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      }`}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          Đang xử lý...
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-check-circle"></i> Xác nhận & Cọc
+                          50,000 VNĐ
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                {/* Deposit Info */}
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold mb-2">
-                    <i className="bi bi-info-circle"></i> Thông tin đặt cọc
-                  </h4>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    <li>
-                      • Tiền cọc: <strong>50,000 VNĐ</strong>
-                    </li>
-                    <li>• Cửa sổ check-in: ±10 phút từ giờ đặt</li>
-                    <li>• Quá giờ check-in sẽ mất cọc</li>
-                    <li>• Tiền cọc sẽ được trừ vào hóa đơn cuối cùng</li>
-                  </ul>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => setSearchResults(null)}
-                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    onClick={handleBooking}
-                    disabled={loading || !availabilityMessage.includes("✅")}
-                    className={`flex-1 px-6 py-3 rounded-lg font-bold text-white transition-all ${
-                      loading || !availabilityMessage.includes("✅")
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700"
-                    }`}
-                  >
-                    {loading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2"></span>
-                        Đang xử lý...
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-check-circle"></i> Xác nhận đặt chỗ
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
