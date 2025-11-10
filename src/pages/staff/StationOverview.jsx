@@ -1,13 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
 import {
   Container,
-  Row,
-  Col,
-  Card,
   Badge,
   Button,
-  Modal,
   Spinner,
+  Alert,
 } from "react-bootstrap";
 import { chargingPointsAPI } from "../../lib/apiServices";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
@@ -70,7 +67,9 @@ export default function StationOverview() {
         selectedPoint.pointId,
         newStatus
       );
-      toast.success(`Đã cập nhật trạng thái trụ ${selectedPoint.name} thành công!`);
+      toast.success(
+        `Đã cập nhật trạng thái trụ ${selectedPoint.name} thành công!`
+      );
       await fetchChargingPoints(false);
       setShowModal(false);
     } catch (err) {
@@ -151,7 +150,6 @@ export default function StationOverview() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Chỉ chạy 1 lần khi mount
 
-
   if (loading && chargingPoints.length === 0) {
     return (
       <Container className="text-center py-5">
@@ -204,127 +202,258 @@ export default function StationOverview() {
         </Button>
       </div>
 
-      {/* Modal Chỉnh sửa */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Chỉnh sửa: {selectedPoint?.name}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedPoint && (
-            <div className="d-flex gap-2 mt-3">
-              <Button
-                variant="warning"
-                className="w-50"
-                onClick={() => handleUpdateStatus("MAINTENANCE")}
+      {/* Edit Status Modal - New Styling */}
+      {showModal && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1050,
+            padding: "1rem",
+          }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl p-4"
+            style={{
+              maxWidth: "28rem",
+              width: "100%",
+              borderRadius: "0.75rem",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-start mb-3">
+              <h3 className="fs-5 fw-bold text-gray-900">
+                Chỉnh sửa: {selectedPoint?.name}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="btn-close"
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  color: "#9ca3af",
+                  cursor: "pointer",
+                }}
               >
-                Bảo trì
-              </Button>
-              <Button
-                variant="secondary"
-                className="w-50"
-                onClick={() => handleUpdateStatus("OUT_OF_SERVICE")}
-              >
-                Tạm dừng
-              </Button>
-              {(selectedPoint?.status === "OUT_OF_SERVICE" ||
-                selectedPoint?.status === "MAINTENANCE") && (
-                <Button
-                  variant="primary"
-                  className="w-50"
-                  onClick={() => handleUpdateStatus("AVAILABLE")}
-                >
-                  Kích hoạt
-                </Button>
-              )}
+                <i className="bi bi-x-lg"></i>
+              </button>
             </div>
-          )}
-        </Modal.Body>
-      </Modal>
 
-      <Row xs={1} md={2} lg={3} className="g-3">
+            {/* Content */}
+            <div className="mb-4">
+              <p className="text-muted mb-3">
+                Chọn trạng thái mới cho trụ sạc:
+              </p>
+              <div className="d-flex flex-column gap-3">
+                <button
+                  onClick={() => handleUpdateStatus("MAINTENANCE")}
+                  className="w-100 px-4 py-3 rounded-lg fw-semibold"
+                  style={{
+                    backgroundColor: "#fef3c7",
+                    color: "#92400e",
+                    border: "none",
+                    borderRadius: "0.5rem",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#fde68a")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#fef3c7")
+                  }
+                >
+                  <i className="bi bi-wrench me-2"></i>
+                  Bảo trì
+                </button>
+                <button
+                  onClick={() => handleUpdateStatus("OUT_OF_SERVICE")}
+                  className="w-100 px-4 py-3 rounded-lg fw-semibold"
+                  style={{
+                    backgroundColor: "#f3f4f6",
+                    color: "#374151",
+                    border: "none",
+                    borderRadius: "0.5rem",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#e5e7eb")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f3f4f6")
+                  }
+                >
+                  <i className="bi bi-pause-circle me-2"></i>
+                  Tạm dừng
+                </button>
+                {(selectedPoint?.status === "OUT_OF_SERVICE" ||
+                  selectedPoint?.status === "MAINTENANCE") && (
+                  <button
+                    onClick={() => handleUpdateStatus("AVAILABLE")}
+                    className="w-100 px-4 py-3 text-white rounded-lg fw-semibold"
+                    style={{
+                      backgroundColor: "#22c55e",
+                      border: "none",
+                      borderRadius: "0.5rem",
+                      transition: "background-color 0.2s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#16a34a")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#22c55e")
+                    }
+                  >
+                    <i className="bi bi-play-circle me-2"></i>
+                    Kích hoạt
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Charging Points Grid - New Styling */}
+      <div className="row g-4">
         {chargingPoints.map((point) => {
           const statusInfo = getStatusInfo(point);
           const isCharging = statusInfo.text === "Đang sạc";
           const sessionInfo = point.currentSessionInfo;
 
           return (
-            <Col key={point.pointId}>
-              <Card className="h-100 shadow-sm">
-                <Card.Body>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h6 className="mb-0">{point.name}</h6>
-                    <Badge
-                      bg={statusInfo.bg}
-                      text={statusInfo.textColor || "light"}
+            <div key={point.pointId} className="col-12 col-md-6 col-lg-4">
+              <div
+                className="border-2 rounded-lg p-4 h-100"
+                style={{
+                  border: "2px solid #e5e7eb",
+                  borderRadius: "0.5rem",
+                  transition: "border-color 0.2s",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.borderColor = "#22c55e")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.borderColor = "#e5e7eb")
+                }
+              >
+                {/* Status Badge */}
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h6 className="mb-0 fw-semibold">{point.name}</h6>
+                  <Badge
+                    bg={statusInfo.bg}
+                    text={statusInfo.textColor || "light"}
+                    style={{
+                      padding: "0.375rem 0.75rem",
+                      borderRadius: "9999px",
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {statusInfo.text}
+                  </Badge>
+                </div>
+
+                {/* Power */}
+                <p className="text-muted small mb-3">
+                  Công suất: {formatPower(point.chargingPower)}
+                </p>
+
+                {/* Session Info if charging */}
+                {isCharging && point.currentSessionId && (
+                  <div
+                    className="p-3 rounded-lg mb-3"
+                    style={{
+                      backgroundColor: "#dcfce7",
+                      borderRadius: "0.5rem",
+                    }}
+                  >
+                    <div className="fw-semibold text-success mb-2">
+                      Đang phục vụ khách
+                    </div>
+                    <div className="small">
+                      <div className="d-flex justify-content-between mb-1">
+                        <span className="text-muted">Pin:</span>
+                        <span className="fw-semibold">
+                          {sessionInfo?.soc ?? "..."}%
+                        </span>
+                      </div>
+                      <div className="d-flex justify-content-between">
+                        <span className="text-muted">Phí:</span>
+                        <span className="fw-semibold">
+                          {formatCurrency(sessionInfo?.totalCost)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-muted" style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
+                      Session: {point.currentSessionId.substring(0, 8)}...
+                    </div>
+                  </div>
+                )}
+
+                {/* Error/Maintenance messages */}
+                {statusInfo.text === "Lỗi" && (
+                  <div
+                    className="text-center py-3 rounded-lg mb-3"
+                    style={{
+                      backgroundColor: "#fee2e2",
+                      color: "#dc2626",
+                      borderRadius: "0.5rem",
+                    }}
+                  >
+                    Trụ đang gặp lỗi
+                  </div>
+                )}
+
+                {statusInfo.text === "Bảo trì" && (
+                  <div
+                    className="text-center py-3 rounded-lg mb-3"
+                    style={{
+                      backgroundColor: "#fef3c7",
+                      color: "#b45309",
+                      borderRadius: "0.5rem",
+                    }}
+                  >
+                    Đang bảo trì
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="d-flex gap-2">
+                  {statusInfo.text !== "Đang sạc" && !isCharging && (
+                    <button
+                      onClick={() => {
+                        setSelectedPoint(point);
+                        setShowModal(true);
+                      }}
+                      disabled={loading}
+                      className="flex-grow-1 px-3 py-2 text-white rounded fw-semibold"
+                      style={{
+                        backgroundColor: "#22c55e",
+                        border: "none",
+                        borderRadius: "0.5rem",
+                        fontSize: "0.875rem",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#16a34a")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#22c55e")
+                      }
                     >
-                      {statusInfo.text}
-                    </Badge>
-                  </div>
-
-                  <div className="text-muted small mb-2">
-                    Công suất: {formatPower(point.chargingPower)}
-                  </div>
-
-                  {isCharging && point.currentSessionId && (
-                    <div className="bg-success bg-opacity-10 p-2 rounded mb-3">
-                      <div className="fw-bold">Đang phục vụ khách</div>
-
-                      <div className="small text-dark mt-2">
-                        <Row>
-                          <Col xs={6}>
-                            <strong>Pin:</strong> {sessionInfo?.soc ?? "..."}%
-                          </Col>
-                          <Col xs={6}>
-                            <strong>Phí:</strong>{" "}
-                            {formatCurrency(sessionInfo?.totalCost)}
-                          </Col>
-                        </Row>
-                      </div>
-
-                      <div className="small text-muted mt-2">
-                        Session: {point.currentSessionId.substring(0, 8)}...
-                      </div>
-                    </div>
+                      Chỉnh sửa
+                    </button>
                   )}
-
-                  {statusInfo.text === "Lỗi" && (
-                    <div className="text-center text-danger py-3">
-                      Trụ đang gặp lỗi
-                    </div>
-                  )}
-
-                  {statusInfo.text === "Bảo trì" && (
-                    <div className="text-center text-warning py-3">
-                      Đang bảo trì
-                    </div>
-                  )}
-
-                  <div className="d-flex gap-2">
-                    {statusInfo.text !== "Đang sạc" && !isCharging && (
-                      <Button
-                        className="w-100"
-                        disabled={loading}
-                        style={{
-                          backgroundColor: "#22c55e",
-                          borderColor: "#22c55e",
-                          color: "white",
-                          fontWeight: "bold",
-                        }}
-                        onClick={() => {
-                          setSelectedPoint(point);
-                          setShowModal(true);
-                        }}
-                      >
-                        Chỉnh sửa
-                      </Button>
-                    )}
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
+                </div>
+              </div>
+            </div>
           );
         })}
-      </Row>
+      </div>
     </Container>
   );
 }

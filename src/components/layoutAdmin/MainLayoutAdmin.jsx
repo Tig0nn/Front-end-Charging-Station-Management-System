@@ -41,19 +41,21 @@ const MainLayoutAdmin = ({ children }) => {
   }, []);
 
   // Fetch overview data
-  useEffect(() => {
-    const fetchOverview = async () => {
-      try {
-        const res = await systemOverviewAPI.getOverview();
-        if (res.data.code === 1000) {
-          setOverview(res.data.result);
-        }
-      } catch (err) {
-        console.error("Fetch overview failed:", err);
-      } finally {
-        setLoading(false);
+  const fetchOverview = async () => {
+    try {
+      setLoading(true);
+      const res = await systemOverviewAPI.getOverview();
+      if (res.data.code === 1000) {
+        setOverview(res.data.result);
       }
-    };
+    } catch (err) {
+      console.error("Fetch overview failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOverview();
   }, []);
 
@@ -67,6 +69,7 @@ const MainLayoutAdmin = ({ children }) => {
   const tabs = [
     { path: "/admin/reports", label: "Phân tích", icon: "bi-graph-up" },
     { path: "/admin/stations", label: "Trạm sạc", icon: "bi-geo-alt-fill" },
+    { path: "/admin/charging-points", label: "Trụ sạc", icon: "bi-ev-station-fill" },
     { path: "/admin/users", label: "Người dùng", icon: "bi-people-fill" },
     {
       path: "/admin/incidents",
@@ -144,6 +147,56 @@ const MainLayoutAdmin = ({ children }) => {
                     {adminProfile?.fullName || "Admin"}
                   </p>
                 </div>
+                <button
+                  onClick={fetchOverview}
+                  disabled={loading}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 20px",
+                    backgroundColor: "#22c55e",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    opacity: loading ? 0.7 : 1,
+                    transition: "all 0.2s",
+                    boxShadow: "0 2px 4px rgba(34, 197, 94, 0.2)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!loading) {
+                      e.currentTarget.style.backgroundColor = "#16a34a";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                      e.currentTarget.style.boxShadow = "0 4px 6px rgba(34, 197, 94, 0.3)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!loading) {
+                      e.currentTarget.style.backgroundColor = "#22c55e";
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "0 2px 4px rgba(34, 197, 94, 0.2)";
+                    }
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <Spinner
+                        animation="border"
+                        size="sm"
+                        style={{ width: "16px", height: "16px" }}
+                      />
+                      <span>Đang tải...</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-arrow-clockwise" style={{ fontSize: "16px" }}></i>
+                      <span>Làm mới</span>
+                    </>
+                  )}
+                </button>
               </div>
             </Col>
           </Row>

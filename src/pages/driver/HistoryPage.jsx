@@ -641,13 +641,14 @@ const ChargingHabits = () => {
 
 // ROUTES (giữ nguyên)
 export default function HistoryPage() {
-  const { data: sessions } = useMySessions();
+  const { data: sessions, loading, reload } = useMySessions();
 
   // Tính toán 4 chỉ số
   const totalCost = sessions.reduce((sum, s) => sum + (s.costTotal || 0), 0);
   const totalEnergy = sessions.reduce((sum, s) => sum + (s.energyKwh || 0), 0);
   const totalSessions = sessions.length;
   const avgCostPerKw = totalEnergy ? Math.round(totalCost / totalEnergy) : 0;
+  
   const tabs = [
     {
       path: "transactions",
@@ -666,7 +667,6 @@ export default function HistoryPage() {
     },
   ];
 
-
   useEffect(
     () => async () => {
       try {
@@ -678,12 +678,56 @@ export default function HistoryPage() {
     },
     []
   );
+
   return (
     <div>
+      {/* Header với nút làm mới */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-semibold">Tổng quan</h2>
+        <button
+          className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg font-semibold transition-all hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
+          style={{ 
+            backgroundColor: "#22c55e",
+            boxShadow: "0 2px 4px rgba(34, 197, 94, 0.2)"
+          }}
+          onClick={reload}
+          disabled={loading}
+          onMouseEnter={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = "#16a34a";
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 4px 6px rgba(34, 197, 94, 0.3)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = "#22c55e";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 2px 4px rgba(34, 197, 94, 0.2)";
+            }
+          }}
+        >
+          {loading ? (
+            <>
+              <div className="animate-spin">
+                <i className="bi bi-arrow-clockwise"></i>
+              </div>
+              <span>Đang tải...</span>
+            </>
+          ) : (
+            <>
+              <i className="bi bi-arrow-clockwise"></i>
+              <span>Làm mới</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* 4 thẻ thống kê */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
           <span className="text-[#2bf0b5] text-2xl">
-            <i class="bi bi-cash-stack"></i>
+            <i className="bi bi-cash-stack"></i>
           </span>
           <div>
             <div className="text-sm text-gray-500">Tổng chi phí</div>
@@ -693,7 +737,7 @@ export default function HistoryPage() {
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
           <span className="text-[#2bf0b5] text-2xl">
-            <i class="bi bi-lightning-fill"></i>
+            <i className="bi bi-lightning-fill"></i>
           </span>
           <div>
             <div className="text-sm text-gray-500">Tổng lượng điện đã sạc</div>
@@ -703,7 +747,7 @@ export default function HistoryPage() {
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
           <span className="text-[#2bf0b5] text-2xl">
-            <i class="bi bi-clock-fill"></i>
+            <i className="bi bi-clock-fill"></i>
           </span>
           <div>
             <div className="text-sm text-gray-500">Số phiên sạc</div>
@@ -713,7 +757,7 @@ export default function HistoryPage() {
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
           <span className="text-[#2bf0b5] text-2xl">
-            <i class="bi bi-cash-coin"></i>
+            <i className="bi bi-cash-coin"></i>
           </span>
           <div>
             <div className="text-sm text-gray-500">
@@ -741,9 +785,10 @@ export default function HistoryPage() {
             key={`/driver/history/${tab.path}`}
             to={`/driver/history/${tab.path}`}
             className={({ isActive }) =>
-              `inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ease-in-out !no-underline select-none ${isActive
-                ? "!bg-green-500 !text-white !shadow-md !-translate-y-[1px]"
-                : "!bg-transparent !text-slate-500 hover:!bg-slate-200 hover:!text-slate-700"
+              `inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ease-in-out !no-underline select-none ${
+                isActive
+                  ? "!bg-green-500 !text-white !shadow-md !-translate-y-[1px]"
+                  : "!bg-transparent !text-slate-500 hover:!bg-slate-200 hover:!text-slate-700"
               }`
             }
             style={{
