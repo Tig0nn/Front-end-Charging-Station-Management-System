@@ -538,14 +538,6 @@ const AdminChargingPointManagement = () => {
                                         <option value="POWER_350KW">350kW</option>
                                     </select>
                                 </div>
-
-                                {/* Info */}
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                    <p className="text-sm text-blue-800">
-                                        <i className="bi bi-info-circle me-2"></i>
-                                        Trạng thái mặc định: <strong>Sẵn sàng (AVAILABLE)</strong>
-                                    </p>
-                                </div>
                             </div>
 
                             {/* Actions */}
