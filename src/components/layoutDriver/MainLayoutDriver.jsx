@@ -163,7 +163,6 @@ const MainLayoutDriver = ({ children }) => {
     getUserLocationAndWeather();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   // Navigation tabs - Driver version (Không có phần Overview)
   const tabs = [
     {
@@ -180,6 +179,11 @@ const MainLayoutDriver = ({ children }) => {
       path: "/driver/history",
       label: "Lịch sử",
       icon: "bi-clock-history",
+    },
+    {
+      path: "/driver/wallet",
+      label: "Ví",
+      icon: "bi-wallet2",
     },
     {
       path: "/driver/profile",

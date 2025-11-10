@@ -13,12 +13,12 @@ const ZaloPayGateway = ({ show, onHide, sessionId, amount }) => {
 
     try {
       setLoading(true);
-      console.log("🔄 Creating ZaloPay payment for session:", sessionId);
-      console.log("💰 Amount:", amount);
+      console.log(" Creating ZaloPay payment for session:", sessionId);
+      console.log(" Amount:", amount);
 
       // Call API to create ZaloPay order
       const response = await zalopayAPI.createPayment(sessionId);
-      console.log("✅ ZaloPay API response:", response);
+      console.log(" ZaloPay API response:", response);
 
       // Extract payment URL from response
       const paymentUrl = response?.data?.result || response?.result;
@@ -31,7 +31,7 @@ const ZaloPayGateway = ({ show, onHide, sessionId, amount }) => {
         throw new Error("Không nhận được URL thanh toán từ ZaloPay");
       }
     } catch (error) {
-      console.error("❌ Payment error:", error);
+      console.error(" Payment error:", error);
       console.error("Error details:", {
         status: error?.response?.status,
         statusText: error?.response?.statusText,

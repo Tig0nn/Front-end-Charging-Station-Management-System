@@ -22,6 +22,7 @@ import ProfileLayout from "./pages/driver/ProfileLayout";
 import NotificationPage from "./pages/driver/NotificationPage";
 import AdminIncidents from "./pages/admin/AdminIncidents";
 import QRCodeManager from "./pages/admin/QRCodeManager";
+import WalletPage from "./Pages/driver/WalletPage";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
@@ -36,8 +37,7 @@ function RequireDriverInfo({ children }) {
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
 
-  useEffect(() => {
-  }, [isAuthenticated, loc.pathname]);
+  useEffect(() => {}, [isAuthenticated, loc.pathname]);
 
   //Chưa đăng nhập → về login
   if (!isAuthenticated) {
@@ -105,7 +105,10 @@ function App() {
             <MainLayoutAdmin>
               <Routes>
                 {/* Default route - Phân tích */}
-                <Route index element={<Navigate to="/admin/reports" replace />} />
+                <Route
+                  index
+                  element={<Navigate to="/admin/reports" replace />}
+                />
 
                 {/* Reports Routes - Trang phân tích */}
                 <Route path="/reports" element={<Reports />} />
@@ -134,11 +137,14 @@ function App() {
         path="/staff/*"
         element={
           <RequireRole allowedRoles={["STAFF"]}>
-          // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
+            // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
             <MainLayoutStaff>
               <Routes>
                 {/* Route mặc định sẽ là trang trạm sạc */}
-                <Route index element={<Navigate to="/staff/station" replace />} />
+                <Route
+                  index
+                  element={<Navigate to="/staff/station" replace />}
+                />
                 <Route path="/station" element={<StationOverview />} />
 
                 {/* Các route khác cho Staff */}
@@ -164,15 +170,17 @@ function App() {
               <MainLayoutDriver>
                 <Routes>
                   {/* Route mặc định sẽ là trang bản đồ */}
-                  <Route index element={<Navigate to="/driver/map" replace />} />
+                  <Route
+                    index
+                    element={<Navigate to="/driver/map" replace />}
+                  />
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/session" element={<ChargingSessionPage />} />
                   <Route
                     path="/session/:sessionId"
                     element={<ChargingSessionPage />}
                   />
-                  <Route path="/history/*" element={<HistoryPage />} />
-
+                  <Route path="/history/*" element={<HistoryPage />} />{" "}
                   {/* Profile Routes with nested routes */}
                   <Route path="/profile/*" element={<ProfileLayout />}>
                     <Route index element={<Navigate to="info" replace />} />
@@ -181,7 +189,8 @@ function App() {
                     <Route path="payment" element={<PaymentPage />} />
                     <Route path="notification" element={<NotificationPage />} />
                   </Route>
-
+                  {/* Wallet route */}
+                  <Route path="/wallet" element={<WalletPage />} />
                   {/* 404 Page for Driver section */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
