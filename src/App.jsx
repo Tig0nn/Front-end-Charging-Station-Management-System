@@ -5,6 +5,7 @@ import Signup from "./pages/SignUp";
 import GoogleCallback from "./pages/GoogleCallback";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
 import { NotFound, Reports, StationsList, UsersList } from "./pages";
+import StaffList from "./Pages/admin/StaffList";
 import EVChargingLanding from "./pages/EVChargingLanding";
 import MainLayoutDriver from "./components/layoutDriver/MainLayoutDriver";
 import MapPage from "./pages/driver/MapPage";
@@ -21,30 +22,29 @@ import StaffPaymentRequests from "./pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./pages/driver/ProfileLayout";
 import AdminIncidents from "./pages/admin/AdminIncidents";
 import QRCodeManager from "./pages/admin/QRCodeManager";
-import WalletPage from "./Pages/driver/WalletPage";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import RequireRole from "./components/RequireRole.jsx";
-import BookingPage from "./pages/driver/BookingPage.jsx";
-import AdminChargingPointManagement from "./pages/admin/AdminChargingPointManagement.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
   const loc = useLocation();
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth(); // ✅ Dùng user từ AuthContext thay vì localStorage
 
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
 
-  useEffect(() => {}, [isAuthenticated, loc.pathname]);
+  useEffect(() => {
+  }, [isAuthenticated, loc.pathname]);
 
   //Chưa đăng nhập → về login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: loc }} replace />;
   }
 
+  // ✅ Đợi loading xong mới check phone
   if (loading) {
     return (
       <div
@@ -105,30 +105,26 @@ function App() {
             <MainLayoutAdmin>
               <Routes>
                 {/* Default route - Phân tích */}
-                <Route
-                  index
-                  element={<Navigate to="/admin/reports" replace />}
-                />
+                <Route path="/" element={<Reports />} />
 
                 {/* Reports Routes - Trang phân tích */}
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/reports/*" element={<Reports />} />
 
                 {/* Stations Routes */}
                 <Route path="/stations" element={<StationsList />} />
-                <Route path="/stations/add" element={<AddStation />} />
-
-                {/* Users Routes */}
+                <Route path="/stations/add" element={<AddStation />} />                {/* Users Routes */}
                 <Route path="/users" element={<UsersList />} />
+
+                {/* Staff Routes */}
+                <Route path="/staffs" element={<StaffList />} />
 
                 {/* Incidents */}
                 <Route path="/incidents" element={<AdminIncidents />} />
 
                 {/* QR Code Manager */}
                 <Route path="/qr-codes" element={<QRCodeManager />} />
-                <Route
-                  path="/charging-points"
-                  element={<AdminChargingPointManagement />}
-                />
+
                 {/* 404 Page */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -140,27 +136,24 @@ function App() {
         path="/staff/*"
         element={
           <RequireRole allowedRoles={["STAFF"]}>
-            // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
-            <MainLayoutStaff>
-              <Routes>
-                {/* Route mặc định sẽ là trang trạm sạc */}
-                <Route
-                  index
-                  element={<Navigate to="/staff/station" replace />}
-                />
-                <Route path="/station" element={<StationOverview />} />
+          // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
+          <MainLayoutStaff>
+            <Routes>
+              {/* Route mặc định sẽ là trang trạm sạc */}
+              <Route index element={<Navigate to="/staff/station" replace />} />
+              <Route path="/station" element={<StationOverview />} />
 
-                {/* Các route khác cho Staff */}
-                <Route
-                  path="/payment-requests"
-                  element={<StaffPaymentRequests />}
-                />
-                <Route path="/reports" element={<StaffReports />} />
+              {/* Các route khác cho Staff */}
+              <Route
+                path="/payment-requests"
+                element={<StaffPaymentRequests />}
+              />
+              <Route path="/reports" element={<StaffReports />} />
 
-                {/* 404 Page for Staff section */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </MainLayoutStaff>
+              {/* 404 Page for Staff section */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </MainLayoutStaff>
           </RequireRole>
         }
       />
@@ -173,27 +166,21 @@ function App() {
               <MainLayoutDriver>
                 <Routes>
                   {/* Route mặc định sẽ là trang bản đồ */}
-                  <Route
-                    index
-                    element={<Navigate to="/driver/map" replace />}
-                  />
+                  <Route index element={<Navigate to="/driver/map" replace />} />
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/session" element={<ChargingSessionPage />} />
                   <Route
                     path="/session/:sessionId"
                     element={<ChargingSessionPage />}
                   />
-                  <Route path="/history/*" element={<HistoryPage />} />{" "}
-                  {/* Profile Routes with nested routes */}
+                  <Route path="/history/*" element={<HistoryPage />} />                  {/* Profile Routes with nested routes */}
                   <Route path="/profile/*" element={<ProfileLayout />}>
                     <Route index element={<Navigate to="info" replace />} />
                     <Route path="info" element={<ProfileInfoPage />} />
                     <Route path="vehicle" element={<VehicleInfoPage />} />
                     <Route path="payment" element={<PaymentPage />} />
-                    <Route path="booking" element={<BookingPage />} />
                   </Route>
-                  {/* Wallet route */}
-                  <Route path="/wallet" element={<WalletPage />} />
+
                   {/* 404 Page for Driver section */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
