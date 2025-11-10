@@ -98,6 +98,14 @@ const apiServices = {
     delete: (stationId) => api.delete(`/api/stations/${stationId}`),
   },
   chargingPoints: {
+    deleteChargingPoint: (stationId, chargingPointId) =>
+      api.delete(
+        `/api/stations/${stationId}/charging-points/${chargingPointId}`
+      ),
+    addChargingPoint: (stationId, chargingPointData) => api.post(
+      `/api/stations/${stationId}/charging-points`,
+      chargingPointData
+    ),
     // Lấy danh sách trụ sạc của một trạm
     getChargersByStation: (stationId) =>
       api.get(`/api/stations/${stationId}/charging-points`),

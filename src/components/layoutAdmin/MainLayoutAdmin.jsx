@@ -67,6 +67,7 @@ const MainLayoutAdmin = ({ children }) => {
   const tabs = [
     { path: "/admin/reports", label: "Phân tích", icon: "bi-graph-up" },
     { path: "/admin/stations", label: "Trạm sạc", icon: "bi-geo-alt-fill" },
+    { path: "/admin/charging-points", label: "Trụ sạc", icon: "bi-ev-station-fill" },
     { path: "/admin/users", label: "Người dùng", icon: "bi-people-fill" },
     {
       path: "/admin/incidents",

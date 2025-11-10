@@ -27,6 +27,7 @@ import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import RequireRole from "./components/RequireRole.jsx";
+import AdminChargingPointManagement from "./pages/admin/AdminChargingPointManagement.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
@@ -122,7 +123,7 @@ function App() {
 
                 {/* QR Code Manager */}
                 <Route path="/qr-codes" element={<QRCodeManager />} />
-
+                <Route path="/charging-points" element={<AdminChargingPointManagement />} /> 
                 {/* 404 Page */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
