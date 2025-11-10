@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import apiServices from "../../lib/apiServices";
-
-// URL hình ảnh hero - bạn có thể thay đổi bằng ảnh của dự án
-const HERO_IMAGE_URL =
-  "https://drive.google.com/file/d/1RKhdwBDSI8xy5iD_ARcnU4pxDeVF-h-C/view?usp=sharing";
+// Thay hero image bằng asset trong project (hoặc đổi thành đường dẫn public)
+// Ví dụ: dùng ảnh có sẵn trong repo: src/assets/image/anhGG.png
+import heroImage from "../../assets/image/ChargeStation.png";
+const HERO_IMAGE_URL = heroImage;
 
 const BookingPage = () => {
   // States
