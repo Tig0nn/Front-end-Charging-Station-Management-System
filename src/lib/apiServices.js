@@ -68,6 +68,14 @@ const apiServices = {
     askForPayment: (sessionId) =>
       api.post(`/api/payments/cash/request`, { sessionId }),
   },
+  wallet: {
+    // Lấy thông tin dashboard ví điện tử
+    walletDashboard: () => api.get("/api/wallet/dashboard"),
+    // Lấy lịch sử giao dịch ví điện tử
+    getTransactionHistory: () => api.get("/api/wallet/history"),
+    // Nạp tiền vào ví qua ZaloPay
+    topupZaloPay: (amount) => api.post("/api/wallet/topup/zalopay", { amount }),
+  },
 
   revenue: {
     // 🆕 Unified revenue endpoint - Thay thế tất cả các endpoint cũ
@@ -205,6 +213,7 @@ export const chargingPointsAPI = apiServices.chargingPoints;
 export const chargingSessionsAPI = apiServices.chargingSessions;
 export const bookingsAPI = apiServices.bookings;
 export const zalopayAPI = apiServices.zalopay;
+export const walletAPI = apiServices.wallet;
 
 // Export default
 export default apiServices;

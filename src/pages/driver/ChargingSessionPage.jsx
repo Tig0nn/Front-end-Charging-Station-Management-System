@@ -600,6 +600,9 @@ export default function ChargingSessionPage() {
                 </div>
 
                 {/* Energy Card */}
+                
+
+                
                 <div className="bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100 border-2 border-emerald-200 rounded-2xl p-7 text-center shadow-lg shadow-emerald-100/50 hover:shadow-xl hover:shadow-emerald-200/60 transition-all duration-300 hover:-translate-y-1">
                   <div className="flex justify-center mb-4">
                     <div className="bg-emerald-100 p-3 rounded-xl">
@@ -624,6 +627,10 @@ export default function ChargingSessionPage() {
                   </div>
                   <div className="text-xs text-emerald-500 mt-1">kWh</div>
                 </div>
+
+
+
+             
 
                 {/* Battery Card */}
                 <div className="bg-gradient-to-br from-amber-50 via-amber-50 to-amber-100 border-2 border-amber-200 rounded-2xl p-7 text-center shadow-lg shadow-amber-100/50 hover:shadow-xl hover:shadow-amber-200/60 transition-all duration-300 hover:-translate-y-1">
@@ -654,9 +661,15 @@ export default function ChargingSessionPage() {
                 </div>
               </div>
 
+
+              
+
               {/* Cost Display - Highlighted */}
+              {/*   
+              
+
               <div className="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-3xl p-10 mb-10 text-center shadow-2xl shadow-emerald-500/40 overflow-hidden">
-                {/* Decorative circles */}
+              
                 <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"></div>
 
@@ -676,6 +689,10 @@ export default function ChargingSessionPage() {
                   </div>
                 </div>
               </div>
+               */}
+
+
+               
 
               {/* Progress Bar */}
               <div className="space-y-4 mb-10 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-7 border border-gray-200 shadow-inner">
@@ -725,22 +742,7 @@ export default function ChargingSessionPage() {
               {/* Additional Info */}
               <div className="mt-8 pt-8 border-t-2 border-gray-200 grid grid-cols-2 gap-8 text-center">
                 <div className="space-y-2">
-                  <div className="text-gray-500 text-xs uppercase tracking-wider">
-                    Công suất
-                  </div>
-                  <div className="text-gray-900 text-lg">
-                    {formatPower(session.powerOutput) || "N/A"}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-gray-500 text-xs uppercase tracking-wider">
-                    Thời gian dự kiến
-                  </div>
-                  <div className="text-gray-900 text-lg">
-                    {session.estimatedTimeRemainingMinutes !== null
-                      ? `~${session.estimatedTimeRemainingMinutes} phút`
-                      : "Đang tính..."}
-                  </div>
+                  
                 </div>
               </div>
             </div>

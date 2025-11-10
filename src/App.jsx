@@ -21,6 +21,7 @@ import StaffPaymentRequests from "./pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./pages/driver/ProfileLayout";
 import AdminIncidents from "./pages/admin/AdminIncidents";
 import QRCodeManager from "./pages/admin/QRCodeManager";
+import WalletPage from "./Pages/driver/WalletPage";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
@@ -182,8 +183,7 @@ function App() {
                     path="/session/:sessionId"
                     element={<ChargingSessionPage />}
                   />
-                  <Route path="/history/*" element={<HistoryPage />} />
-
+                  <Route path="/history/*" element={<HistoryPage />} />{" "}
                   {/* Profile Routes with nested routes */}
                   <Route path="/profile/*" element={<ProfileLayout />}>
                     <Route index element={<Navigate to="info" replace />} />
@@ -192,7 +192,8 @@ function App() {
                     <Route path="payment" element={<PaymentPage />} />
                     <Route path="booking" element={<BookingPage />} />
                   </Route>
-
+                  {/* Wallet route */}
+                  <Route path="/wallet" element={<WalletPage />} />
                   {/* 404 Page for Driver section */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
