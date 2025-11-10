@@ -1,13 +1,32 @@
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import React, { useState, useEffect } from "react";
 import apiServices from "../../lib/apiServices";
+import "./BookingPage.css";
 // Thay hero image bằng asset trong project (hoặc đổi thành đường dẫn public)
 // Ví dụ: dùng ảnh có sẵn trong repo: src/assets/image/anhGG.png
 import heroImage from "../../assets/image/ChargeStation.png";
 const HERO_IMAGE_URL = heroImage;
+const CustomInputButton = React.forwardRef(
+  ({ value, onClick, placeholder }, ref) => (
+    <div
+      className="flex justify-between items-center w-full cursor-pointer" // Phải là justify-between
+      onClick={onClick}
+      ref={ref}
+    >
+      {/* Chữ (ngày giờ) */}
+      <span className={`text-sm ${value ? "text-gray-900" : "text-gray-400"}`}>
+        {value || placeholder}
+      </span>
+      {/* Icon */}
+      <i className="bi bi-calendar-event text-gray-600"></i>
+    </div>
+  )
+);
 
 const BookingPage = () => {
   // States
-  const [bookingTime, setBookingTime] = useState("");
+  const [bookingTime, setBookingTime] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [stations, setStations] = useState([]);
   const [chargers, setChargers] = useState([]);
@@ -28,39 +47,47 @@ const BookingPage = () => {
   const getMinDateTime = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() + 1);
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return now;
   };
 
   // Lấy datetime tối đa (đúng 24 giờ kể từ bây giờ)
   const getMaxDateTime = () => {
     const max = new Date();
     max.setHours(max.getHours() + 24); // Thêm 24 giờ
-    const year = max.getFullYear();
-    const month = String(max.getMonth() + 1).padStart(2, "0");
-    const day = String(max.getDate()).padStart(2, "0");
-    const hours = String(max.getHours()).padStart(2, "0");
-    const minutes = String(max.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return max;
+  };
+
+  const formatDateTimeForAPI = (date) => {
+    if (!date) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    // API của bạn cần "yyyy-MM-ddTHH:mm:ss"
+    return `${year}-${month}-${day}T${hours}:${minutes}:00`;
   };
 
   // Load initial data (vehicles, stations)
   useEffect(() => {
     loadVehicles();
-    loadStations();
-    // Set default datetime (now + 1 giờ)
+    loadStations(); // THAY ĐỔI 5: Set default datetime là Date object
+    // và làm tròn LÊN 30 phút gần nhất
     const defaultTime = new Date();
     defaultTime.setHours(defaultTime.getHours() + 1);
-    const year = defaultTime.getFullYear();
-    const month = String(defaultTime.getMonth() + 1).padStart(2, "0");
-    const day = String(defaultTime.getDate()).padStart(2, "0");
-    const hours = String(defaultTime.getHours()).padStart(2, "0");
-    const minutes = String(defaultTime.getMinutes()).padStart(2, "0");
-    setBookingTime(`${year}-${month}-${day}T${hours}:${minutes}`);
+
+    const minutes = defaultTime.getMinutes();
+    if (minutes === 0) {
+      // Đã tròn
+    } else if (minutes <= 30) {
+      defaultTime.setMinutes(30);
+    } else {
+      defaultTime.setHours(defaultTime.getHours() + 1);
+      defaultTime.setMinutes(0);
+    }
+    defaultTime.setSeconds(0); // Đảm bảo giây = 0
+
+    setBookingTime(defaultTime);
   }, []);
 
   const loadVehicles = async () => {
@@ -125,7 +152,7 @@ const BookingPage = () => {
     try {
       setLoading(true);
       // API yêu cầu format yyyy-MM-ddTHH:mm:ss
-      const bookingDateTime = bookingTime + ":00";
+      const bookingDateTime = formatDateTimeForAPI(bookingTime);
 
       const response = await apiServices.bookings.checkAvailability(
         selectedCharger,
@@ -186,7 +213,7 @@ const BookingPage = () => {
       const bookingData = {
         vehicleId: selectedVehicle,
         chargingPointId: selectedCharger,
-        bookingTime: bookingTime + ":00",
+        bookingTime: formatDateTimeForAPI(bookingTime),
         desiredPercentage: parseInt(desiredPercentage),
       };
 
@@ -240,13 +267,24 @@ const BookingPage = () => {
                 <label className="text-xs font-semibold text-gray-600 block mb-1">
                   <i className="bi bi-calendar3"></i> Ngày giờ đặt chỗ
                 </label>
-                <input
-                  type="datetime-local"
-                  className="w-full border-0 focus:outline-none focus:ring-0 text-sm p-0"
-                  value={bookingTime}
-                  onChange={(e) => setBookingTime(e.target.value)}
-                  min={getMinDateTime()}
-                  max={getMaxDateTime()}
+                <DatePicker
+                  selected={bookingTime}
+                  onChange={(date) => setBookingTime(date)}
+                  showTimeSelect
+                  timeIntervals={30}
+                  timeFormat="HH:mm"
+                  dateFormat="yyyy-MM-dd HH:mm" // Vẫn giữ để format 'value'
+                  minDate={getMinDateTime()}
+                  maxDate={getMaxDateTime()}
+                  // BỎ 'className'
+                  // (vì chúng ta không style input nữa)
+
+                  // GIỮ 'placeholderText'
+                  // (nó sẽ được truyền vào CustomInputButton)
+                  placeholderText="Chọn ngày và giờ"
+                  // THÊM DÒNG NÀY
+                  customInput={<CustomInputButton />}
+                  wrapperClassName="w-full"
                 />
               </div>
 

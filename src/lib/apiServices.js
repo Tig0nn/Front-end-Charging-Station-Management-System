@@ -111,10 +111,8 @@ const apiServices = {
       api.delete(
         `/api/stations/${stationId}/charging-points/${chargingPointId}`
       ),
-    addChargingPoint: (stationId, chargingPointData) => api.post(
-      `/api/stations/${stationId}/charging-points`,
-      chargingPointData
-    ),
+    addChargingPoint: (stationId, chargingPointData) =>
+      api.post(`/api/stations/${stationId}/charging-points`, chargingPointData),
     // Lấy danh sách trụ sạc của một trạm
     getChargersByStation: (stationId) =>
       api.get(`/api/stations/${stationId}/charging-points`),
@@ -194,6 +192,32 @@ const apiServices = {
     getPendingPaymentRequests: () =>
       api.get("/api/payments/sessions?status=UNPAID"),
   },
+  wallet: {
+    // Lấy thông tin tổng quan dashboard ví
+    getDashboard: () => api.get("/api/wallet/dashboard"),
+
+    // Lấy số dư ví
+    getBalance: () => api.get("/api/wallet/balance"),
+
+    // Lấy lịch sử giao dịch ví (có filter)
+    getHistory: (filterType) => {
+      const params = new URLSearchParams();
+      if (filterType && filterType !== "ALL") {
+        params.append("type", filterType);
+      }
+      return api.get(`/api/wallet/history?${params.toString()}`);
+    },
+
+    // Tạo đơn nạp tiền ZaloPay
+    createZaloPayTopup: (amount) =>
+      api.post("/api/wallet/topup/zalopay", { amount }),
+
+    // ❗️ API THANH TOÁN BẰNG VÍ (TẠM GIẢ ĐỊNH) ❗️
+    // Backend có thể dùng 1 API khác, ví dụ: /api/payments/wallet/pay
+    // Vui lòng xác nhận lại đường dẫn API này!
+    payForSession: (sessionId) =>
+      api.post(`/api/wallet/pay-session`, { sessionId }),
+  },
 };
 
 // Individual exports for easier imports
@@ -220,4 +244,3 @@ export default apiServices;
 
 // Console log to show API is ready
 console.log("🌐 Real API Services loaded");
-console.log("✅ Cleaned up: Removed 30 unused API methods");
