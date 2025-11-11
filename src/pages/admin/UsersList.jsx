@@ -85,7 +85,7 @@ const UsersList = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const res = await usersAPI.getStaff();
+        const res = await usersAPI.getDriver();
         setUsers(res?.data?.result || []);
       } catch (err) {
         console.error("Lỗi khi tải danh sách người dùng:", err);

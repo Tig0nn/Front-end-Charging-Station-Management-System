@@ -5,6 +5,7 @@ import Signup from "./pages/SignUp";
 import GoogleCallback from "./pages/GoogleCallback";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
 import { NotFound, Reports, StationsList, UsersList } from "./pages";
+import StaffList from "./Pages/admin/StaffList";
 import EVChargingLanding from "./pages/EVChargingLanding";
 import MainLayoutDriver from "./components/layoutDriver/MainLayoutDriver";
 import MapPage from "./pages/driver/MapPage";
@@ -21,19 +22,16 @@ import StaffPaymentRequests from "./pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./pages/driver/ProfileLayout";
 import AdminIncidents from "./pages/admin/AdminIncidents";
 import QRCodeManager from "./pages/admin/QRCodeManager";
-import WalletPage from "./Pages/driver/WalletPage";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import RequireRole from "./components/RequireRole.jsx";
-import BookingPage from "./pages/driver/BookingPage.jsx";
-import AdminChargingPointManagement from "./pages/admin/AdminChargingPointManagement.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
   const loc = useLocation();
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth(); // ✅ Dùng user từ AuthContext thay vì localStorage
 
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
@@ -45,6 +43,7 @@ function RequireDriverInfo({ children }) {
     return <Navigate to="/login" state={{ from: loc }} replace />;
   }
 
+  // ✅ Đợi loading xong mới check phone
   if (loading) {
     return (
       <div
@@ -105,30 +104,21 @@ function App() {
             <MainLayoutAdmin>
               <Routes>
                 {/* Default route - Phân tích */}
-                <Route
-                  index
-                  element={<Navigate to="/admin/reports" replace />}
-                />
-
+                <Route path="/" element={<Reports />} />
                 {/* Reports Routes - Trang phân tích */}
                 <Route path="/reports" element={<Reports />} />
-
+                <Route path="/reports/*" element={<Reports />} />
                 {/* Stations Routes */}
                 <Route path="/stations" element={<StationsList />} />
-                <Route path="/stations/add" element={<AddStation />} />
-
+                <Route path="/stations/add" element={<AddStation />} />{" "}
                 {/* Users Routes */}
                 <Route path="/users" element={<UsersList />} />
-
+                {/* Staff Routes */}
+                <Route path="/staffs" element={<StaffList />} />
                 {/* Incidents */}
                 <Route path="/incidents" element={<AdminIncidents />} />
-
                 {/* QR Code Manager */}
                 <Route path="/qr-codes" element={<QRCodeManager />} />
-                <Route
-                  path="/charging-points"
-                  element={<AdminChargingPointManagement />}
-                />
                 {/* 404 Page */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

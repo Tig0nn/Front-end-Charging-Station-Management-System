@@ -55,7 +55,6 @@ const MainLayoutAdmin = ({ children }) => {
     if (num === null || num === undefined) return "0";
     return new Intl.NumberFormat("vi-VN").format(num);
   };
-
   // Navigation tabs
   const tabs = [
     { path: "/admin/reports", label: "Phân tích", icon: "bi-graph-up" },
@@ -66,6 +65,7 @@ const MainLayoutAdmin = ({ children }) => {
       icon: "bi-ev-station-fill",
     },
     { path: "/admin/users", label: "Người dùng", icon: "bi-people-fill" },
+    { path: "/admin/staffs", label: "Nhân viên", icon: "bi-person-badge-fill" },
     {
       path: "/admin/incidents",
       label: "Sự cố",
