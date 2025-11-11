@@ -184,13 +184,14 @@ function App() {
                     element={<ChargingSessionPage />}
                   />
                   <Route path="/history/*" element={<HistoryPage />} />{" "}
+                  {/* Booking route - moved out from profile */}
+                  <Route path="/booking" element={<BookingPage />} />
                   {/* Profile Routes with nested routes */}
                   <Route path="/profile/*" element={<ProfileLayout />}>
                     <Route index element={<Navigate to="info" replace />} />
                     <Route path="info" element={<ProfileInfoPage />} />
                     <Route path="vehicle" element={<VehicleInfoPage />} />
                     <Route path="payment" element={<PaymentPage />} />
-                    <Route path="booking" element={<BookingPage />} />
                   </Route>
                   {/* Wallet route */}
                   <Route path="/wallet" element={<WalletPage />} />

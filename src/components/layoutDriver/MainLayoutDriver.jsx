@@ -103,7 +103,6 @@ const MainLayoutDriver = ({ children }) => {
     // Fetch driver info từ API
     const fetchDriverInfo = async () => {
       try {
-        console.log("📞 MainLayoutDriver: Fetching driver info...");
         const response = await usersAPI.getProfile();
 
         const responseData =
@@ -122,7 +121,6 @@ const MainLayoutDriver = ({ children }) => {
           driverData.username ||
           "Tài xế";
 
-        console.log("👤 MainLayoutDriver: Driver name:", name);
         setUserName(name);
 
         // Also update localStorage for other components
@@ -141,10 +139,7 @@ const MainLayoutDriver = ({ children }) => {
         };
         localStorage.setItem("user", JSON.stringify(userData));
       } catch (error) {
-        console.error(
-          "❌ MainLayoutDriver: Error fetching driver info:",
-          error
-        );
+        console.error("MainLayoutDriver: Error fetching driver info:", error);
         // Fallback: Lấy từ localStorage nếu API lỗi
         const cachedUser = JSON.parse(localStorage.getItem("user") || "{}");
         const name =
@@ -179,6 +174,11 @@ const MainLayoutDriver = ({ children }) => {
       path: "/driver/history",
       label: "Lịch sử",
       icon: "bi-clock-history",
+    },
+    {
+      path: "/driver/booking",
+      label: "Đặt chỗ",
+      icon: "bi-calendar-check",
     },
     {
       path: "/driver/wallet",

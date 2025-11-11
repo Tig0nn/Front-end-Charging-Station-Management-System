@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Spinner,
-  Dropdown,
-} from "react-bootstrap";
+import { Container, Row, Col, Card, Spinner, Dropdown } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router";
 import { Toaster } from "react-hot-toast";
 import Header from "./Header";
@@ -25,16 +18,14 @@ const MainLayoutAdmin = ({ children }) => {
     const fetchAdminProfile = async () => {
       try {
         const res = await usersAPI.getProfile();
-        console.log("📋 Admin profile response:", res);
 
         // Backend trả về: { code: 1000, result: { role: "ADMIN", adminProfile: {...} } }
         const resultData = res.data?.result || res.result;
         const profileData = resultData?.adminProfile || resultData;
 
-        console.log("👤 Admin profile data:", profileData);
         setAdminProfile(profileData);
       } catch (err) {
-        console.error("❌ Fetch admin profile failed:", err);
+        console.error("Fetch admin profile failed:", err);
       }
     };
     fetchAdminProfile();
@@ -69,7 +60,11 @@ const MainLayoutAdmin = ({ children }) => {
   const tabs = [
     { path: "/admin/reports", label: "Phân tích", icon: "bi-graph-up" },
     { path: "/admin/stations", label: "Trạm sạc", icon: "bi-geo-alt-fill" },
-    { path: "/admin/charging-points", label: "Trụ sạc", icon: "bi-ev-station-fill" },
+    {
+      path: "/admin/charging-points",
+      label: "Trụ sạc",
+      icon: "bi-ev-station-fill",
+    },
     { path: "/admin/users", label: "Người dùng", icon: "bi-people-fill" },
     {
       path: "/admin/incidents",
@@ -143,8 +138,7 @@ const MainLayoutAdmin = ({ children }) => {
                       fontSize: "14px",
                     }}
                   >
-                    Quản trị T-Green -{" "}
-                    {adminProfile?.fullName || "Admin"}
+                    Quản trị T-Green - {adminProfile?.fullName || "Admin"}
                   </p>
                 </div>
                 <button
@@ -170,14 +164,16 @@ const MainLayoutAdmin = ({ children }) => {
                     if (!loading) {
                       e.currentTarget.style.backgroundColor = "#16a34a";
                       e.currentTarget.style.transform = "translateY(-1px)";
-                      e.currentTarget.style.boxShadow = "0 4px 6px rgba(34, 197, 94, 0.3)";
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 6px rgba(34, 197, 94, 0.3)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!loading) {
                       e.currentTarget.style.backgroundColor = "#22c55e";
                       e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "0 2px 4px rgba(34, 197, 94, 0.2)";
+                      e.currentTarget.style.boxShadow =
+                        "0 2px 4px rgba(34, 197, 94, 0.2)";
                     }
                   }}
                 >
@@ -192,7 +188,10 @@ const MainLayoutAdmin = ({ children }) => {
                     </>
                   ) : (
                     <>
-                      <i className="bi bi-arrow-clockwise" style={{ fontSize: "16px" }}></i>
+                      <i
+                        className="bi bi-arrow-clockwise"
+                        style={{ fontSize: "16px" }}
+                      ></i>
                       <span>Làm mới</span>
                     </>
                   )}

@@ -14,13 +14,12 @@ const Header = () => {
     const fetchAdminProfile = async () => {
       try {
         const res = await usersAPI.getProfile();
-        console.log("📋 Admin header profile response:", res);
 
         // Backend trả về: { code: 1000, result: { role: "ADMIN", adminProfile: {...} } }
         const resultData = res.data?.result || res.result;
         const profileData = resultData?.adminProfile || resultData;
 
-        console.log("👤 Admin header profile data:", profileData);
+        console.log("Admin header profile data:", profileData);
         setAdminProfile(profileData);
       } catch (err) {
         console.error("❌ Fetch admin profile failed:", err);

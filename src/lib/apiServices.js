@@ -44,10 +44,8 @@ const apiServices = {
     create: (planData) => api.post("/api/plans", planData),
     update: (planId, planData) => api.put(`/api/plans/${planId}`, planData),
     delete: (planId) => api.delete(`/api/plans/${planId}`),
-    //cần xem lại
-    // chưa có subscribe
-    subscribe: (planId, paymentMethodId) =>
-      api.post("/api/subscriptions", { planId, paymentMethodId }),
+    // Subscribe to a plan - payment from wallet
+    subscribe: (planId) => api.post(`/api/plans/subscribe/${planId}`),
   },
 
   //cần xem lại
@@ -192,7 +190,7 @@ const apiServices = {
     getPendingPaymentRequests: () =>
       api.get("/api/payments/sessions?status=UNPAID"),
   },
-  wallet: {
+  walletAPI: {
     // Lấy thông tin tổng quan dashboard ví
     getDashboard: () => api.get("/api/wallet/dashboard"),
 
@@ -241,6 +239,3 @@ export const walletAPI = apiServices.wallet;
 
 // Export default
 export default apiServices;
-
-// Console log to show API is ready
-console.log("🌐 Real API Services loaded");

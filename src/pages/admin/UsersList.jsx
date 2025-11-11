@@ -44,7 +44,7 @@ const UsersList = () => {
     try {
       setPlansLoading(true);
       const response = await plansAPI.getPlans();
-      console.log("📦 Plans API response:", response);
+      console.log("Plans API response:", response);
 
       let plansData = [];
       if (response.data?.result) {
@@ -57,16 +57,8 @@ const UsersList = () => {
         plansData = response;
       }
 
-      console.log("📋 Raw plans data from backend:", plansData);
-
       // Transform to UI format with full information
-      const transformedPlans = plansData.map((plan, index) => {
-        console.log(`Plan ${index}:`, plan);
-        console.log(`  → benefits: "${plan.benefits}"`);
-        console.log(
-          `  → pricePerKwh: ${plan.pricePerKwh}, pricePerMinute: ${plan.pricePerMinute}`
-        );
-
+      const transformedPlans = plansData.map((plan) => {
         return {
           id: plan.planId || plan.id,
           name: plan.name,
@@ -98,10 +90,6 @@ const UsersList = () => {
       } catch (err) {
         console.error("Lỗi khi tải danh sách người dùng:", err);
         setError("Không thể tải danh sách người dùng");
-        console.log(
-          "localStorage authToken:",
-          localStorage.getItem("authToken")
-        );
       } finally {
         setLoading(false);
       }
@@ -115,7 +103,6 @@ const UsersList = () => {
   const handleShowPlanModal = (plan = null) => {
     if (plan) {
       // Chế độ Edit - map đầy đủ từ backend
-      console.log("📝 Editing plan:", plan);
       setEditingPlan(plan);
       const formData = {
         name: plan.name,
@@ -125,11 +112,9 @@ const UsersList = () => {
         benefits: plan.benefits || "",
         billingType: plan.billingType || "MONTHLY_SUBSCRIPTION",
       };
-      console.log("📋 Form data set to:", formData);
       setPlanFormData(formData);
     } else {
       // Chế độ Create (Reset form)
-      console.log("➕ Creating new plan");
       setEditingPlan(null);
       setPlanFormData({
         name: "",
@@ -172,17 +157,11 @@ const UsersList = () => {
         benefits: planFormData.benefits || "",
       };
 
-      console.log("📤 Sending to backend:", planData);
-
       if (editingPlan) {
-        console.log("🔄 Updating plan:", editingPlan.id);
-        const response = await plansAPI.update(editingPlan.id, planData);
-        console.log("✅ Update response:", response);
+        await plansAPI.update(editingPlan.id, planData);
         toast.success("Cập nhật gói dịch vụ thành công!");
       } else {
-        console.log("➕ Creating new plan");
-        const response = await plansAPI.create(planData);
-        console.log("✅ Create response:", response);
+        await plansAPI.create(planData);
         toast.success("Tạo gói dịch vụ thành công!");
       }
 
@@ -193,9 +172,7 @@ const UsersList = () => {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Tải lại danh sách plans
-      console.log("🔄 Reloading plans...");
       await fetchPlans();
-      console.log("✅ Plans reloaded");
     } catch (err) {
       console.error("❌ Error saving plan:", err);
       console.error("❌ Error response:", err.response?.data);
@@ -216,7 +193,6 @@ const UsersList = () => {
     }
 
     try {
-      console.log("Deleting plan:", plan.id);
       await plansAPI.delete(plan.id);
       toast.success("Xóa gói dịch vụ thành công!");
       fetchPlans(); // Reload danh sách

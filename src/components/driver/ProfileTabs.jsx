@@ -26,12 +26,6 @@ const ProfileTabs = () => {
       label: "Thanh toán",
       icon: "bi-credit-card",
     },
-    {
-      id: "booking",
-      path: "booking",
-      label: "Đặt chỗ",
-      icon: "bi-calendar-check",
-    },
   ];
 
   const isActiveTab = (path) => {

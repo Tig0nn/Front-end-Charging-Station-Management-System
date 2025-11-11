@@ -14,7 +14,6 @@ const ProfileLayout = () => {
   const fetchDriverInfo = async () => {
     try {
       setLoading(true);
-      console.log("📞 Fetching driver info from API...");
       const response = await usersAPI.getProfile();
 
       const responseData =
@@ -22,8 +21,6 @@ const ProfileLayout = () => {
 
       // Backend returns data inside driverProfile object
       const driverData = responseData.driverProfile || responseData;
-
-      console.log("👤 Driver data:", driverData);
 
       // Map to consistent format
       const userData = {

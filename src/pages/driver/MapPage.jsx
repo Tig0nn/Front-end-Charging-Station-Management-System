@@ -31,11 +31,6 @@ export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [preSelectedPointId, setPreSelectedPointId] = useState(null); // For QR code flow
 
-  // Charging session states
-  const [showChargingPanel, setShowChargingPanel] = useState(false);
-  const [activeCharger, setActiveCharger] = useState(null);
-  const [activeStation, setActiveStation] = useState(null);
-
   // Kiểm tra session đang hoạt động khi component mount
   // Nếu có, chuyển hướng người dùng đến trang session
 
@@ -101,7 +96,7 @@ export default function MapPage() {
     try {
       setLoading(true);
       const response = await stationsAPI.getAllDetails();
-      console.log("📍 Stations API response:", response);
+      console.log(" Stations API response:", response);
 
       let stationsData = [];
       if (response.data?.result && Array.isArray(response.data.result)) {
@@ -112,10 +107,7 @@ export default function MapPage() {
         stationsData = response.data;
       }
 
-      console.log("📍 Parsed stations data:", stationsData);
-      if (stationsData.length > 0) {
-        console.log("🔍 RAW first station from API:", stationsData[0]);
-      }
+      console.log(" Parsed stations data:", stationsData);
 
       // --- 💡 HELPER FUNCTION ĐỂ LẤY TỔNG SỐ TRỤ TỪ CHUỖI SUMMARY ---
       // Ví dụ: "T:8 | H:8 | Đ:0 | B:0" -> trả về 8
@@ -185,11 +177,10 @@ export default function MapPage() {
         };
       });
 
-      console.log("🔍 First station mapping example:", mappedStations[0]);
       setStations(mappedStations);
       setError(null);
 
-      console.log(`✅ Loaded ${mappedStations.length} stations`);
+      console.log(` Loaded ${mappedStations.length} stations`);
     } catch (err) {
       console.error("❌ Error fetching stations:", err);
       setError("Không thể tải danh sách trạm sạc");
@@ -214,20 +205,6 @@ export default function MapPage() {
           console.warn("⚠️ Could not get user location:", error);
         }
       );
-    }
-  };
-
-  const handleStationClick = (station) => {
-    console.log("🖱️ Station clicked:", {
-      name: station.stationName,
-      availableChargingPoints: station.availableChargingPoints,
-      activeChargingPoints: station.activeChargingPoints,
-      chargingPointsCount: station.chargingPointsCount,
-      totalChargingPoints: station.totalChargingPoints,
-    });
-    setSelectedStation(station);
-    if (station.latitude && station.longitude) {
-      setMapCenter([station.latitude, station.longitude]);
     }
   };
 
@@ -308,17 +285,6 @@ export default function MapPage() {
     }
   };
 
-  const handleCloseChargingPanel = () => {
-    setShowChargingPanel(false);
-    setActiveCharger(null);
-    setActiveStation(null);
-  };
-
-  const handleCompleteCharging = () => {
-    // TODO: Add to history, update user data
-    console.log("Charging completed!");
-  };
-
   const handleShowDirections = (station) => {
     if (!userLocation) {
       alert("Không thể xác định vị trí của bạn. Vui lòng bật GPS.");
@@ -339,6 +305,11 @@ export default function MapPage() {
     setShowRoute(false);
     setRouteDestination(null);
     setRouteInfo(null);
+  };
+
+  const handleStationClick = (station) => {
+    setSelectedStation(station);
+    // Có thể thêm zoom tới station ở đây nếu cần
   };
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -457,16 +428,6 @@ export default function MapPage() {
           onClose={handleCloseChargerModal}
           onStartCharging={handleStartCharging}
           preSelectedPointId={preSelectedPointId}
-        />
-      )}
-
-      {/* Charging Panel Overlay */}
-      {showChargingPanel && activeStation && activeCharger && (
-        <ChargingPanel
-          station={activeStation}
-          charger={activeCharger}
-          onClose={handleCloseChargingPanel}
-          onComplete={handleCompleteCharging}
         />
       )}
     </div>

@@ -48,7 +48,7 @@ const AdminIncidents = () => {
       setError("");
 
       const response = await adminAPI.getAllIncidents();
-      console.log("📋 Incidents response:", response);
+      console.log("Incidents response:", response);
 
       const data = response?.data?.result || response?.data || [];
       setIncidents(data);
@@ -58,8 +58,8 @@ const AdminIncidents = () => {
       console.error("❌ Error loading incidents:", err);
       setError(
         err.response?.data?.message ||
-        err.message ||
-        "Không thể tải danh sách báo cáo sự cố"
+          err.message ||
+          "Không thể tải danh sách báo cáo sự cố"
       );
     } finally {
       setLoading(false);
@@ -144,8 +144,6 @@ const AdminIncidents = () => {
     }
   };
 
-
-
   // Format date
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -186,11 +184,11 @@ const AdminIncidents = () => {
             Quản lý và theo dõi các báo cáo sự cố từ nhân viên
           </p>
         </div>
-        <Button 
+        <Button
           style={{
             backgroundColor: "#22c55e",
             borderColor: "#22c55e",
-            color: "white"
+            color: "white",
           }}
           onClick={loadIncidents}
         >
@@ -299,7 +297,6 @@ const AdminIncidents = () => {
                     <th className="border-0">Thời gian báo cáo</th>
                     <th className="border-0">Trạng thái</th>
                     <th className="border-0">Hành động</th>
-
                   </tr>
                 </thead>
                 <tbody>
@@ -308,10 +305,14 @@ const AdminIncidents = () => {
                       <td className="align-middle">
                         {incident.stationName || "-"}
                         {incident.chargingPointName ? (
-                          <div className="text-muted small">{incident.chargingPointName}</div>
+                          <div className="text-muted small">
+                            {incident.chargingPointName}
+                          </div>
                         ) : null}
                       </td>
-                      <td className="align-middle">{getSeverityBadge(incident.severity)}</td>
+                      <td className="align-middle">
+                        {getSeverityBadge(incident.severity)}
+                      </td>
                       <td className="align-middle">
                         {incident.reporterName || "N/A"}
                       </td>
@@ -334,7 +335,8 @@ const AdminIncidents = () => {
                         )}
                       </td>
                       <td className="align-middle">
-                        <Button className="me-3"
+                        <Button
+                          className="me-3"
                           variant="outline-primary"
                           size="sm"
                           onClick={() => viewIncidentDetails(incident)}
@@ -345,11 +347,13 @@ const AdminIncidents = () => {
                         {incident.status === "WAITING" ? (
                           <Button
                             size="sm"
-                            onClick={() => handleSubmit("WORKING", incident.incidentId)}
+                            onClick={() =>
+                              handleSubmit("WORKING", incident.incidentId)
+                            }
                             style={{
                               backgroundColor: "#22c55e",
                               borderColor: "#22c55e",
-                              color: "white"
+                              color: "white",
                             }}
                           >
                             Duyệt
@@ -357,17 +361,20 @@ const AdminIncidents = () => {
                         ) : incident.status === "WORKING" ? (
                           <Button
                             size="sm"
-                            onClick={() => handleSubmit("DONE", incident.incidentId)}
+                            onClick={() =>
+                              handleSubmit("DONE", incident.incidentId)
+                            }
                             style={{
                               backgroundColor: "#22c55e",
                               borderColor: "#22c55e",
-                              color: "white"
+                              color: "white",
                             }}
                           >
                             Hoàn thành
                           </Button>
-                        ) : " "}
-
+                        ) : (
+                          " "
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -422,7 +429,9 @@ const AdminIncidents = () => {
               <Row className="mb-3">
                 <Col md={6}>
                   <small className="text-muted d-block">Mức độ</small>
-                  <td className="align-middle">{getSeverityBadge(selectedIncident.severity)}</td>
+                  <td className="align-middle">
+                    {getSeverityBadge(selectedIncident.severity)}
+                  </td>
                 </Col>
                 <Col md={6}>
                   <small className="text-muted d-block">Trạng thái</small>
@@ -435,9 +444,7 @@ const AdminIncidents = () => {
                       Đang giải quyết
                     </span>
                   ) : (
-                    <span className="text-green-600 font-medium">
-                      Đã xử lý
-                    </span>
+                    <span className="text-green-600 font-medium">Đã xử lý</span>
                   )}
                 </Col>
               </Row>
@@ -462,8 +469,6 @@ const AdminIncidents = () => {
                   </div>
                 </Col>
               </Row>
-
-
             </div>
           )}
         </Modal.Body>
