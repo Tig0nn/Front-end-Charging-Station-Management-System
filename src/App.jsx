@@ -7,6 +7,7 @@ import { MainLayoutAdmin } from "./components/layoutAdmin";
 import { NotFound, Reports, StationsList, UsersList } from "./pages";
 import StaffList from "./Pages/admin/StaffList";
 import EVChargingLanding from "./pages/EVChargingLanding";
+import CashTopup from "./pages/staff/CashTopup";
 import MainLayoutDriver from "./components/layoutDriver/MainLayoutDriver";
 import MapPage from "./pages/driver/MapPage";
 import ChargingSessionPage from "./pages/driver/ChargingSessionPage";
@@ -147,7 +148,7 @@ function App() {
                   element={<Navigate to="/staff/station" replace />}
                 />
                 <Route path="/station" element={<StationOverview />} />
-
+                <Route path="/cash-topup" element={<CashTopup />} />
                 {/* Các route khác cho Staff */}
                 <Route
                   path="/payment-requests"

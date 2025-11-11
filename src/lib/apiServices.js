@@ -73,6 +73,8 @@ const apiServices = {
     getTransactionHistory: () => api.get("/api/wallet/history"),
     // Nạp tiền vào ví qua ZaloPay
     topupZaloPay: (amount) => api.post("/api/wallet/topup/zalopay", { amount }),
+    // Nạp tiền mặt vào ví (Staff only)
+    cashTopup: (data) => api.post("/api/wallet/topup/cash", data),
   },
 
   revenue: {
