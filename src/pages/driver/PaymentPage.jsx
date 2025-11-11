@@ -1,10 +1,74 @@
 // src/pages/PaymentPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { plansAPI, dashboardAPI } from "../../lib/apiServices";
+import toast from "react-hot-toast";
 
 // Import các component con
 import PlanCard from "../../components/PlanCard";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
+
+// Helper function to translate backend error messages to Vietnamese
+const translateErrorMessage = (errorMessage, errorCode) => {
+  // Chuyển về lowercase để so sánh
+  const lowerMsg = (errorMessage || "").toLowerCase();
+
+  // Map các lỗi phổ biến từ backend
+  const errorMap = {
+    // Wallet/Payment errors
+    "insufficient funds": "Số dư ví không đủ",
+    "insufficient balance": "Số dư ví không đủ",
+    "wallet balance is insufficient": "Số dư ví không đủ",
+    "not enough balance": "Số dư ví không đủ",
+    "low balance": "Số dư ví không đủ",
+
+    // Plan errors
+    "plan not found": "Không tìm thấy gói dịch vụ",
+    "plan does not exist": "Gói dịch vụ không tồn tại",
+    "invalid plan": "Gói dịch vụ không hợp lệ",
+    "plan is not available": "Gói dịch vụ không khả dụng",
+
+    // Subscription errors
+    "already subscribed": "Bạn đã đăng ký gói này rồi",
+    "subscription already exists": "Đã có gói đăng ký",
+    "cannot downgrade": "Không thể hạ cấp xuống gói thấp hơn",
+    "active subscription exists": "Đang có gói đang hoạt động",
+
+    // User errors
+    "user not found": "Không tìm thấy người dùng",
+    "unauthorized": "Không có quyền truy cập",
+    "authentication failed": "Xác thực thất bại",
+    "invalid token": "Phiên đăng nhập hết hạn",
+
+    // Generic errors
+    "internal server error": "Lỗi hệ thống, vui lòng thử lại sau",
+    "service unavailable": "Dịch vụ tạm thời không khả dụng",
+    "network error": "Lỗi kết nối mạng",
+    "timeout": "Yêu cầu quá thời gian chờ",
+  };
+
+  // Tìm khớp message
+  for (const [engMsg, vieMsg] of Object.entries(errorMap)) {
+    if (lowerMsg.includes(engMsg)) {
+      return vieMsg;
+    }
+  }
+
+  // Xử lý theo mã lỗi
+  if (errorCode === 400) {
+    return "Yêu cầu không hợp lệ";
+  } else if (errorCode === 401) {
+    return "Vui lòng đăng nhập lại";
+  } else if (errorCode === 403) {
+    return "Không có quyền thực hiện thao tác này";
+  } else if (errorCode === 404) {
+    return "Không tìm thấy dữ liệu";
+  } else if (errorCode === 500) {
+    return "Lỗi hệ thống, vui lòng thử lại sau";
+  }
+
+  // Trả về message gốc nếu không tìm thấy bản dịch
+  return errorMessage || "Đã xảy ra lỗi, vui lòng thử lại";
+};
 
 export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -129,7 +193,7 @@ export default function PaymentPage() {
   // 🚀 Handle subscription - Payment directly from wallet
   const handleSubscribe = async (plan) => {
     if (plan.isCurrent) {
-      alert("Bạn đang sử dụng gói này rồi");
+      toast.error("Bạn đang sử dụng gói này rồi");
       return;
     }
 
@@ -188,35 +252,47 @@ export default function PaymentPage() {
         response?.message ||
         `Đăng ký gói ${plan.name} thành công!`;
 
-      alert(
-        `✅ ${successMessage}\n\n` +
-          `📧 Vui lòng kiểm tra email để xem thông tin chi tiết.`
+      toast.success(
+        `${successMessage}\n\nVui lòng kiểm tra email để xem thông tin chi tiết.`,
+        {
+          duration: 5000,
+          icon: "✅",
+        }
       );
 
       setSelectedPlan(null);
     } catch (error) {
       // Handle error
-      const errorMessage =
+      const backendMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
-        "Đăng ký thất bại. Vui lòng thử lại.";
+        "";
 
       const errorCode = error.response?.data?.code || error.response?.status;
 
-      let userMessage = errorMessage;
+      // Dịch thông báo lỗi sang tiếng Việt
+      let userMessage = translateErrorMessage(backendMessage, errorCode);
 
-      // Provide helpful message based on error
+      // Thêm context cụ thể cho từng loại lỗi
       if (errorCode === 400) {
-        userMessage = `Không thể đăng ký gói: ${errorMessage}`;
-      } else if (errorCode === 403 || errorMessage.includes("insufficient")) {
+        userMessage = `Không thể đăng ký gói: ${userMessage}`;
+      } else if (
+        errorCode === 403 ||
+        backendMessage.toLowerCase().includes("insufficient")
+      ) {
         userMessage =
           "Số dư ví không đủ để đăng ký gói này. Vui lòng nạp thêm tiền vào ví.";
       } else if (errorCode === 404) {
         userMessage = "Không tìm thấy gói dịch vụ. Vui lòng thử lại.";
+      } else if (errorCode === 401) {
+        userMessage =
+          "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
       }
 
-      alert(`❌ ${userMessage}`);
+      toast.error(userMessage, {
+        duration: 5000,
+      });
       setError(userMessage);
     } finally {
       setLoading(false);

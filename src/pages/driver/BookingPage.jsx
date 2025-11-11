@@ -2,6 +2,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import React, { useState, useEffect } from "react";
 import apiServices from "../../lib/apiServices";
+import toast from "react-hot-toast";
 import "./BookingPage.css";
 // Thay hero image bằng asset trong project (hoặc đổi thành đường dẫn public)
 // Ví dụ: dùng ảnh có sẵn trong repo: src/assets/image/anhGG.png
@@ -25,6 +26,38 @@ const CustomInputButton = React.forwardRef(
 );
 
 const BookingPage = () => {
+  // Helper function to translate backend messages
+  const translateMessage = (message) => {
+    if (!message) return message;
+    
+    const lowerMsg = message.toLowerCase();
+    
+    // Map common messages from backend
+    if (lowerMsg.includes("you can charge to")) {
+      // Extract percentage if exists
+      const match = message.match(/(\d+)%/);
+      if (match) {
+        return `Bạn có thể sạc đến ${match[1]}%`;
+      }
+      return "Bạn có thể sạc đến mức tối đa";
+    }
+    
+    if (lowerMsg.includes("available")) {
+      return "Trạm sạc khả dụng";
+    }
+    
+    if (lowerMsg.includes("not available") || lowerMsg.includes("unavailable")) {
+      return "Trạm sạc không khả dụng";
+    }
+    
+    if (lowerMsg.includes("already booked")) {
+      return "Trạm đã được đặt trong thời gian này";
+    }
+    
+    // Return original if no translation found
+    return message;
+  };
+
   // States
   const [bookingTime, setBookingTime] = useState(null);
   const [vehicles, setVehicles] = useState([]);
@@ -137,7 +170,7 @@ const BookingPage = () => {
   // Xử lý khi nhấn nút "Tìm kiếm"
   const handleSearch = () => {
     if (!bookingTime || !selectedVehicle || !selectedStation) {
-      alert("Vui lòng chọn đầy đủ: Ngày giờ, Xe, và Trạm sạc");
+      toast.error("Vui lòng chọn đầy đủ: Ngày giờ, Xe, và Trạm sạc");
       return;
     }
     setSearchResults({ searched: true }); // Hiển thị khu vực kết quả
@@ -164,7 +197,9 @@ const BookingPage = () => {
         const apiMessage = response?.data?.message || "Trạm khả dụng!";
         const newMax = response?.data?.maxChargePercentage || 100;
 
-        setAvailabilityMessage(`✅ ${apiMessage}`); // Dùng message từ API
+        // Translate message from English to Vietnamese
+        const translatedMessage = translateMessage(apiMessage);
+        setAvailabilityMessage(`✅ ${translatedMessage}`);
         setMaxPercentage(newMax);
 
         // Tự động giảm % pin nếu người dùng đang chọn cao hơn mức cho phép
@@ -172,9 +207,9 @@ const BookingPage = () => {
           setDesiredPercentage(newMax);
         }
       } else {
-        setAvailabilityMessage(
-          response?.data?.message || "❌ Trạm đã được đặt trong thời gian này"
-        );
+        const apiMessage = response?.data?.message || "Trạm đã được đặt trong thời gian này";
+        const translatedMessage = translateMessage(apiMessage);
+        setAvailabilityMessage(`❌ ${translatedMessage}`);
         setMaxPercentage(100); // Reset
       }
     } catch (err) {
@@ -199,12 +234,12 @@ const BookingPage = () => {
   // Xử lý khi nhấn nút "Xác nhận đặt chỗ"
   const handleBooking = async () => {
     if (!selectedVehicle || !selectedCharger || !bookingTime) {
-      alert("Vui lòng điền đầy đủ thông tin!");
+      toast.error("Vui lòng điền đầy đủ thông tin!");
       return;
     }
 
     if (!availabilityMessage.includes("✅")) {
-      alert("Trạm không khả dụng hoặc thông tin không hợp lệ!");
+      toast.error("Trạm không khả dụng hoặc thông tin không hợp lệ!");
       return;
     }
 
@@ -218,7 +253,13 @@ const BookingPage = () => {
       };
 
       await apiServices.bookings.createBooking(bookingData);
-      alert("✅ Đặt chỗ thành công! Tiền cọc 50,000 VNĐ đã được trừ từ ví.");
+      toast.success(
+        "Đặt chỗ thành công! Tiền cọc 50,000 VNĐ đã được trừ từ ví.",
+        {
+          duration: 5000,
+          icon: "✅",
+        }
+      );
 
       // Reset form về trạng thái ban đầu
       setSearchResults(null);
@@ -230,7 +271,9 @@ const BookingPage = () => {
       console.error("Error creating booking:", err);
       const errorMsg =
         err?.response?.data?.message || err?.message || "Lỗi không xác định";
-      alert("❌ Đặt chỗ thất bại! " + errorMsg);
+      toast.error(`Đặt chỗ thất bại! ${errorMsg}`, {
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }

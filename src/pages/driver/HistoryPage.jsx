@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Routes, Route, Navigate, NavLink } from "react-router-dom";
-// import PopUpPayment from "../../components/layoutDriver/PopUpPayment";
-import toast from "react-hot-toast";
 import {
   BarChart,
   Bar,
@@ -15,7 +13,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { chargingSessionsAPI, walletAPI } from "../../lib/apiServices";
+import { chargingSessionsAPI } from "../../lib/apiServices";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 // Helpers
@@ -123,7 +121,6 @@ function useMySessions() {
 // 1) GIAO DỊCH
 const TransactionHistory = () => {
   const { data: sessions, loading, error, reload } = useMySessions();
-  const [payingId, setPayingId] = useState(null); // Chỉ cần state này
 
   if (loading)
     return (
@@ -187,37 +184,6 @@ const TransactionHistory = () => {
     );
   }
 
-  // // Hàm mở popup và chọn session
-  // const handleOpenPaymentModal = (session) => {
-  //   setSelectedSession(session); // Lưu lại session đang được chọn
-  //   setIsModalOpen(true); // Bật "công tắc" để mở popup
-  // };
-  // // Hàm này được truyền cho popup để nó tự đóng
-  // const handleCloseModal = () => {
-  //   setIsModalOpen(false);
-  //   setSelectedSession(null); // Xóa session đã chọn
-  // };
-
-  const handleProcessPayment = async (sessionId) => {
-    if (payingId) return; // Nếu đang xử lý 1 cái khác, thì không cho bấm
-
-    setPayingId(sessionId); // Set ID đang thanh toán
-    const toastId = toast.loading("Đang xử lý thanh toán qua ví...");
-    try {
-      // THAY ĐỔI: Gọi hàm 'payForSession' mới từ 'walletAPI'
-      const res = await walletAPI.payForSession(sessionId);
-      console.log("Kết quả thanh toán qua ví:", res);
-      toast.success("Thanh toán qua ví thành công!", { id: toastId });
-    } catch (e) {
-      console.error("Lỗi khi thanh toán qua ví:", e);
-      // Hiển thị lỗi từ API (ví dụ: 19002 - "Insufficient Funds In Wallet")
-      toast.error(getErrorMessage(e), { id: toastId });
-    } finally {
-      setPayingId(null);
-      reload();
-    }
-  };
-
   const headers = [
     "Ngày",
     "Trạm sạc",
@@ -225,7 +191,6 @@ const TransactionHistory = () => {
     "Lượng điện đã sạc",
     "Chi phí",
     "Trạng thái",
-    "Thanh Toán",
   ];
 
   return (
@@ -285,30 +250,6 @@ const TransactionHistory = () => {
                   <span className="text-red-600 font-medium">
                     Chưa hoàn thành
                   </span>
-                )}
-              </td>
-              <td
-                className="px-6 py-4 whitespace-nowrap"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {s.paymentStatus === "UNPAID" && s.status === "COMPLETED" ? (
-                  <button
-                    className="px-3 py-1 !bg-[#10B981] text-white font-bold rounded hover:bg-[#00ffc6]"
-                    onClick={() => handleProcessPayment(s.sessionId)}
-                    disabled={payingId === s.sessionId}
-                  >
-                    {payingId === s.sessionId ? "Đang xử lý..." : "Thanh toán"}
-                  </button>
-                ) : s.paymentStatus === "PENDING" ? (
-                  <span className="text-yellow-600 font-medium">
-                    Đang xử lý
-                  </span>
-                ) : s.paymentStatus === "PAID" ? (
-                  <span className="text-green-600 font-medium">
-                    Đã thanh toán
-                  </span>
-                ) : (
-                  <span className="text-gray-600 font-medium">-</span>
                 )}
               </td>
             </tr>

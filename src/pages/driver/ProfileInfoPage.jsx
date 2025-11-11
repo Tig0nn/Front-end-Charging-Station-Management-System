@@ -200,8 +200,9 @@ const ProfileInfoPage = () => {
         updateUser(mergedUser);
         localStorage.setItem("user", JSON.stringify(mergedUser)); // đồng bộ lại localStorage
 
-        setSuccessMessage("Thông tin tài xế đã được cập nhật thành công!");
-        toast.success(successMessage);
+        const message = "✅ Cập nhật thông tin thành công!";
+        setSuccessMessage(message);
+        toast.success(message);
         setIsEditMode(false);
       } else {
         throw new Error(responseData?.message || "Cập nhật thất bại");
