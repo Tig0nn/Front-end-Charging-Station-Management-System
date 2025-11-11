@@ -19,6 +19,9 @@ const apiServices = {
     getStaff: () => api.get("/api/users/staffs"),
     // Get all drivers (Admin only)
     getDriver: () => api.get("/api/users/drivers"),
+    // Lookup driver by email (Staff/Admin)
+    lookupDriverByEmail: (email) =>
+      api.get(`/api/users/drivers/lookup?email=${email}`),
   },
   //Admin
   systemOverview: {

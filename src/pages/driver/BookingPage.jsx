@@ -29,9 +29,9 @@ const BookingPage = () => {
   // Helper function to translate backend messages
   const translateMessage = (message) => {
     if (!message) return message;
-    
+
     const lowerMsg = message.toLowerCase();
-    
+
     // Map common messages from backend
     if (lowerMsg.includes("you can charge to")) {
       // Extract percentage if exists
@@ -41,19 +41,22 @@ const BookingPage = () => {
       }
       return "Bạn có thể sạc đến mức tối đa";
     }
-    
+
     if (lowerMsg.includes("available")) {
       return "Trạm sạc khả dụng";
     }
-    
-    if (lowerMsg.includes("not available") || lowerMsg.includes("unavailable")) {
+
+    if (
+      lowerMsg.includes("not available") ||
+      lowerMsg.includes("unavailable")
+    ) {
       return "Trạm sạc không khả dụng";
     }
-    
+
     if (lowerMsg.includes("already booked")) {
       return "Trạm đã được đặt trong thời gian này";
     }
-    
+
     // Return original if no translation found
     return message;
   };
@@ -207,7 +210,8 @@ const BookingPage = () => {
           setDesiredPercentage(newMax);
         }
       } else {
-        const apiMessage = response?.data?.message || "Trạm đã được đặt trong thời gian này";
+        const apiMessage =
+          response?.data?.message || "Trạm đã được đặt trong thời gian này";
         const translatedMessage = translateMessage(apiMessage);
         setAvailabilityMessage(`❌ ${translatedMessage}`);
         setMaxPercentage(100); // Reset

@@ -19,7 +19,6 @@ import VehicleInfoPage from "./pages/driver/VehicleInfoPage";
 import PaymentPage from "./pages/driver/PaymentPage";
 import AddStation from "./pages/admin/AddStation";
 import StaffReports from "./pages/staff/StaffReports";
-import StaffPaymentRequests from "./pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./pages/driver/ProfileLayout";
 import AdminIncidents from "./pages/admin/AdminIncidents";
 import QRCodeManager from "./pages/admin/QRCodeManager";
@@ -150,10 +149,7 @@ function App() {
                 <Route path="/station" element={<StationOverview />} />
                 <Route path="/cash-topup" element={<CashTopup />} />
                 {/* Các route khác cho Staff */}
-                <Route
-                  path="/payment-requests"
-                  element={<StaffPaymentRequests />}
-                />
+
                 <Route path="/reports" element={<StaffReports />} />
 
                 {/* 404 Page for Staff section */}

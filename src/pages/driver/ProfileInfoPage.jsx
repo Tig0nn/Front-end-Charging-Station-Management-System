@@ -178,7 +178,6 @@ const ProfileInfoPage = () => {
         updateData.dateOfBirth = null;
       }
 
-
       // Gọi API update trực tiếp
       setIsUpdating(true);
       setError(null);
@@ -190,11 +189,12 @@ const ProfileInfoPage = () => {
       if (responseData && responseData.code === 1000) {
         // Cập nhật user trong AuthContext
         const mergedUser = {
-          ...user,                // Giữ lại dữ liệu cũ (role, phone, token, ...)
+          ...user, // Giữ lại dữ liệu cũ (role, phone, token, ...)
           ...responseData.result, // Gộp dữ liệu mới từ API
-          ...updateData,          // Gộp dữ liệu người dùng nhập
-          fullName: `${updateData.firstName || user?.firstName || ""} ${updateData.lastName || user?.lastName || ""
-            }`.trim(),
+          ...updateData, // Gộp dữ liệu người dùng nhập
+          fullName: `${updateData.firstName || user?.firstName || ""} ${
+            updateData.lastName || user?.lastName || ""
+          }`.trim(),
         };
 
         updateUser(mergedUser);
@@ -253,7 +253,7 @@ const ProfileInfoPage = () => {
             style={{
               backgroundColor: "#22c55e",
               borderColor: "#22c55e",
-              color: "white"
+              color: "white",
             }}
             onClick={() => setIsEditMode(true)}
             className="d-flex align-items-center"
@@ -395,10 +395,10 @@ const ProfileInfoPage = () => {
                     isEditMode
                       ? formData.dateOfBirth
                       : formData.dateOfBirth
-                        ? new Date(formData.dateOfBirth).toLocaleDateString(
+                      ? new Date(formData.dateOfBirth).toLocaleDateString(
                           "vi-VN"
                         )
-                        : "Chưa cập nhật"
+                      : "Chưa cập nhật"
                   }
                   onChange={handleChange}
                   readOnly={!isEditMode}
@@ -478,13 +478,11 @@ const ProfileInfoPage = () => {
                     style={{
                       backgroundColor: "#22c55e",
                       borderColor: "#22c55e",
-                      color: "white"
+                      color: "white",
                     }}
                   >
                     {isUpdating ? (
-                      <>
-                        Đang lưu...
-                      </>
+                      <>Đang lưu...</>
                     ) : (
                       <>
                         <i className="bi bi-save me-2"></i>

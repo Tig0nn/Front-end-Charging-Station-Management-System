@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { walletAPI } from "../../lib/apiServices.js";
+import toast from "react-hot-toast";
 
 // CSS animation cho loading spinner
 const styles = document.createElement("style");
@@ -28,6 +29,43 @@ export default function WalletPage() {
   // Chỉ sử dụng dữ liệu thật từ API
   const transactions = userTransactions;
 
+  // =============== HELPERS - Dịch message từ backend ===============
+  const translateErrorMessage = (message) => {
+    const translations = {
+      // Wallet errors
+      "Insufficient balance": "Số dư không đủ",
+      "Wallet not found": "Không tìm thấy ví",
+      "Invalid amount": "Số tiền không hợp lệ",
+      "Transaction failed": "Giao dịch thất bại",
+      "Payment failed": "Thanh toán thất bại",
+      "Invalid transaction": "Giao dịch không hợp lệ",
+
+      // ZaloPay errors
+      "ZaloPay payment failed": "Thanh toán ZaloPay thất bại",
+      "Cannot create payment order": "Không thể tạo đơn thanh toán",
+      "Payment order creation failed": "Tạo đơn thanh toán thất bại",
+
+      // Network errors
+      "Network Error": "Lỗi kết nối mạng",
+      "Request timeout": "Hết thời gian chờ",
+      "Server error": "Lỗi máy chủ",
+
+      // Auth errors
+      Unauthorized: "Chưa đăng nhập",
+      "Token expired": "Phiên đăng nhập hết hạn",
+    };
+
+    // Kiểm tra message có trong bản dịch không
+    for (const [english, vietnamese] of Object.entries(translations)) {
+      if (message?.toLowerCase().includes(english.toLowerCase())) {
+        return vietnamese;
+      }
+    }
+
+    // Nếu không tìm thấy, trả về message gốc
+    return message;
+  };
+
   // =============== EFFECT - Tải dữ liệu ví khi component mount ===============
   useEffect(() => {
     // Hàm lấy thông tin dashboard ví (số dư, thống kê)
@@ -43,14 +81,14 @@ export default function WalletPage() {
         } else {
           const errorMsg = res.data.message || "Không thể tải dữ liệu ví";
           console.log(" API returned error:", errorMsg);
-          setError(errorMsg);
+          setError(translateErrorMessage(errorMsg));
         }
       } catch (error) {
         console.error(" Error fetching wallet dashboard:", error);
         console.error("Error response:", error.response?.data);
-        setError(
-          error.response?.data?.message || "Lỗi kết nối. Vui lòng thử lại sau."
-        );
+        const errorMsg =
+          error.response?.data?.message || "Lỗi kết nối. Vui lòng thử lại sau.";
+        setError(translateErrorMessage(errorMsg));
       } finally {
         setIsLoading(false);
       }
@@ -65,6 +103,10 @@ export default function WalletPage() {
         }
       } catch (error) {
         console.error(" Lỗi khi lấy lịch sử giao dịch:", error);
+        const errorMsg = error.response?.data?.message || error.message;
+        toast.error(
+          translateErrorMessage(errorMsg) || "Không thể tải lịch sử giao dịch"
+        );
       }
     };
 
@@ -127,7 +169,7 @@ export default function WalletPage() {
           ></i>
         );
     }
-  };  // Format số tiền theo định dạng VN (ví dụ: 1,000,000)
+  }; // Format số tiền theo định dạng VN (ví dụ: 1,000,000)
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN").format(Math.abs(amount));
   };
@@ -135,20 +177,20 @@ export default function WalletPage() {
   // Format timestamp từ API thành date và time
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return { date: "N/A", time: "N/A" };
-    
+
     const date = new Date(timestamp);
-    
+
     // Format date: DD/MM/YYYY
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     const formattedDate = `${day}/${month}/${year}`;
-    
+
     // Format time: HH:MM
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     const formattedTime = `${hours}:${minutes}`;
-    
+
     return { date: formattedDate, time: formattedTime };
   };
 
@@ -158,7 +200,7 @@ export default function WalletPage() {
   const handleTopup = async () => {
     // Kiểm tra đã nhập số tiền chưa
     if (!topupAmount) {
-      alert("Vui lòng nhập số tiền nạp!");
+      toast.error("Vui lòng nhập số tiền nạp!");
       return;
     }
 
@@ -179,7 +221,7 @@ export default function WalletPage() {
         setShowTopupDialog(false);
         setTopupAmount("");
 
-        alert(
+        toast.success(
           "Đang chuyển đến ZaloPay để thanh toán. Vui lòng hoàn tất thanh toán trên trang ZaloPay."
         );
 
@@ -203,11 +245,12 @@ export default function WalletPage() {
           }
         }, 3000);
       } else {
-        alert("Không thể tạo thanh toán. Vui lòng thử lại!");
+        toast.error("Không thể tạo thanh toán. Vui lòng thử lại!");
       }
     } catch (error) {
       console.error(" Lỗi khi tạo thanh toán ZaloPay:", error);
-      alert("Lỗi: " + (error.response?.data?.message || error.message));
+      const errorMsg = error.response?.data?.message || error.message;
+      toast.error(translateErrorMessage(errorMsg) || "Lỗi không xác định");
     } finally {
       setIsProcessingPayment(false);
     }
@@ -374,16 +417,19 @@ export default function WalletPage() {
                         }`}
                       >
                         {getTransactionIcon(transaction.transactionType)}
-                      </div>                      {/* Details */}
+                      </div>{" "}
+                      {/* Details */}
                       <div>
                         <p className="text-gray-900 mb-1 font-medium">
                           {transaction.description}
                         </p>
                         <p className="text-sm text-gray-500 m-0">
-                          {formatTimestamp(transaction.timestamp).date} • {formatTimestamp(transaction.timestamp).time}
+                          {formatTimestamp(transaction.timestamp).date} •{" "}
+                          {formatTimestamp(transaction.timestamp).time}
                         </p>
                       </div>
-                    </div>{" "}                    {/* Amount */}
+                    </div>{" "}
+                    {/* Amount */}
                     <div className="text-right">
                       <p
                         className={`text-lg mb-1 font-semibold ${
@@ -519,12 +565,3 @@ export default function WalletPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-

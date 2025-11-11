@@ -35,7 +35,7 @@ const translateErrorMessage = (errorMessage, errorCode) => {
 
     // User errors
     "user not found": "Không tìm thấy người dùng",
-    "unauthorized": "Không có quyền truy cập",
+    unauthorized: "Không có quyền truy cập",
     "authentication failed": "Xác thực thất bại",
     "invalid token": "Phiên đăng nhập hết hạn",
 
@@ -43,7 +43,7 @@ const translateErrorMessage = (errorMessage, errorCode) => {
     "internal server error": "Lỗi hệ thống, vui lòng thử lại sau",
     "service unavailable": "Dịch vụ tạm thời không khả dụng",
     "network error": "Lỗi kết nối mạng",
-    "timeout": "Yêu cầu quá thời gian chờ",
+    timeout: "Yêu cầu quá thời gian chờ",
   };
 
   // Tìm khớp message
@@ -286,8 +286,7 @@ export default function PaymentPage() {
       } else if (errorCode === 404) {
         userMessage = "Không tìm thấy gói dịch vụ. Vui lòng thử lại.";
       } else if (errorCode === 401) {
-        userMessage =
-          "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+        userMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
       }
 
       toast.error(userMessage, {

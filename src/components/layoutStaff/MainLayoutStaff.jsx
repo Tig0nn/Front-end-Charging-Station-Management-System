@@ -127,11 +127,6 @@ export default function MainLayoutStaff({ children }) {
       icon: "bi-cash-coin",
     },
     {
-      path: "/staff/payment-requests",
-      label: "Thanh toán",
-      icon: "bi-currency-dollar",
-    },
-    {
       path: "/staff/reports",
       label: "Sự cố",
       icon: "bi-exclamation-triangle-fill",

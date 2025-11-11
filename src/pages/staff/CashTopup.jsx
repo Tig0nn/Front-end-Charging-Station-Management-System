@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Row,
@@ -7,66 +7,51 @@ import {
   Form,
   Button,
   Alert,
-  Table,
   Badge,
 } from "react-bootstrap";
 import { usersAPI, walletAPI } from "../../lib/apiServices";
 import toast from "react-hot-toast";
-import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 const CashTopup = () => {
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [usersLoading, setUsersLoading] = useState(true);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [driverInfo, setDriverInfo] = useState(null);
 
   const [formData, setFormData] = useState({
-    targetUserIdentifier: "",
+    email: "",
     amount: "",
     description: "",
   });
 
-  const [validationError, setValidationError] = useState("");
   const [recentTransactions, setRecentTransactions] = useState([]);
 
-  // Fetch danh sách users khi component mount
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // Lookup driver by email
+  const handleLookupDriver = async () => {
+    if (!formData.email.trim()) {
+      toast.error("Vui lòng nhập email");
+      return;
+    }
 
-  const fetchUsers = async () => {
     try {
-      setUsersLoading(true);
-      const response = await usersAPI.getDriver();
-      setUsers(response?.data?.result || []);
-    } catch (err) {
-      console.error(" Error fetching users:", err);
-    } finally {
-      setUsersLoading(false);
-    }
-  };
-
-  // Validate email/phone với danh sách users
-  const validateUserIdentifier = (identifier) => {
-    if (!identifier) {
-      setValidationError("");
-      return false;
-    }
-
-    const foundUser = users.find(
-      (user) =>
-        user.email?.toLowerCase() === identifier.toLowerCase() ||
-        user.phone === identifier
-    );
-
-    if (!foundUser) {
-      setValidationError(
-        ` Không tìm thấy người dùng với email: ${identifier}`
+      setLookupLoading(true);
+      const response = await usersAPI.lookupDriverByEmail(
+        formData.email.trim()
       );
-      return false;
-    }
 
-    setValidationError(` Tìm thấy: ${foundUser.fullName} (${foundUser.email})`);
-    return true;
+      if (response.data.code === 1000) {
+        const driver = response.data.result;
+        setDriverInfo(driver);
+        toast.success(`✓ Tìm thấy: ${driver.fullName}`);
+      }
+    } catch (err) {
+      console.error("Error looking up driver:", err);
+      setDriverInfo(null);
+      const errorMsg =
+        err.response?.data?.message || "Không tìm thấy tài xế với email này";
+      toast.error(errorMsg);
+    } finally {
+      setLookupLoading(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -76,29 +61,24 @@ const CashTopup = () => {
       [name]: value,
     }));
 
-    // Validate khi nhập email/phone
-    if (name === "targetUserIdentifier") {
-      validateUserIdentifier(value);
+    // Clear driver info when email changes
+    if (name === "email" && driverInfo) {
+      setDriverInfo(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate
-    if (!formData.targetUserIdentifier) {
-      toast.error("Vui lòng nhập email");
+    // Validate driver info
+    if (!driverInfo) {
+      toast.error("Vui lòng tra cứu tài xế trước khi nạp tiền");
       return;
     }
 
+    // Validate amount
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       toast.error("Số tiền phải lớn hơn 0");
-      return;
-    }
-
-    // Validate user tồn tại
-    if (!validateUserIdentifier(formData.targetUserIdentifier)) {
-      toast.error("Email không hợp lệ");
       return;
     }
 
@@ -106,22 +86,20 @@ const CashTopup = () => {
       setLoading(true);
 
       const payload = {
-        targetUserIdentifier: formData.targetUserIdentifier.trim(),
+        targetUserIdentifier: formData.email.trim(),
         amount: parseFloat(formData.amount),
         description: formData.description || `Nạp tiền mặt tại trạm`,
       };
 
-      console.log(" Sending cash topup request:", payload);
-
       const response = await walletAPI.cashTopup(payload);
-
-      console.log(" Cash topup response:", response);
 
       if (response.data.code === 1000) {
         const transaction = response.data.result;
 
         toast.success(
-          ` Nạp ${transaction.amount.toLocaleString("vi-VN")}₫ thành công!`
+          `✓ Nạp ${transaction.amount.toLocaleString(
+            "vi-VN"
+          )}₫ thành công cho ${driverInfo.fullName}!`
         );
 
         // Thêm vào lịch sử giao dịch
@@ -129,14 +107,14 @@ const CashTopup = () => {
 
         // Reset form
         setFormData({
-          targetUserIdentifier: "",
+          email: "",
           amount: "",
           description: "",
         });
-        setValidationError("");
+        setDriverInfo(null);
       }
     } catch (err) {
-      console.error(" Error cash topup:", err);
+      console.error("Error cash topup:", err);
       const errorMsg = err.response?.data?.message || err.message;
       toast.error(`Lỗi nạp tiền: ${errorMsg}`);
     } finally {
@@ -173,39 +151,81 @@ const CashTopup = () => {
               </div>
 
               <Form onSubmit={handleSubmit}>
-                {/* Email Input */}
+                {/* Email Input with Lookup Button */}
                 <Form.Group className="mb-4">
                   <Form.Label className="fw-semibold text-secondary small mb-2">
-                    Email người dùng
+                    Email tài xế
                   </Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="targetUserIdentifier"
-                    value={formData.targetUserIdentifier}
-                    onChange={handleInputChange}
-                    placeholder="Nhập email"
-                    disabled={loading || usersLoading}
-                    required
-                    style={{
-                      height: "50px",
-                      fontSize: "15px",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "12px",
-                    }}
-                  />
-                  {validationError && (
-                    <div
-                      className={`mt-2 small ${
-                        validationError.includes("Tìm thấy")
-                          ? "text-success"
-                          : "text-danger"
-                      }`}
+                  <div className="d-flex gap-2">
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="Nhập email tài xế"
+                      disabled={loading || lookupLoading}
+                      required
+                      style={{
+                        height: "50px",
+                        fontSize: "15px",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "12px",
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleLookupDriver}
+                      disabled={
+                        loading || lookupLoading || !formData.email.trim()
+                      }
+                      style={{
+                        height: "50px",
+                        minWidth: "100px",
+                        fontSize: "15px",
+                        fontWeight: "600",
+                        backgroundColor: "#3b82f6",
+                        border: "none",
+                        borderRadius: "12px",
+                      }}
                     >
-                      {validationError}
-                    </div>
-                  )}
+                      {lookupLoading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" />
+                          Đang tìm...
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-search me-2"></i>
+                          Tra cứu
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </Form.Group>
-
+                {/* Driver Info Display */}
+                {driverInfo && (
+                  <Alert
+                    variant="success"
+                    className="mb-4 border-0 rounded-3"
+                    style={{ backgroundColor: "#f0fdf4" }}
+                  >
+                    <div className="d-flex align-items-start">
+                      <i
+                        className="bi bi-person-check-fill me-3"
+                        style={{ fontSize: "24px", color: "#22c55e" }}
+                      ></i>
+                      <div>
+                        <h6 className="fw-bold mb-1">{driverInfo.fullName}</h6>
+                        <div className="small text-muted">
+                          <div>📧 Email: {driverInfo.email}</div>
+                          {driverInfo.phone && (
+                            <div>📱 SĐT: {driverInfo.phone}</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Alert>
+                )}
                 {/* Amount Input */}
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-semibold text-secondary small mb-2">
@@ -227,7 +247,8 @@ const CashTopup = () => {
                       fontWeight: "500",
                     }}
                   />
-                </Form.Group>                {/* Quick Amount Buttons */}
+                </Form.Group>{" "}
+                {/* Quick Amount Buttons */}
                 <div className="mb-4">
                   <Row className="g-2">
                     {[50000, 100000, 200000, 500000, 1000000, 2000000].map(
@@ -260,7 +281,6 @@ const CashTopup = () => {
                     )}
                   </Row>
                 </div>
-
                 {/* Description */}
                 <Form.Group className="mb-4">
                   <Form.Label className="fw-semibold text-secondary small mb-2">
@@ -281,16 +301,12 @@ const CashTopup = () => {
                     }}
                   />
                 </Form.Group>
-
                 {/* Submit Button */}
                 <Button
                   type="submit"
                   className="w-100"
                   disabled={
-                    loading ||
-                    usersLoading ||
-                    !formData.targetUserIdentifier ||
-                    !formData.amount
+                    loading || lookupLoading || !driverInfo || !formData.amount
                   }
                   style={{
                     height: "56px",
@@ -355,20 +371,6 @@ const CashTopup = () => {
                 </div>
               </Card.Body>
             </Card>
-          )}
-
-          {/* Loading State */}
-          {usersLoading && (
-            <Alert
-              variant="info"
-              className="mt-3 border-0 rounded-3"
-              style={{ backgroundColor: "#f0f9ff" }}
-            >
-              <div className="d-flex align-items-center">
-                <LoadingSpinner size="sm" />
-                <span className="ms-2">Đang tải danh sách người dùng...</span>
-              </div>
-            </Alert>
           )}
         </Col>
       </Row>
