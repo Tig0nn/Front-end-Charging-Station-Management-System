@@ -53,7 +53,7 @@ const StationCard = ({
   };
 
   return (
-    <div 
+    <div
       className={`station-card ${isSelected ? "station-card-active" : ""}`}
       onClick={() => onStationClick && onStationClick(station)}
       style={{ cursor: "pointer" }}

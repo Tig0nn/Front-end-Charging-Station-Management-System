@@ -22,6 +22,9 @@ import StaffPaymentRequests from "./pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./pages/driver/ProfileLayout";
 import AdminIncidents from "./pages/admin/AdminIncidents";
 import QRCodeManager from "./pages/admin/QRCodeManager";
+import WalletPage from "./Pages/driver/WalletPage";
+import BookingPage from "./pages/driver/BookingPage";
+import AdminChargingPointManagement from "./pages/admin/AdminChargingPointManagement.jsx";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
@@ -119,6 +122,11 @@ function App() {
                 <Route path="/incidents" element={<AdminIncidents />} />
                 {/* QR Code Manager */}
                 <Route path="/qr-codes" element={<QRCodeManager />} />
+                {/* Charging Point Management */}
+                <Route
+                  path="/charging-points"
+                  element={<AdminChargingPointManagement />}
+                />
                 {/* 404 Page */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
