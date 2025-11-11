@@ -75,6 +75,8 @@ const apiServices = {
     getTransactionHistory: () => api.get("/api/wallet/history"),
     // Nạp tiền vào ví qua ZaloPay
     topupZaloPay: (amount) => api.post("/api/wallet/topup/zalopay", { amount }),
+    // Nạp tiền mặt vào ví (Staff only)
+    cashTopup: (data) => api.post("/api/wallet/topup/cash", data),
   },
 
   revenue: {
@@ -111,10 +113,8 @@ const apiServices = {
       api.delete(
         `/api/stations/${stationId}/charging-points/${chargingPointId}`
       ),
-    addChargingPoint: (stationId, chargingPointData) => api.post(
-      `/api/stations/${stationId}/charging-points`,
-      chargingPointData
-    ),
+    addChargingPoint: (stationId, chargingPointData) =>
+      api.post(`/api/stations/${stationId}/charging-points`, chargingPointData),
     // Lấy danh sách trụ sạc của một trạm
     getChargersByStation: (stationId) =>
       api.get(`/api/stations/${stationId}/charging-points`),

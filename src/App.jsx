@@ -18,6 +18,7 @@ import VehicleInfoPage from "./pages/driver/VehicleInfoPage";
 import PaymentPage from "./pages/driver/PaymentPage";
 import AddStation from "./pages/admin/AddStation";
 import StaffReports from "./pages/staff/StaffReports";
+import CashTopup from "./Pages/staff/CashTopup";
 import StaffPaymentRequests from "./pages/staff/StaffPaymentRequests";
 import ProfileLayout from "./pages/driver/ProfileLayout";
 import AdminIncidents from "./pages/admin/AdminIncidents";
@@ -27,6 +28,7 @@ import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import RequireRole from "./components/RequireRole.jsx";
+import WalletPage from "./pages/driver/WalletPage.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
@@ -142,7 +144,7 @@ function App() {
               {/* Route mặc định sẽ là trang trạm sạc */}
               <Route index element={<Navigate to="/staff/station" replace />} />
               <Route path="/station" element={<StationOverview />} />
-
+              <Route path="/cash-topup" element={<CashTopup />} />
               {/* Các route khác cho Staff */}
               <Route
                 path="/payment-requests"
@@ -173,12 +175,15 @@ function App() {
                     path="/session/:sessionId"
                     element={<ChargingSessionPage />}
                   />
-                  <Route path="/history/*" element={<HistoryPage />} />                  {/* Profile Routes with nested routes */}
+                  <Route path="/history/*" element={<HistoryPage />} />
+                  <Route path="/wallet" element={<WalletPage />} />
+                  {/* Profile Routes with nested routes */}
                   <Route path="/profile/*" element={<ProfileLayout />}>
                     <Route index element={<Navigate to="info" replace />} />
                     <Route path="info" element={<ProfileInfoPage />} />
                     <Route path="vehicle" element={<VehicleInfoPage />} />
                     <Route path="payment" element={<PaymentPage />} />
+                    
                   </Route>
 
                   {/* 404 Page for Driver section */}

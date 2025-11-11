@@ -83,7 +83,7 @@ const UsersList = () => {
 
       setPlans(transformedPlans);
     } catch (err) {
-      console.error("❌ Error fetching plans:", err);
+      console.error(" Error fetching plans:", err);
     } finally {
       setPlansLoading(false);
     }
@@ -193,12 +193,12 @@ const UsersList = () => {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Tải lại danh sách plans
-      console.log("🔄 Reloading plans...");
+      console.log(" Reloading plans...");
       await fetchPlans();
-      console.log("✅ Plans reloaded");
+      console.log(" Plans reloaded");
     } catch (err) {
-      console.error("❌ Error saving plan:", err);
-      console.error("❌ Error response:", err.response?.data);
+      console.error(" Error saving plan:", err);
+      console.error(" Error response:", err.response?.data);
       const errorMsg =
         err.response?.data?.message || err.response?.data?.error || err.message;
       toast.error(`Có lỗi xảy ra khi lưu gói dịch vụ: ${errorMsg}`);

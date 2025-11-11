@@ -89,7 +89,7 @@ export default function MainLayoutStaff({ children }) {
     timerRef.current = setInterval(() => {
       console.log("(Polling) Đang tải lại dashboard stats...");
       fetchDashboardStats(false); // Tải lại ngầm
-    }, 30000);
+    }, 3000);
 
     // Cleanup khi unmount
     return () => {
@@ -114,13 +114,17 @@ export default function MainLayoutStaff({ children }) {
     }
     return `${value}đ`;
   };
-
   // Navigation tabs
   const tabs = [
     {
       path: "/staff/station",
       label: "Điểm sạc",
       icon: "bi-gear-fill",
+    },
+    {
+      path: "/staff/cash-topup",
+      label: "Nạp tiền",
+      icon: "bi-cash-coin",
     },
     {
       path: "/staff/payment-requests",
