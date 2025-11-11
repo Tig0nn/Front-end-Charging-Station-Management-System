@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext, createContext } from "react";
-import { authAPI,usersAPI } from "../lib/apiServices.js";
+import { authAPI, usersAPI, staffAPI } from "../lib/apiServices.js";
 import { setAuthToken, getAuthToken } from "../lib/api";
-// import { setCurrentUser, getCurrentUser, clearAuth } from "../lib/auth.js";
 
 const AuthContext = createContext();
 
@@ -13,13 +12,13 @@ export const AuthProvider = ({ children }) => {
   // Hàm decode JWT token
   const decodeToken = (token) => {
     try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
       const jsonPayload = decodeURIComponent(
         atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
       );
       return JSON.parse(jsonPayload);
     } catch (error) {
@@ -35,10 +34,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
         if (storedUser && storedUser.email) {
+          // Prefill UI, nhưng KHÔNG return, KHÔNG setLoading(false)
           setUser(storedUser);
           setIsAuthenticated(true);
-          setLoading(false);
-          return;
         }
       } catch (error) {
         console.log("Error reading stored user:", error);
@@ -58,12 +56,35 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userInfo = decodedToken.userInfo || decodedToken;
-      const role = String(userInfo.role || decodedToken.role || decodedToken.scope || "").toUpperCase();
+      const role = String(
+        userInfo.role || decodedToken.role || decodedToken.scope || ""
+      ).toUpperCase();
 
-      // Nếu là DRIVER, gọi getDriverInfo
       if (role === "DRIVER") {
         usersAPI
-          .getDriverInfo()
+          .getProfile()
+          .then((response) => {
+            const resultData = response.data.result || response.data;
+
+            // Flatten structure: nếu có driverProfile thì merge vào root level
+            const userData = resultData.driverProfile
+              ? { ...resultData.driverProfile, role: resultData.role }
+              : resultData;
+
+            setUser(userData);
+            setIsAuthenticated(true);
+            localStorage.setItem("user", JSON.stringify(userData));
+          })
+          .catch(() => {
+            setAuthToken(null);
+            setUser(null);
+            setIsAuthenticated(false);
+            localStorage.removeItem("user");
+          })
+          .finally(() => setLoading(false));
+      } else if (role === "STAFF") {
+        staffAPI
+          .getStaffProfile()
           .then((response) => {
             const userData = response.data.result || response.data;
             setUser(userData);
@@ -76,18 +97,23 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(false);
             localStorage.removeItem("user");
           })
-          .finally(() => {
-            setLoading(false);
-          });
+          .finally(() => setLoading(false));
       } else {
-        // Nếu là ADMIN hoặc role khác, chỉ dùng thông tin từ token
         const userData = {
-          userId: userInfo.userId || decodedToken.sub || decodedToken.userId || decodedToken.id,
+          userId:
+            userInfo.userId ||
+            decodedToken.sub ||
+            decodedToken.userId ||
+            decodedToken.id,
           email: userInfo.email || decodedToken.email || decodedToken.sub,
           role: role,
           firstName: userInfo.firstName || decodedToken.firstName || null,
           lastName: userInfo.lastName || decodedToken.lastName || null,
-          fullName: userInfo.fullName || decodedToken.fullName || decodedToken.name || null,
+          fullName:
+            userInfo.fullName ||
+            decodedToken.fullName ||
+            decodedToken.name ||
+            null,
         };
         setUser(userData);
         setIsAuthenticated(true);
@@ -104,9 +130,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
 
       // Clear old data before login
-      localStorage.removeItem("users");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
       localStorage.removeItem("currentUserId");
 
+      // 1) Gọi API login để lấy token
       // 1) Gọi API login để lấy token
       const response = await authAPI.login(credentials);
       console.log("Login response:", response);
@@ -117,6 +145,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error("No token received from server");
       }
 
+      // 2) Decode token để lấy role
       // 2) Decode token để lấy role
       const decodedToken = decodeToken(token);
       console.log("Decoded token:", decodedToken);
@@ -130,7 +159,9 @@ export const AuthProvider = ({ children }) => {
 
       // 4) Lấy role từ token
       const userInfo = decodedToken.userInfo || decodedToken;
-      const role = String(userInfo.role || decodedToken.role || decodedToken.scope || "").toUpperCase();
+      const role = String(
+        userInfo.role || decodedToken.role || decodedToken.scope || ""
+      ).toUpperCase();
 
       let userData;
       let needsProfile = false;
@@ -138,26 +169,36 @@ export const AuthProvider = ({ children }) => {
       // 5) Nếu là DRIVER, gọi getDriverInfo để lấy thông tin đầy đủ
       if (role === "DRIVER") {
         try {
-          const userInfoResponse = await usersAPI.getDriverInfo();
+          const userInfoResponse = await usersAPI.getProfile();
           console.log("Driver info response:", userInfoResponse.data);
 
-          const driverData = userInfoResponse.data?.result || userInfoResponse.data;
+          const responseData =
+            userInfoResponse.data?.result || userInfoResponse.data;
 
+          // Backend returns data inside driverProfile object
+          const driverData = responseData.driverProfile || responseData;
+
+          // Map data với correct field names (backend uses lowercase)
           userData = {
             userId: driverData.userId || null,
             email: driverData.email || null,
             phone: driverData.phone || null,
             dateOfBirth: driverData.dateOfBirth || null,
             gender: driverData.gender || null,
-            firstName: driverData.firstName || null,
-            lastName: driverData.lastName || null,
-            fullName: driverData.fullName || null,
+            firstName: driverData.firstname || driverData.firstName || null,
+            lastName: driverData.lastname || driverData.lastName || null,
+            fullName: driverData.fullname || driverData.fullName || null,
+            address: driverData.address || null,
+            joinDate: driverData.joinDate || null,
             role: driverData.role || role,
           };
 
           needsProfile = !userData.phone;
         } catch (driverError) {
-          console.warn("Cannot get driver info (may need to fill profile):", driverError);
+          console.warn(
+            "Cannot get driver info (may need to fill profile):",
+            driverError
+          );
           // Nếu 403, driver chưa có profile
           userData = {
             userId: userInfo.userId || decodedToken.sub,
@@ -166,15 +207,45 @@ export const AuthProvider = ({ children }) => {
           };
           needsProfile = true;
         }
+      } else if (role === "STAFF") {
+        // 7) Nếu là STAFF, gọi staffAPI.getStaffProfile để lấy thông tin đầy đủ
+        try {
+          const userInfoResponse = await staffAPI.getStaffProfile();
+          const staffData =
+            userInfoResponse.data?.result || userInfoResponse.data;
+
+          userData = {
+            staffId: staffData.staffId,
+            email: staffData.email,
+            fullName: staffData.fullName,
+            phone: staffData.phone,
+            employeeNo: staffData.employeeNo,
+            position: staffData.position,
+            stationId: staffData.stationId,
+            stationName: staffData.stationName,
+            stationAddress: staffData.stationAddress,
+            role: staffData.role || role,
+          };
+        } catch (staffError) {
+          console.warn("Cannot get staff info:", staffError);
+        }
       } else {
         // 6) Nếu là ADMIN hoặc role khác, chỉ dùng thông tin từ token
         userData = {
-          userId: userInfo.userId || decodedToken.sub || decodedToken.userId || decodedToken.id,
+          userId:
+            userInfo.userId ||
+            decodedToken.sub ||
+            decodedToken.userId ||
+            decodedToken.id,
           email: userInfo.email || decodedToken.email || decodedToken.sub,
           role: role,
           firstName: userInfo.firstName || decodedToken.firstName || null,
           lastName: userInfo.lastName || decodedToken.lastName || null,
-          fullName: userInfo.fullName || decodedToken.fullName || decodedToken.name || null,
+          fullName:
+            userInfo.fullName ||
+            decodedToken.fullName ||
+            decodedToken.name ||
+            null,
         };
       }
 
@@ -183,6 +254,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
+      // Store user data in localStorage
       // Store user data in localStorage
       localStorage.setItem("user", JSON.stringify(userData));
       if (userData.role) {
@@ -216,6 +288,7 @@ export const AuthProvider = ({ children }) => {
 
       // Clear ALL localStorage keys to prevent old data from persisting
       localStorage.removeItem("user");
+      localStorage.removeItem("staff");
       localStorage.removeItem("users");
       localStorage.removeItem("role");
       localStorage.removeItem("authToken");
@@ -225,19 +298,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("adminTab");
       localStorage.removeItem("staffTab");
 
-      // Try to call logout API (optional, don't fail if it errors)
-      await authAPI.logout();
+      // KHÔNG gọi API logout vì backend redirect về Google (gây lỗi CORS)
+      // Client-side logout là đủ nếu backend không cung cấp proper logout endpoint
+      console.log("✅ Client-side logout completed");
     } catch (error) {
-      console.warn("Logout API call failed (ignoring):", error);
-      // Continue with logout process even if API call fails
+      console.error("❌ Logout error:", error);
     } finally {
-      // Always redirect to login page
+      // Always redirect to login page (guaranteed to happen)
       window.location.href = "/login";
     }
   };
 
   const updateUser = (userData) => {
     setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const value = {
@@ -271,7 +345,7 @@ export const withAuth = (Component) => {
       return (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <Spinner className="mx-auto text-gray-900" />
             <p className="mt-2 text-gray-600">Loading...</p>
           </div>
         </div>

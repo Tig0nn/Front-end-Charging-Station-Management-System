@@ -30,3 +30,22 @@ export function clearAuth() {
   localStorage.removeItem("authToken");
   localStorage.removeItem(USER_KEY);
 }
+
+export const handleLogout = async () => {
+  try {
+    console.log("🚪 Starting logout process...");
+
+    clearAuth();
+
+    // Clear local storage
+    localStorage.removeItem("refreshToken");
+
+    window.location.href = "/login";
+  } catch (error) {
+    console.error("❌ Logout API error:", error);
+    clearAuth();
+    // Nếu API không tồn tại, vẫn clear local và logout
+    localStorage.clear();
+    window.location.href = "/login";
+  }
+};

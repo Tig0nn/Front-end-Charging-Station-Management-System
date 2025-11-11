@@ -1,115 +1,82 @@
 import "./App.css";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Login from "./Pages/Login";
-import Signup from "./Pages/SignUp";
+import Login from "./pages/Login";
+import Signup from "./pages/SignUp";
+import GoogleCallback from "./pages/GoogleCallback";
 import { MainLayoutAdmin } from "./components/layoutAdmin";
-import { Dashboard, NotFound, Reports, StationsList, UsersList } from "./Pages";
-import MockApiTest from "./Pages/MockApiTest";
-import EVChargingLanding from "./Pages/EVChargingLanding";
+import { NotFound, Reports, StationsList, UsersList } from "./pages";
+import StaffList from "./Pages/admin/StaffList";
+import EVChargingLanding from "./pages/EVChargingLanding";
+import CashTopup from "./pages/staff/CashTopup";
 import MainLayoutDriver from "./components/layoutDriver/MainLayoutDriver";
-import MapPage from "./Pages/driver/MapPage";
-import ChargingSessionPage from "./Pages/driver/ChargingSessionPage";
-import HistoryPage from "./Pages/driver/HistoryPage";
-import ProfileInfoPage from "./Pages/driver/ProfileInfoPage";
-import VehicleInfoPage from "./Pages/driver/VehicleInfoPage";
-import PaymentPage from "./Pages/driver/PaymentPage";
-import AddStation from "./Pages/admin/AddStation";
-import { usersAPI } from "./lib/apiServices";
-import AddUserInfoPage from "./Pages/AddUserInfoPage";
+import MapPage from "./pages/driver/MapPage";
+import ChargingSessionPage from "./pages/driver/ChargingSessionPage";
+import HistoryPage from "./pages/driver/HistoryPage";
+import ProfileInfoPage from "./pages/driver/ProfileInfoPage";
+import MainLayoutStaff from "./components/layoutStaff/MainLayoutStaff";
+import StationOverview from "./pages/staff/StationOverview";
+import VehicleInfoPage from "./pages/driver/VehicleInfoPage";
+import PaymentPage from "./pages/driver/PaymentPage";
+import AddStation from "./pages/admin/AddStation";
+import StaffReports from "./pages/staff/StaffReports";
+import ProfileLayout from "./pages/driver/ProfileLayout";
+import AdminIncidents from "./pages/admin/AdminIncidents";
+import QRCodeManager from "./pages/admin/QRCodeManager";
+import WalletPage from "./Pages/driver/WalletPage";
+import BookingPage from "./pages/driver/BookingPage";
+import AdminChargingPointManagement from "./pages/admin/AdminChargingPointManagement.jsx";
+// import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
+import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
+import { useAuth } from "./hooks/useAuth.jsx";
+import RequireRole from "./components/RequireRole.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
   const loc = useLocation();
+  const { user, loading } = useAuth(); // ✅ Dùng user từ AuthContext thay vì localStorage
 
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
 
-  useEffect(() => {
-    const syncDriverInfo = async () => {
-      // Chỉ sync nếu đã đăng nhập và không ở trang add-info
-      if (!isAuthenticated || loc.pathname.startsWith("/driver/add-info")) {
-        return;
-      }
+  useEffect(() => {}, [isAuthenticated, loc.pathname]);
 
-      // Lấy user hiện tại từ localStorage
-      let user = null;
-      try {
-        user = JSON.parse(localStorage.getItem("user") || "null");
-      } catch {
-        return;
-      }
-
-      const role = String(user?.role || "").toUpperCase();
-
-      // Chỉ sync nếu là DRIVER
-      if (role !== "DRIVER") {
-        return;
-      }
-
-      // Gọi API getDriverInfo để lấy thông tin mới nhất
-      try {
-        console.log("Syncing driver info from API...");
-        const response = await usersAPI.getDriverInfo();
-        console.log("Driver info response:", response.data);
-
-        const driverData = response.data?.result || response.data;
-
-        // Merge driver info vào user hiện tại
-        const updatedUser = {
-          ...user,
-          ...driverData,
-          // Đảm bảo role không bị ghi đè
-          role: user.role,
-        };
-
-        console.log("Updated user with driver info:", updatedUser);
-
-        // Lưu lại vào localStorage
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-      } catch (error) {
-        console.warn("Cannot sync driver info:", error);
-      }
-    };
-
-    syncDriverInfo();
-  }, [isAuthenticated, loc.pathname]);
-
-  // 1) Chưa đăng nhập → về login
+  //Chưa đăng nhập → về login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: loc }} replace />;
   }
 
-  // 2) Đang ở trang add-info → cho qua luôn
-  if (loc.pathname.startsWith("/driver/add-info")) {
-    return children;
-  }
-
-  // 3) Kiểm tra phone từ localStorage
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    user = null;
+  // ✅ Đợi loading xong mới check phone
+  if (loading) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "100vh" }}
+      >
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
   }
 
   const role = String(user?.role || "").toUpperCase();
-  const phone = user?.phone || user?.phoneNum || user?.phoneNumber;
-  const hasPhone = phone && String(phone).trim() !== "";
+  const phone = user?.phone;
 
-  console.log("Guard check - role:", role, "hasPhone:", hasPhone, "phone:", phone);
+  // Check nếu phone tồn tại và không phải null/undefined/empty
+  const hasPhone =
+    phone !== null &&
+    phone !== undefined &&
+    String(phone).trim() !== "" &&
+    String(phone).trim() !== "null";
 
-  // 4) Nếu là DRIVER và không có phone → redirect về add-info
+  // Nếu là DRIVER và không có phone → redirect về add-info
   if (role === "DRIVER" && !hasPhone) {
-    console.log("❌ No phone found, redirecting to add-info");
     return <Navigate to="/driver/add-info" replace />;
   }
 
-  // 5) Có phone hoặc không phải DRIVER → cho qua
-  console.log("✅ Allowing access to:", loc.pathname);
   return children;
 }
-
 
 function App() {
   return (
@@ -118,9 +85,17 @@ function App() {
       <Route path="/" element={<EVChargingLanding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
       {/* Trang bổ sung thông tin: để ngoài guard */}
-      <Route path="/driver/add-info" element={<AddUserInfoPage />} />
+      <Route
+        path="/driver/add-info"
+        element={
+          <RequireRole allowedRoles={["DRIVER"]}>
+            <AddUserInfoPage />
+          </RequireRole>
+        }
+      />
 
       {/* Legacy Admin Route */}
 
@@ -128,53 +103,99 @@ function App() {
       <Route
         path="/admin/*"
         element={
-          <MainLayoutAdmin>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-
-              {/* Stations Routes */}
-              <Route path="/stations" element={<StationsList />} />
-              <Route path="/stations/add" element={<AddStation />} />
-
-              {/* Users Routes */}
-              <Route path="/users" element={<UsersList />} />
-
-              {/* Reports Routes */}
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/reports/*" element={<Reports />} />
-
-              {/* Mock API Test Page */}
-              <Route path="/mock-test" element={<MockApiTest />} />
-
-              {/* 404 Page */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </MainLayoutAdmin>
+          <RequireRole allowedRoles={["ADMIN"]}>
+            <MainLayoutAdmin>
+              <Routes>
+                {/* Default route - Phân tích */}
+                <Route path="/" element={<Reports />} />
+                {/* Reports Routes - Trang phân tích */}
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/reports/*" element={<Reports />} />
+                {/* Stations Routes */}
+                <Route path="/stations" element={<StationsList />} />
+                <Route path="/stations/add" element={<AddStation />} />{" "}
+                {/* Users Routes */}
+                <Route path="/users" element={<UsersList />} />
+                {/* Staff Routes */}
+                <Route path="/staffs" element={<StaffList />} />
+                {/* Incidents */}
+                <Route path="/incidents" element={<AdminIncidents />} />
+                {/* QR Code Manager */}
+                <Route path="/qr-codes" element={<QRCodeManager />} />
+                {/* Charging Point Management */}
+                <Route
+                  path="/charging-points"
+                  element={<AdminChargingPointManagement />}
+                />
+                {/* 404 Page */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MainLayoutAdmin>
+          </RequireRole>
         }
       />
       <Route
-        path="/driver/*"
+        path="/staff/*"
         element={
-          <RequireDriverInfo>
-            <MainLayoutDriver>
+          <RequireRole allowedRoles={["STAFF"]}>
+            // TODO: Thêm Guard kiểm tra vai trò Staff nếu cần
+            <MainLayoutStaff>
               <Routes>
-                {/* Route mặc định sẽ là trang bản đồ */}
-                <Route path="/" element={<MapPage />} />
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/session" element={<ChargingSessionPage />} />
-                <Route path="/history" element={<HistoryPage />} />
+                {/* Route mặc định sẽ là trang trạm sạc */}
+                <Route
+                  index
+                  element={<Navigate to="/staff/station" replace />}
+                />
+                <Route path="/station" element={<StationOverview />} />
+                <Route path="/cash-topup" element={<CashTopup />} />
+                {/* Các route khác cho Staff */}
 
-                {/* Các route con của trang hồ sơ */}
-                <Route path="/profile/info" element={<ProfileInfoPage />} />
-                <Route path="/profile/vehicle" element={<VehicleInfoPage />} />
-                <Route path="/profile/payment" element={<PaymentPage />} />
+                <Route path="/reports" element={<StaffReports />} />
 
-                {/* 404 Page for Driver section */}
+                {/* 404 Page for Staff section */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </MainLayoutDriver>
-          </RequireDriverInfo>
+            </MainLayoutStaff>
+          </RequireRole>
+        }
+      />
+
+      <Route
+        path="/driver/*"
+        element={
+          <RequireRole allowedRoles={["DRIVER"]}>
+            <RequireDriverInfo>
+              <MainLayoutDriver>
+                <Routes>
+                  {/* Route mặc định sẽ là trang bản đồ */}
+                  <Route
+                    index
+                    element={<Navigate to="/driver/map" replace />}
+                  />
+                  <Route path="/map" element={<MapPage />} />
+                  <Route path="/session" element={<ChargingSessionPage />} />
+                  <Route
+                    path="/session/:sessionId"
+                    element={<ChargingSessionPage />}
+                  />
+                  <Route path="/history/*" element={<HistoryPage />} />{" "}
+                  {/* Booking route - moved out from profile */}
+                  <Route path="/booking" element={<BookingPage />} />
+                  {/* Profile Routes with nested routes */}
+                  <Route path="/profile/*" element={<ProfileLayout />}>
+                    <Route index element={<Navigate to="info" replace />} />
+                    <Route path="info" element={<ProfileInfoPage />} />
+                    <Route path="vehicle" element={<VehicleInfoPage />} />
+                    <Route path="payment" element={<PaymentPage />} />
+                  </Route>
+                  {/* Wallet route */}
+                  <Route path="/wallet" element={<WalletPage />} />
+                  {/* 404 Page for Driver section */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MainLayoutDriver>
+            </RequireDriverInfo>
+          </RequireRole>
         }
       />
       {/* Catch all other routes */}

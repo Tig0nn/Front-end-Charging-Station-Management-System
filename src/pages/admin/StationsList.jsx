@@ -10,9 +10,10 @@ import {
   Form,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { stationsAPI } from "../../lib/apiServices";
-import { staffAPI } from "../../lib/apiServices";
+import { stationsAPI, staffAPI } from "../../lib/apiServices";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
 const StationsList = () => {
   const [stations, setStations] = useState([]);
@@ -23,13 +24,28 @@ const StationsList = () => {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
 
-  // State danh sách nhân viên
-  const [searchText, setSearchText] = useState([]);
-  // State tìm kiếm nhân viên
-  const [searchStaff, setSearchStaff] = useState("");
-  //quản lý danh sách nhân viên
-  const [staffs, setStaffs] = useState([]);
-  const [loadingStaff, setLoadingStaff] = useState(true);
+  // State quản lý search nhân viên
+  const [searchText, setSearchText] = useState(""); // text nhập vào ô tìm kiếm
+  const [searchStaff, setSearchStaff] = useState([]); // danh sách nhân viên hiển thị
+  const [staffs, setStaffs] = useState([]); // toàn bộ danh sách nhân viên
+  const [selectedStaffId, setSelectedStaffId] = useState(""); // nhân viên được chọn
+
+  // Hàm tải lại danh sách trạm
+  const fetchStations = async () => {
+    try {
+      setLoading(true);
+      const res = await stationsAPI.getAllDetails();
+      console.log("API raw response:", res.data);
+      const data = res.data.result;
+      console.log("Danh sách trạm sạc:", data);
+      setStations(data);
+    } catch (err) {
+      console.error(" Lỗi tải trạm sạc:", err);
+      toast.error("Không thể tải danh sách trạm sạc.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Khi bấm nút "Chỉnh sửa"
   const handleEditClick = (station) => {
@@ -54,7 +70,7 @@ const StationsList = () => {
       };
 
       await stationsAPI.update(editingId, dataToSend);
-      alert("Cập nhật thành công!");
+      toast.success("Cập nhật trạm sạc thành công!");
 
       setStations((prev) =>
         prev.map((s) => (s.stationId === editingId ? dataToSend : s))
@@ -62,7 +78,7 @@ const StationsList = () => {
       setEditingId(null);
     } catch (err) {
       console.error("Lỗi khi cập nhật:", err);
-      alert("Không thể cập nhật trạm sạc!");
+      toast.error("Không thể cập nhật trạm sạc. Vui lòng thử lại.");
     }
   };
 
@@ -74,16 +90,15 @@ const StationsList = () => {
 
   // Gọi api xóa trạm
   const handleDelete = async (stationId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa trạm sạc này không?"))
-      return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa trạm sạc này không?")) return;
 
     try {
       await stationsAPI.delete(stationId);
-      alert(" Xóa trạm sạc thành công!");
+      toast.success("Xóa trạm sạc thành công!");
       setStations((prev) => prev.filter((s) => s.stationId !== stationId));
     } catch (err) {
       console.error(" Lỗi khi xóa trạm:", err);
-      alert("Không thể xóa trạm sạc. Vui lòng thử lại!");
+      toast.error("Không thể xóa trạm sạc. Vui lòng thử lại.");
     }
   };
 
@@ -92,44 +107,33 @@ const StationsList = () => {
     const fetchStaff = async () => {
       try {
         const res = await staffAPI.getAllStaffs();
-        setStaffs(res.data.result || []);
-        setSearchStaff(res.data.result || []);
+        const allStaffs = res.data.result || [];
+        console.log("Danh sách nhân viên:", allStaffs);
+        setStaffs(allStaffs);
+        setSearchStaff(allStaffs); // mặc định hiển thị toàn bộ
       } catch (err) {
         console.error("Lỗi khi tải danh sách nhân viên:", err);
-      } finally {
-        setLoadingStaff(false);
       }
     };
     fetchStaff();
   }, []);
 
-  //  Lọc danh sách staff khi searchText thay đổi
+  // Lọc danh sách khi searchText thay đổi
   useEffect(() => {
-    const filtered = staffs.filter((s) => {
-      const name = (s.fullName || s.name || "").toLowerCase();
-      return name.includes(searchText.toLowerCase());
-    });
-    setSearchStaff(filtered);
+    if (searchText.trim() === "") {
+      setSearchStaff(staffs); // hiển thị toàn bộ khi rỗng
+    } else {
+      const filtered = staffs.filter((s) =>
+        (s.fullName || s.name || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
+      );
+      setSearchStaff(filtered);
+    }
   }, [searchText, staffs]);
 
   //  Gọi API lấy danh sách trạm khi component mount
   useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        setLoading(true);
-        const res = await stationsAPI.getAll(1, 100);
-        console.log("API raw response:", res.data);
-        // Nếu backend trả về dạng {data: [...]}
-        const data = res.data.result;
-        console.log("Danh sách trạm sạc:", data);
-        setStations(data);
-      } catch (err) {
-        console.error(" Lỗi tải trạm sạc:", err);
-        setError("Không thể tải danh sách trạm sạc.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStations();
   }, []);
 
@@ -168,7 +172,7 @@ const StationsList = () => {
   if (loading) {
     return (
       <div className="text-center py-5">
-        <Spinner animation="border" variant="primary" />
+        <LoadingSpinner />
         <div className="mt-2 text-muted">Đang tải danh sách trạm...</div>
       </div>
     );
@@ -184,19 +188,44 @@ const StationsList = () => {
             Theo dõi và quản lý tất cả trạm sạc trong hệ thống
           </p>
         </div>
-        <Button
-          as={Link}
-          to="/admin/stations/add"
-          variant="primary"
-          className="d-flex align-items-center gap-2"
-        >
-          <i className="bi bi-plus-lg"></i>
-          Thêm trạm sạc
-        </Button>
+        <div className="d-flex gap-2">
+          <Button
+            onClick={fetchStations}
+            disabled={loading}
+            className="d-flex align-items-center gap-2"
+            style={{
+              backgroundColor: "#22c55e",
+              borderColor: "#22c55e",
+              color: "white",
+            }}
+          >
+            {loading ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" />
+                <span>Đang tải...</span>
+              </>
+            ) : (
+              <>
+                <i className="bi bi-arrow-clockwise"></i>
+                <span>Làm mới</span>
+              </>
+            )}
+          </Button>
+          <Button
+            as={Link}
+            to="/admin/stations/add"
+            variant="dark"
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="bi bi-plus-lg"></i>
+            Thêm trạm sạc
+          </Button>
+        </div>
       </div>
 
       {/* Error */}
-      {error && <div className="alert alert-danger">{error}</div>}
+      {/* {error && <div className="alert alert-danger">{error}</div>} */}
+      {/* Lỗi hiển thị bằng toast (react-hot-toast) */}
 
       {/* Bảng trạm sạc */}
       <Card className="border-0 shadow-sm">
@@ -210,7 +239,6 @@ const StationsList = () => {
                   <th className="px-2 py-3 text-center">Điểm sạc</th>
                   <th className="px-2 py-3 text-end">Doanh thu</th>
                   <th className="px-2 py-3 text-center">Sử dụng</th>
-                  <th className="px-2 py-3">Chủ</th>
                   <th className="px-2 py-3 text-center">Nhân viên</th>
                   <th className="px-4 py-3 text-center">Thao tác</th>
                 </tr>
@@ -276,11 +304,15 @@ const StationsList = () => {
                       <td className="text-center small">
                         <>
                           <div className="fw-semibold text-success">
-                            Tổng: {station.totalPoints || 0}
+                            Tổng: {station.totalChargingPoints || 0}
                           </div>
                           <div className="mt-1">
-                            Hoạt động: {station.activePoints || 0} / Bảo trì:{" "}
-                            {station.maintenancePoints || 0}
+                            Hoạt động: {station.activeChargingPoints || 0}{" "}
+                            <br />
+                            Bảo trì: {station.maintenanceChargingPoints ||
+                              0}{" "}
+                            <br /> Ngưng hoạt động:{" "}
+                            {station.offlineChargingPoints || 0}
                           </div>
                         </>
                       </td>
@@ -292,28 +324,17 @@ const StationsList = () => {
                       {/* Thanh tiến trình sử dụng */}
                       <td className="text-center">
                         <ProgressBar
-                          now={station.utilization || 0}
+                          now={station.usagePercent || 0}
                           variant={getUtilizationColor(
-                            station.utilization || 0
+                            station.usagePercent || 0
                           )}
                           style={{ width: "80px", height: "6px" }}
                           className="mx-auto"
                         />
-                        <small>{station.utilization || 0}%</small>
+                        <small>{station.usagePercent || 0}%</small>
                       </td>
 
-                      <td>
-                        {editingId === station.stationId ? (
-                          <Form.Control
-                            type="text"
-                            name="operatorName"
-                            value={editData.operatorName || ""}
-                            onChange={handleChangeEdit}
-                          />
-                        ) : (
-                          station.operatorName || "Chưa có"
-                        )}
-                      </td>
+                    
 
                       {/* Chức năng tìm kiếm nhân viên */}
                       <td className="text-center">
@@ -328,12 +349,9 @@ const StationsList = () => {
                             />
                             <Form.Select
                               name="staffId"
-                              value={searchStaff.staffId}
+                              value={selectedStaffId}
                               onChange={(e) =>
-                                setSearchStaff({
-                                  ...searchStaff,
-                                  staffId: e.target.value,
-                                })
+                                setSelectedStaffId(e.target.value)
                               }
                               required
                             >

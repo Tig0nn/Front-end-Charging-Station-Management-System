@@ -3,9 +3,14 @@ import { FaCreditCard, FaWallet } from "react-icons/fa";
 
 const PaymentMethodItem = ({ method, isSelected, onSelect }) => {
   const getIcon = () => {
-    if (method.name.toLowerCase().includes("momo")) {
+    // Check method type from backend
+    if (
+      method.type === "EWALLET" ||
+      method.name.toLowerCase().includes("momo")
+    ) {
       return <FaWallet className="w-8 h-8 text-purple-600" />;
     }
+    // Default to credit card icon for CREDIT_CARD, DEBIT_CARD, etc.
     return <FaCreditCard className="w-8 h-8 text-blue-600" />;
   };
 
@@ -23,11 +28,11 @@ const PaymentMethodItem = ({ method, isSelected, onSelect }) => {
           {getIcon()}
         </div>
         <div>
-          <p className="font-semibold text-gray-800">
-            {method.number || method.name}
-          </p>
+          <p className="font-semibold text-gray-800">{method.name}</p>
           <p className="text-sm text-gray-500">
-            {method.expiry || method.balance}
+            {method.maskedToken
+              ? `**** ${method.maskedToken}`
+              : method.balance || "Sẵn sàng thanh toán"}
           </p>
         </div>
       </div>
@@ -37,7 +42,7 @@ const PaymentMethodItem = ({ method, isSelected, onSelect }) => {
         </span>
       ) : (
         !isSelected &&
-        method.name.toLowerCase().includes("momo") && (
+        method.type === "EWALLET" && (
           <span className="text-blue-600 text-sm font-semibold">Kết nối</span>
         )
       )}

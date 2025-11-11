@@ -1,218 +1,246 @@
 // Unified API Services - Single file for all API calls
-import { mockApi } from "./mockApi.js";
 import { api } from "./api.js";
 
-// Environment configuration
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === "true" || false;
-
-// Real API services
-const realApiServices = {
+// API services
+const apiServices = {
   auth: {
     login: (credentials) => api.post("/api/auth/login", credentials),
-    getProfile: () => api.get("/api/auth/profile"),
-    logout: () => api.post("/api/auth/logout"),
+    introspect: (token) => api.post("/api/auth/introspect", { token }),
+
+    // Google OAuth endpoints
+    googleCallback: () => api.get("/api/auth/google/callback"),
   },
 
   users: {
-    register: (userData) => api.post("/api/users/register", userData),
-    getDriverInfo: () => {
-      console.log(
-        "🔍 Calling getDriverInfo endpoint: /api/users/driver/myInfo"
-      );
-      return api.get("/api/users/driver/myInfo");
-    },
-    updateDriverInfo: (driverData) => {
-      console.log(
-        "🔄 Calling updateDriverInfo endpoint: /api/users/driver/myInfo"
-      );
-      console.log("📝 Data to update:", driverData);
-      return api.patch("/api/users/driver/myInfo", driverData);
-    },
-
-    // Get user profile by ID (requires Bearer token)
-    getUserById: (userId) => api.get(`/api/users/${userId}`),
-
-    // Admin endpoints
-    getAll: () => api.get("/api/users"), // Get all drivers (Admin only)
-    deleteUser: (id) => api.delete(`/api/users/${id}`),
-
-    // Update specific user by ID (Admin only)
-    updateUserById: (userId, userData) =>
-      api.patch(`/api/users/${userId}`, userData),
+    register: (userData) => api.post("/api/users", userData),
+    getProfile: () => api.get("/api/users/profile"),
+    updateDriverInfo: (driverData) =>
+      api.patch("/api/users/profile", driverData),
+    getStaff: () => api.get("/api/users/staffs"),
+    // Get all drivers (Admin only)
+    getDriver: () => api.get("/api/users/drivers"),
+    // Lookup driver by email (Staff/Admin)
+    lookupDriverByEmail: (email) =>
+      api.get(`/api/users/drivers/lookup?email=${email}`),
+  },
+  //Admin
+  systemOverview: {
+    getOverview: () => api.get("/api/dashboard/overview"),
   },
 
-  systemOverview: {
-    getOverview: () => api.get("/api/overview"),
+  admin: {
+    // Get all incidents from all stations (Admin only)
+    getAllIncidents: () => api.get("/api/incidents"),
+    updateIncidentStatus: (status, incidentId) =>
+      api.patch(`/api/incidents/${incidentId}`, { status }),
+  },
+
+  dashboard: {
+    // Get current plan for user
+    getCurrentPlan: () => api.get("/api/plans/my-plan"),
   },
 
   plans: {
-    getAll: () => api.get("/api/plans"),
-    // Create general plan
+    getPlans: () => {
+      return api.get(`/api/plans`);
+    },
     create: (planData) => api.post("/api/plans", planData),
-    // Create prepaid plan
-    createPrepaid: (planData) => api.post("/api/plans/prepaid", planData),
-    // Create postpaid plan
-    createPostpaid: (planData) => api.post("/api/plans/postpaid", planData),
-    // Create VIP plan
-    createVip: (planData) => api.post("/api/plans/vip", planData),
-    // Get user's current subscription
-    getCurrentSubscription: () => api.get("/api/plans/current"),
-    // Get all available plans
-    getAvailable: () => api.get("/api/plans/available"),
+    update: (planId, planData) => api.put(`/api/plans/${planId}`, planData),
+    delete: (planId) => api.delete(`/api/plans/${planId}`),
+    // Subscribe to a plan - payment from wallet
+    subscribe: (planId) => api.post(`/api/plans/subscribe/${planId}`),
+  },
+
+  //cần xem lại
+  subscriptions: {
+    // Get driver's current active subscription
+    getActive: () => {
+      console.log(
+        "🔍 Calling getActive subscription endpoint: /api/subscriptions/active"
+      );
+      return api.get("/api/subscriptions/active");
+    },
   },
 
   payments: {
-    // Get user's payment methods
     getPaymentMethods: () => api.get("/api/payments/methods"),
-    // Add new payment method
-    addPaymentMethod: (methodData) =>
-      api.post("/api/payments/methods", methodData),
-    // Remove payment method
-    removePaymentMethod: (methodId) =>
-      api.delete(`/api/payments/methods/${methodId}`),
-    // Set default payment method
-    setDefaultPaymentMethod: (methodId) =>
-      api.patch(`/api/payments/methods/${methodId}/default`),
-    // Process payment
-    processPayment: (paymentData) =>
-      api.post("/api/payments/process", paymentData),
-    // Get payment history
-    getHistory: () => api.get("/api/payments/history"),
+
+    //cần sửa
+    askForPayment: (sessionId) =>
+      api.post(`/api/payments/cash/request`, { sessionId }),
+  },
+  wallet: {
+    // Lấy thông tin dashboard ví điện tử
+    walletDashboard: () => api.get("/api/wallet/dashboard"),
+    // Lấy lịch sử giao dịch ví điện tử
+    getTransactionHistory: () => api.get("/api/wallet/history"),
+    // Nạp tiền vào ví qua ZaloPay
+    topupZaloPay: (amount) => api.post("/api/wallet/topup/zalopay", { amount }),
+    // Nạp tiền mặt vào ví (Staff only)
+    cashTopup: (data) => api.post("/api/wallet/topup/cash", data),
   },
 
   revenue: {
-    // Lấy doanh thu theo tuần
-    getWeekly: (year, week) =>
-      api.get(`/api/revenue/weekly?year=${year}&week=${week}`),
+    // 🆕 Unified revenue endpoint - Thay thế tất cả các endpoint cũ
+    getRevenues: (params) => {
+      const { period, year, month, day, week } = params;
+      const queryParams = new URLSearchParams();
 
-    // Lấy doanh thu theo tháng
-    getMonthly: (year, month) =>
-      api.get(`/api/revenue/monthly?year=${year}&month=${month}`),
+      queryParams.append("period", period); // daily, weekly, monthly, yearly
+      if (year) queryParams.append("year", year);
+      if (month) queryParams.append("month", month);
+      if (day) queryParams.append("day", day);
+      if (week) queryParams.append("week", week);
 
-    // Lấy doanh thu theo năm
-    getYearly: (year) => api.get(`/api/revenue/yearly?year=${year}`),
+      console.log(
+        `📊 Calling revenue API: /api/revenues?${queryParams.toString()}`
+      );
+      return api.get(`/api/revenues?${queryParams.toString()}`);
+    },
   },
 
   // =========================
   // 🚉 Stations API Services
   // =========================
   stations: {
-    // Lấy tổng quan tất cả trạm
-    getOverview: () => api.get("/api/stations/overview"),
-
-    // Lấy danh sách chi tiết + filter theo status
-    getAll: (page = 1, limit = 10) =>
-      api.get(`/api/stations/overview?page=${page}&limit=${limit}`),
-
-    // Cập nhật trạng thái hoạt động (status)
-    updateStatus: (stationId, status) =>
-      api.patch(`/api/stations/${stationId}/status?status=${status}`),
-
-    // Kích hoạt trạm
-    activate: (stationId) => api.patch(`/api/stations/${stationId}/activate`),
-
-    // Vô hiệu hóa trạm
-    deactivate: (stationId) =>
-      api.patch(`/api/stations/${stationId}/deactivate`),
-
-    // Bật/tắt trạng thái trạm (toggle)
-    toggle: (stationId) => api.patch(`/api/stations/${stationId}/toggle`),
-
-    // =========================
-    // 👥 Staff Management
-    // =========================
-
-    // Lấy danh sách nhân viên của một trạm
-    getStaffByStation: (stationId) =>
-      api.get(`/api/stations/${stationId}/staff`),
-
-    // Gán nhân viên vào trạm
-    assignStaff: (stationId, staffId) =>
-      api.post(`/api/stations/${stationId}/staff/${staffId}`),
-
-    // Xóa nhân viên khỏi trạm
-    removeStaff: (stationId, staffId) =>
-      api.delete(`/api/stations/${stationId}/staff/${staffId}`),
-
-    // Lấy danh sách nhân viên chưa gán trạm
-    getUnassignedStaff: () => api.get("/api/stations/staff/unassigned"),
+    getAllDetails: () => api.get("/api/stations?view=detail"),
+    create: (stationData) => api.post("/api/stations", stationData),
     update: (id, stationData) => api.put(`/api/stations/${id}`, stationData),
+    delete: (stationId) => api.delete(`/api/stations/${stationId}`),
+    getStation: () => api.get(`/api/stations?view=basic`),
+  },
+  chargingPoints: {
+    deleteChargingPoint: (stationId, chargingPointId) =>
+      api.delete(
+        `/api/stations/${stationId}/charging-points/${chargingPointId}`
+      ),
+    addChargingPoint: (stationId, chargingPointData) =>
+      api.post(`/api/stations/${stationId}/charging-points`, chargingPointData),
+    // Lấy danh sách trụ sạc của một trạm
+    getChargersByStation: (stationId) =>
+      api.get(`/api/stations/${stationId}/charging-points`),
+
+    getChargersMyStation: () =>
+      api.get("/api/stations/my-station/charging-points"),
+    startCharging: (data) => api.post(`/api/sessions`, data),
+    //giả lập sạc
+    simulateCharging: (sessionId) => api.get(`/api/sessions/${sessionId}`),
+    // Cập nhật trạng thái trụ sạc
+    updateStatus: (power, stationId, chargingPointId, status) =>
+      api.put(`/api/stations/${stationId}/charging-points/${chargingPointId}`, {
+        chargingPower: power,
+        status: status,
+      }),
+    //  Dừng sạc
+    stopCharging: (sessionId) => api.post(`/api/sessions/${sessionId}/stop`),
   },
 
-  // =========================
-  // 🚗 Vehicles API Services
-  // =========================
   vehicles: {
-    // Lấy danh sách tất cả xe của driver hiện tại
-    getMyVehicles: () => {
-      console.log(
-        "🔍 Calling getMyVehicles endpoint: /api/vehicles/my-vehicles"
-      );
-      return api.get("/api/vehicles/my-vehicles");
-    },
+    getBrands: () => api.get("/api/vehicles/brands"),
+    lookUp: (plate) => api.get(`/api/vehicles/lookup?licensePlate=${plate}`),
 
-    // Tạo xe mới cho driver hiện tại
-    createVehicle: (vehicleData) => {
-      console.log("➕ Calling createVehicle endpoint: /api/vehicles");
-      console.log("📝 Vehicle data to create:", vehicleData);
-      return api.post("/api/vehicles", vehicleData);
-    },
+    getModelsByBrand: (brand) =>
+      api.get(`/api/vehicles/brands/${brand}/models`),
+    getMyVehicles: () => api.get("/api/vehicles"),
 
-    // Lấy chi tiết một xe của driver hiện tại
-    getVehicleById: (vehicleId) => {
-      console.log(
-        `🔍 Calling getVehicleById endpoint: /api/vehicles/my-vehicles/${vehicleId}`
-      );
-      return api.get(`/api/vehicles/my-vehicles/${vehicleId}`);
-    },
+    createVehicle: (vehicleData) => api.post("/api/vehicles", vehicleData),
+    getVehicleById: (vehicleId) => api.get(`/api/vehicles/${vehicleId}`),
+    updateVehicle: (vehicleId, vehicleData) =>
+      api.put(`/api/vehicles/${vehicleId}`, vehicleData),
+    deleteVehicle: (vehicleId) => api.delete(`/api/vehicles/${vehicleId}`),
+  },
+  chargingSessions: {
+    // Lịch sử sạc của driver hiện tại
+    getMySessions: () => api.get("/api/sessions"),
+  },
 
-    // Cập nhật thông tin xe (partial update)
-    updateVehicle: (vehicleId, vehicleData) => {
-      console.log(
-        `🔄 Calling updateVehicle endpoint: /api/vehicles/${vehicleId}`
-      );
-      console.log("📝 Vehicle data to update:", vehicleData);
-      return api.put(`/api/vehicles/${vehicleId}`, vehicleData);
-    },
+  // Booking API
+  bookings: {
+    // Check availability before creating booking
+    checkAvailability: (chargingPointId, bookingTime, vehicleId) =>
+      api.get(
+        `/api/bookings/availability?chargingPointId=${chargingPointId}&bookingTime=${bookingTime}&vehicleId=${vehicleId}`
+      ),
+    // Create a new booking
+    createBooking: (bookingData) => api.post("/api/bookings", bookingData),
+    // Get all bookings for current user
+    getMyBookings: () => api.get("/api/bookings"),
+    // Get booking by ID
+    getBookingById: (bookingId) => api.get(`/api/bookings/${bookingId}`),
+    // Cancel booking
+    cancelBooking: (bookingId) => api.delete(`/api/bookings/${bookingId}`),
+  },
 
-    // Xóa xe
-    deleteVehicle: (vehicleId) => {
-      console.log(
-        `🗑️ Calling deleteVehicle endpoint: /api/vehicles/${vehicleId}`
-      );
-      return api.delete(`/api/vehicles/${vehicleId}`);
-    },
-
-    // Admin endpoint: Lấy xe của một driver cụ thể
-    getVehiclesByDriverId: (driverId) => {
-      console.log(
-        `🔍 Admin calling getVehiclesByDriverId endpoint: /api/vehicles/driver/${driverId}`
-      );
-      return api.get(`/api/vehicles/driver/${driverId}`);
-    },
+  // ZaloPay payment integration
+  zalopay: {
+    createPayment: (sessionId) =>
+      api.post(`/api/payments/zalopay?sessionId=${sessionId}`),
+    callback: (callbackData) =>
+      api.post("/api/payment/zalopay-callback", callbackData),
   },
 
   staff: {
-    getAllStaffs: () => api.get("/api/stations/staff/all"),
+    getStaffProfile: () => api.get("/api/users/profile"),
+    getStaffDashboard: () => api.get("/api/dashboard/staff"),
+    getStaffReport: () => api.get("/api/incidents/my-station"),
+    getAllStaffs: () => api.get("/api/users/staffs"),
+    getChargingPoint: () => api.get("/api/stations/my-station/charging-points"),
+    submitReport: (reportData) => api.post("/api/incidents", reportData),
+
+    //backend đổi lại thành patch
+    approvePendingPaymentRequest: (paymentId) =>
+      // api.put(`/api/cash-payments/staff/confirm/${paymentId}`),
+      api.patch(`/api/payments/cash/${paymentId}/confirm`),
+    //cần xem lại đã nâng cấp
+    getPendingPaymentRequests: () =>
+      api.get("/api/payments/sessions?status=UNPAID"),
+  },
+  walletAPI: {
+    // Lấy thông tin tổng quan dashboard ví
+    getDashboard: () => api.get("/api/wallet/dashboard"),
+
+    // Lấy số dư ví
+    getBalance: () => api.get("/api/wallet/balance"),
+
+    // Lấy lịch sử giao dịch ví (có filter)
+    getHistory: (filterType) => {
+      const params = new URLSearchParams();
+      if (filterType && filterType !== "ALL") {
+        params.append("type", filterType);
+      }
+      return api.get(`/api/wallet/history?${params.toString()}`);
+    },
+
+    // Tạo đơn nạp tiền ZaloPay
+    createZaloPayTopup: (amount) =>
+      api.post("/api/wallet/topup/zalopay", { amount }),
+
+    // ❗️ API THANH TOÁN BẰNG VÍ (TẠM GIẢ ĐỊNH) ❗️
+    // Backend có thể dùng 1 API khác, ví dụ: /api/payments/wallet/pay
+    // Vui lòng xác nhận lại đường dẫn API này!
+    payForSession: (sessionId) =>
+      api.post(`/api/wallet/pay-session`, { sessionId }),
   },
 };
-
-// Export the appropriate API based on configuration
-export const apiServices = USE_MOCK_API ? mockApi : realApiServices;
 
 // Individual exports for easier imports
 export const staffAPI = apiServices.staff;
 export const authAPI = apiServices.auth;
 export const usersAPI = apiServices.users;
 export const systemOverviewAPI = apiServices.systemOverview;
+export const adminAPI = apiServices.admin;
+export const dashboardAPI = apiServices.dashboard;
 export const plansAPI = apiServices.plans;
+export const subscriptionsAPI = apiServices.subscriptions;
 export const paymentsAPI = apiServices.payments;
 export const revenueAPI = apiServices.revenue;
 export const stationsAPI = apiServices.stations;
 export const vehiclesAPI = apiServices.vehicles;
+export const chargingPointsAPI = apiServices.chargingPoints;
+export const chargingSessionsAPI = apiServices.chargingSessions;
+export const bookingsAPI = apiServices.bookings;
+export const zalopayAPI = apiServices.zalopay;
+export const walletAPI = apiServices.wallet;
 
-// Helper function to check if using mock API
-export const isMockMode = () => USE_MOCK_API;
-
-// Console log to show which mode is active
-console.log(`🔧 API Mode: ${USE_MOCK_API ? "🎭 Mock API" : "🌐 Real API"}`);
+// Export default
+export default apiServices;
