@@ -29,6 +29,10 @@ const UsersList = () => {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
 
+  // User detail modal state
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
   // SỬA 1: Cập nhật state của form plan theo API spec
   const [planFormData, setPlanFormData] = useState({
     name: "",
@@ -88,8 +92,8 @@ const UsersList = () => {
         const res = await usersAPI.getDriver();
         setUsers(res?.data?.result || []);
       } catch (err) {
-        console.error("Lỗi khi tải danh sách người dùng:", err);
-        setError("Không thể tải danh sách người dùng");
+        console.error("Lỗi khi tải danh sách tài xế:", err);
+        setError("Không thể tải danh sách tài xế");
       } finally {
         setLoading(false);
       }
@@ -285,12 +289,23 @@ const UsersList = () => {
     );
   };
 
+  // Handle show user detail modal
+  const handleShowUserDetail = (user) => {
+    setSelectedUser(user);
+    setShowUserDetailModal(true);
+  };
+
+  const handleCloseUserDetail = () => {
+    setShowUserDetailModal(false);
+    setSelectedUser(null);
+  };
+
   return (
     <Container className="py-4">
       <Row>
         <Col>
-          <h2 className="fw-bold">Quản lý người dùng</h2>
-          <p className="text-muted">Danh sách và thông tin người dùng</p>
+          <h2 className="fw-bold">Quản lý tài xế</h2>
+          <p className="text-muted">Danh sách và thông tin tài xế</p>
         </Col>
       </Row>
 
@@ -351,6 +366,7 @@ const UsersList = () => {
                         variant="light"
                         size="sm"
                         className="me-2 border text-dark"
+                        onClick={() => handleShowUserDetail(user)}
                       >
                         Chi tiết
                       </Button>
@@ -587,6 +603,140 @@ const UsersList = () => {
             </Button>
           </Modal.Footer>
         </Form>
+      </Modal>
+
+      {/* User Detail Modal */}
+      <Modal
+        show={showUserDetailModal}
+        onHide={handleCloseUserDetail}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton className="border-bottom">
+          <Modal.Title className="fw-bold">
+            Thông tin chi tiết tài xế
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          {selectedUser && (
+            <div>
+              {/* Personal Information */}
+              <div className="mb-4">
+
+                <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                  <i className="bi bi-person-circle me-2"></i>
+                  Thông tin cá nhân
+                </h5>
+                <Row className="g-3">
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Họ và tên</small>
+                      <div className="fw-semibold">{selectedUser.fullName || "—"}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Email</small>
+                      <div className="fw-semibold">{selectedUser.email || "—"}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Số điện thoại</small>
+                      <div className="fw-semibold">{selectedUser.phone || "—"}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Ngày tham gia</small>
+                      <div className="fw-semibold">{selectedUser.joinDate || "—"}</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Subscription Information */}
+              <div className="mb-4">
+
+                <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                  <i className="bi bi-star-fill me-2"></i>
+                  Thông tin gói dịch vụ
+                </h5>
+                <Row className="g-3">
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Gói hiện tại</small>
+                      <div>{getPlanBadge(selectedUser.planName)}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Trạng thái</small>
+                      <div>{getStatusBadge(selectedUser.status)}</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Usage Statistics */}
+              <div className="mb-4">
+
+                <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                  <i className="bi bi-graph-up me-2"></i>
+                  Thống kê sử dụng
+                </h5>
+                <Row className="g-3">
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Tổng số phiên sạc</small>
+
+                      <div className="fw-semibold fs-4" style={{ color: "#22c55e" }}>
+                        {selectedUser.sessionCount ?? 0}
+                      </div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+
+                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1">Tổng chi tiêu</small>
+
+                      <div className="fw-semibold fs-4" style={{ color: "#22c55e" }}>
+                        {(selectedUser.totalSpent ?? 0).toLocaleString("vi-VN")}₫
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Additional Info */}
+              {selectedUser.address && (
+                <div className="mb-3">
+
+                  <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                    <i className="bi bi-geo-alt-fill me-2"></i>
+                    Địa chỉ
+                  </h5>
+
+                  <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                    <div className="fw-semibold">{selectedUser.address}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-top">
+          <Button variant="secondary" onClick={handleCloseUserDetail}>
+            Đóng
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );

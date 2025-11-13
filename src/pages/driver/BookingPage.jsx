@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import apiServices from "../../lib/apiServices";
 import toast from "react-hot-toast";
 import "./BookingPage.css";
+import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 // Thay hero image bằng asset trong project (hoặc đổi thành đường dẫn public)
 // Ví dụ: dùng ảnh có sẵn trong repo: src/assets/image/anhGG.png
 import heroImage from "../../assets/image/ChargeStation.png";
@@ -78,6 +79,7 @@ const BookingPage = () => {
   const [searchResults, setSearchResults] = useState(null);
   const [availabilityMessage, setAvailabilityMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingChargers, setLoadingChargers] = useState(false);
 
   // Lấy datetime tối thiểu (bây giờ + 1 phút)
   const getMinDateTime = () => {
@@ -147,7 +149,7 @@ const BookingPage = () => {
   // Load chargers khi chọn trạm
   const loadChargers = async (stationId) => {
     try {
-      setLoading(true);
+      setLoadingChargers(true);
       const response = await apiServices.chargingPoints.getChargersByStation(
         stationId
       );
@@ -155,7 +157,7 @@ const BookingPage = () => {
     } catch (err) {
       console.error("Error loading chargers:", err);
     } finally {
-      setLoading(false);
+      setLoadingChargers(false);
     }
   };
 
@@ -376,7 +378,7 @@ const BookingPage = () => {
               {/* Search Button */}
               <button
                 onClick={handleSearch}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all text-lg h-[62px] md:h-auto md:py-3"
+                className="bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold !rounded-lg transition-all text-lg h-[62px] md:h-auto md:py-3"
               >
                 <i className="bi bi-search"></i> Tìm kiếm
               </button>
@@ -395,46 +397,53 @@ const BookingPage = () => {
                 {stations.find((s) => s.stationId === selectedStation)?.name}
               </h2>
 
-              {/* Chargers Grid */}
-              {chargers.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <i className="bi bi-inbox text-4xl"></i>
-                  <p className="mt-2">Không có trụ sạc tại trạm này</p>
-                </div>
+              {/* Loading Spinner */}
+              {loadingChargers ? (
+                <LoadingSpinner size={80} />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  {chargers.map((charger) => (
-                    <div
-                      key={charger.pointId}
-                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                        selectedCharger === charger.pointId
-                          ? "border-blue-600 bg-blue-50"
-                          : "border-gray-200 hover:border-blue-300"
-                      }`}
-                      onClick={() => setSelectedCharger(charger.pointId)}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-lg">{charger.name}</h3>
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-semibold ${
-                            charger.status === "AVAILABLE"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {charger.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-2">
-                        <i className="bi bi-lightning-charge"></i>{" "}
-                        {charger.chargingPower}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        <i className="bi bi-plug"></i> {charger.connectorType}
-                      </p>
+                <>
+                  {/* Chargers Grid */}
+                  {chargers.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <i className="bi bi-inbox text-4xl"></i>
+                      <p className="mt-2">Không có trụ sạc tại trạm này</p>
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                      {chargers.map((charger) => (
+                        <div
+                          key={charger.pointId}
+                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                            selectedCharger === charger.pointId
+                              ? "border-green-600 bg-green-50"
+                              : "border-green-200 hover:border-green-300"
+                          }`}
+                          onClick={() => setSelectedCharger(charger.pointId)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-bold text-lg">{charger.name}</h3>
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-semibold ${
+                                charger.status === "AVAILABLE"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {charger.status}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">
+                            <i className="bi bi-lightning-charge"></i>{" "}
+                            {charger.chargingPower}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <i className="bi bi-plug"></i> {charger.connectorType}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Booking Form (chỉ hiện khi đã chọn trụ) */}

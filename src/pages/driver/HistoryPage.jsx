@@ -558,36 +558,81 @@ const ChargingHabits = () => {
           <YAxis allowDecimals={false} />
           <Tooltip formatter={(value) => [value, "Số lần sạc"]} />
           <Legend />
-          <Bar dataKey="count" name="Số lần sạc" fill="#8B5CF6" />
+          <Bar dataKey="count" name="Số lần sạc" fill="#22c55e" />
         </BarChart>
       </ResponsiveContainer>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <div className="border rounded p-4">
-          <h3 className="font-semibold mb-3">Trạm sạc yêu thích</h3>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {favorites.map((f) => (
-              <li key={f.name}>
-                {f.name} — {f.count} lần
-              </li>
+        <div className="bg-gradient-to-br from-[#22c55e]/10 to-[#16a34a]/5 border border-[#22c55e]/30 rounded-lg p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <i className="bi bi-geo-alt-fill text-[#22c55e] text-xl"></i>
+            <h3 className="font-semibold text-gray-800">Trạm sạc yêu thích</h3>
+          </div>
+          <div className="space-y-3">
+            {favorites.map((f, index) => (
+              <div
+                key={f.name}
+                className="flex items-center gap-3 bg-white/80 rounded-lg p-3 hover:bg-white transition-colors"
+              >
+                {index === 0 ? (
+                  <i className="bi bi-trophy-fill text-yellow-500 text-2xl"></i>
+                ) : index === 1 ? (
+                  <i className="bi bi-trophy-fill text-gray-400 text-xl"></i>
+                ) : (
+                  <i className="bi bi-trophy-fill text-amber-700 text-lg"></i>
+                )}
+                <div className="flex-1">
+                  <div className="font-medium text-gray-800">{f.name}</div>
+                  <div className="text-sm text-gray-500">{f.count} lần sạc</div>
+                </div>
+                <div
+                  className="px-3 py-1 rounded-full text-sm font-semibold"
+                  style={{
+                    backgroundColor: index === 0 ? "#22c55e" : "#e5e7eb",
+                    color: index === 0 ? "white" : "#6b7280",
+                  }}
+                >
+                  #{index + 1}
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
 
-        <div className="border rounded p-4">
-          <h3 className="font-semibold mb-3">Thống kê khác</h3>
-          <table>
-            <tbody>
-              <tr>
-                <td style={{ paddingRight: 12 }}>Thời gian sạc TB:</td>
-                <td>{avgMins} phút</td>
-              </tr>
-              <tr>
-                <td style={{ paddingRight: 12 }}>Giờ sạc phổ biến:</td>
-                <td>{popularHours}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="bg-gradient-to-br from-[#22c55e]/10 to-[#16a34a]/5 border border-[#22c55e]/30 rounded-lg p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <i className="bi bi-bar-chart-fill text-[#22c55e] text-xl"></i>
+            <h3 className="font-semibold text-gray-800">Thống kê khác</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="bg-white/80 rounded-lg p-4 hover:bg-white transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#22c55e]/10">
+                  <i className="bi bi-clock-history text-[#22c55e] text-xl"></i>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500">Thời gian sạc TB</div>
+                  <div className="text-lg font-bold text-gray-800">
+                    {avgMins} phút
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/80 rounded-lg p-4 hover:bg-white transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#22c55e]/10">
+                  <i className="bi bi-speedometer2 text-[#22c55e] text-xl"></i>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-gray-500">Giờ sạc phổ biến</div>
+                  <div className="text-lg font-bold text-gray-800">
+                    {popularHours}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -640,7 +685,7 @@ export default function HistoryPage() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold">Tổng quan</h2>
         <button
-          className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg font-semibold transition-all hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-4 py-2 text-white !rounded-md font-semibold transition-all hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
           style={{
             backgroundColor: "#22c55e",
             boxShadow: "0 2px 4px rgba(34, 197, 94, 0.2)",

@@ -373,7 +373,7 @@ export default function WalletPage() {
                 <button
                   key={tab.value}
                   onClick={() => setActiveTab(tab.value)}
-                  className={`px-8 py-2.5 rounded-full text-sm font-medium border-none cursor-pointer transition-all duration-200 whitespace-nowrap ${
+                  className={`px-8 py-2.5 !rounded-md text-sm font-medium border-none cursor-pointer transition-all duration-200 whitespace-nowrap ${
                     activeTab === tab.value
                       ? "bg-emerald-500 text-white shadow-emerald-500/40 shadow-lg hover:shadow-emerald-500/50 hover:shadow-xl"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md"

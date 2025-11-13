@@ -64,7 +64,7 @@ const MainLayoutAdmin = ({ children }) => {
       label: "Trụ sạc",
       icon: "bi-ev-station-fill",
     },
-    { path: "/admin/users", label: "Người dùng", icon: "bi-people-fill" },
+    { path: "/admin/users", label: "Tài xế", icon: "bi-people-fill" },
     { path: "/admin/staffs", label: "Nhân viên", icon: "bi-person-badge-fill" },
     {
       path: "/admin/incidents",

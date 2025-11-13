@@ -107,7 +107,10 @@ function App() {
             <MainLayoutAdmin>
               <Routes>
                 {/* Default route - Phân tích */}
-                <Route path="/" element={<Reports />} />
+                <Route
+                  index
+                  element={<Navigate to="/admin/reports" replace />}
+                />
                 {/* Reports Routes - Trang phân tích */}
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/reports/*" element={<Reports />} />

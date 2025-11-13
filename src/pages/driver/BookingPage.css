@@ -15,7 +15,7 @@
 
 /* Tùy chỉnh Header (chỗ Tên Tháng) */
 .react-datepicker__header {
-  background-color: #f8fafc; /* Nền xám rất nhạt */
+  background-color: #dcfce7; /* Nền xanh lá nhạt */
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -33,15 +33,15 @@
 
 /* Hiệu ứng khi hover */
 .react-datepicker__time-list-item:hover {
-  background-color: #f1f5f9 !important; /* Nền xám khi hover */
+  background-color: #bbf7d0 !important; /* Nền xanh lá nhạt khi hover */
 }
 
 /* Khi được chọn */
 .react-datepicker__time-list-item--selected {
-  background-color: #2563eb !important; /* Màu xanh (giống .bg-blue-600) */
+  background-color: #22c55e !important; /* Màu xanh lá chủ đạo */
   color: white !important;
   font-weight: bold;
 }
 .react-datepicker__time-list-item--selected:hover {
-  background-color: #1d4ed8 !important; /* Màu xanh đậm hơn khi hover */
+  background-color: #16a34a !important; /* Màu xanh lá đậm hơn khi hover */
 }
