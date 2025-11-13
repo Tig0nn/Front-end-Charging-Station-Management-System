@@ -133,28 +133,39 @@ export default function EVChargingLanding() {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-10 relative min-h-screen flex flex-col  justify-start overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-        {/* Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-32 h-32 bg-emerald-500/10 rounded-full blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl animate-pulse delay-2000"></div>
+      <section className="py-10 relative min-h-screen flex flex-col justify-center overflow-hidden">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1669349412975-a9dd0d2292ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVjdHJpYyUyMGNhciUyMGNoYXJnaW5nJTIwZ3JlZW58ZW58MXx8fHwxNzYzMDM4MjU3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral)",
+          }}
+        ></div>
+
+        {/* Gradient Overlay - Emerald Green */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/80 via-emerald-500/70 to-teal-600/80"></div>
+
+        {/* Subtle Pattern Overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
-            <div className="inline-flex items-center px-4 py-2 bg-emerald-100 rounded-full text-sm text-emerald-700 border border-emerald-200 mb-6">
+            <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white border border-white/30 mb-6">
               <Zap className="w-4 h-4 mr-2" />
               Hệ thống trạm sạc xe điện thông minh
             </div>
 
             <h1 className="text-10xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent">
+              <span className="text-white drop-shadow-lg">
                 T-GREEN
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
               Bạn có xe điện? Chúng tôi có trạm sạc! Hãy tin tưởng vào T-GREEN.
             </p>
 
@@ -162,10 +173,10 @@ export default function EVChargingLanding() {
               <button
                 onClick={() => navigate("/signup")}
                 className="font-bold !rounded-2xl group px-8 py-4 
-              bg-gradient-to-r from-emerald-500 to-emerald-600 text-white 
-              hover:from-emerald-600 hover:to-emerald-700 hover:scale-105
-              shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-600/50
-              transition-all duration-200 flex items-center"
+              bg-white text-emerald-600 
+              hover:bg-emerald-50 hover:scale-105
+              shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30
+               transition-all duration-200 flex items-center"
               >
                 Bắt đầu ngay
               </button>
@@ -180,10 +191,10 @@ export default function EVChargingLanding() {
               { number: "24/7", label: "Hỗ trợ" },
             ].map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-emerald-600 mb-2">
+                <div className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-lg">
                   {stat.number}
                 </div>
-                <div className="text-gray-600 text-sm">{stat.label}</div>
+                <div className="text-white/80 text-sm drop-shadow-md">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -255,7 +266,7 @@ export default function EVChargingLanding() {
       {/* CTA Section */}
       <section
         id="subscription"
-        className="py-20 bg-white"
+        className="py-20 bg-gradient-to-br from-emerald-50 via-emerald-100/30 to-teal-50"
       >
         {/* Feature Tabs */}
         <div className="text-center mb-16">
@@ -284,7 +295,7 @@ export default function EVChargingLanding() {
                   className={`flex items-center px-6 py-4 rounded-xl transition-all text-left ${
                     activeFeature === index
                       ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/40"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-white text-gray-700 hover:bg-emerald-50 border border-emerald-200"
                   }`}
                 >
                   <span className="font-medium">{plan.name}</span>
@@ -294,7 +305,7 @@ export default function EVChargingLanding() {
 
             {/* Feature Content */}
             <div className="flex-1 max-w-2xl">
-              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-8 border border-emerald-200 shadow-lg">
+              <div className="bg-white rounded-2xl p-8 border border-emerald-300 shadow-xl">
                 <div className="flex items-center mb-6">
                   <h3 className="text-2xl font-bold text-gray-900">
                     {plans[activeFeature]?.name}
@@ -374,7 +385,7 @@ export default function EVChargingLanding() {
         </div>
       </section>
       {/* Footer */}
-      <footer className="bg-gray-900 border-t border-gray-800 py-12">
+      <footer className="bg-gradient-to-r from-emerald-600 to-teal-600 border-t border-green-600 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
@@ -384,7 +395,7 @@ export default function EVChargingLanding() {
                 </div>
                 <span className="text-xl font-bold text-white">T-Green</span>
               </div>
-              <p className="text-gray-400">
+              <p className="!text-white">
                 Hệ thống trạm sạc xe điện thông minh, tiện lợi và đáng tin cậy.
               </p>
             </div>
@@ -394,25 +405,25 @@ export default function EVChargingLanding() {
               <div className="space-y-2">
                 <a
                   href="#"
-                  className="block text-gray-400 hover:text-emerald-400 transition-colors"
+                  className="block !text-white hover:text-emerald-400 transition-colors !no-underline"
                 >
                   Trường Huy
                 </a>
                 <a
                   href="#"
-                  className="block text-gray-400 hover:text-emerald-400 transition-colors"
+                  className="block !text-white hover:text-emerald-400 transition-colors !no-underline"
                 >
                   Thục Nhân
                 </a>
                 <a
                   href="#"
-                  className="block text-gray-400 hover:text-emerald-400 transition-colors"
+                  className="block !text-white hover:text-emerald-400 transition-colors !no-underline"
                 >
                   Đăng Khoa
                 </a>
                 <a
                   href="#"
-                  className="block text-gray-400 hover:text-emerald-400 transition-colors"
+                  className="block !text-white hover:text-emerald-400 transition-colors !no-underline"
                 >
                   Phi Trường
                 </a>
@@ -424,19 +435,19 @@ export default function EVChargingLanding() {
               <div className="space-y-2">
                 <a
                   href="#"
-                  className="block text-gray-400 hover:text-emerald-400 transition-colors"
+                  className="block !text-white hover:text-emerald-400 transition-colors !no-underline"
                 >
                   Về chúng tôi
                 </a>
                 <a
                   href="#"
-                  className="block text-gray-400 hover:text-emerald-400 transition-colors"
+                  className="block !text-white hover:text-emerald-400 transition-colors !no-underline"
                 >
                   Tin tức
                 </a>
                 <a
                   href="#"
-                  className="block text-gray-400 hover:text-emerald-400 transition-colors"
+                  className="block !text-white hover:text-emerald-400 transition-colors !no-underline"
                 >
                   Liên hệ
                 </a>
@@ -444,7 +455,7 @@ export default function EVChargingLanding() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t border-white mt-8 pt-8 text-center text-white">
             <p>&copy; 2025 T-Green - Một sản phẩm đến từ SWP391</p>
             <p>Mọi thông tin chỉ là minh họa.</p>
           </div>
