@@ -182,8 +182,8 @@ function App() {
                     element={<ChargingSessionPage />}
                   />
                   <Route path="/history/*" element={<HistoryPage />} />{" "}
-                  {/* Booking route - moved out from profile */}
-                  <Route path="/booking" element={<BookingPage />} />
+                  {/* Booking route with nested routes */}
+                  <Route path="/booking/*" element={<BookingPage />} />
                   {/* Profile Routes with nested routes */}
                   <Route path="/profile/*" element={<ProfileLayout />}>
                     <Route index element={<Navigate to="info" replace />} />

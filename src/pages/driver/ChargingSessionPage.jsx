@@ -184,7 +184,6 @@ export default function ChargingSessionPage() {
 
   // Tải danh sách xe nếu không có session hoặc có lỗi
 
-
   // useEffect(() => {
   //   // CẬP NHẬT ĐIỀU KIỆN: Tải xe nếu không có session HOẶC nếu có lỗi
   //   if (!sessionId || error) {
@@ -204,8 +203,6 @@ export default function ChargingSessionPage() {
   //     fetchVehicleInfo();
   //   }
   // }, [sessionId, error]);
-
-
 
   // Hàm dừng phiên sạc
   const handleStopSession = async () => {
@@ -627,7 +624,7 @@ export default function ChargingSessionPage() {
                     Năng lượng
                   </div>
                   <div className="text-5xl text-emerald-900 tabular-nums mb-2">
-                    {(session.energyConsumedKwh || 0).toFixed(1)}
+                    {(session.energyKwh || 0).toFixed(1)}
                   </div>
                   <div className="text-xs text-emerald-500 mt-1">kWh</div>
                 </div>

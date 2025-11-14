@@ -164,11 +164,14 @@ const apiServices = {
     // Create a new booking
     createBooking: (bookingData) => api.post("/api/bookings", bookingData),
     // Get all bookings for current user
-    getMyBookings: () => api.get("/api/bookings"),
+    getMyBookings: () => api.get("/api/bookings/my-bookings"),
     // Get booking by ID
     getBookingById: (bookingId) => api.get(`/api/bookings/${bookingId}`),
     // Cancel booking
-    cancelBooking: (bookingId) => api.delete(`/api/bookings/${bookingId}`),
+    cancelBooking: (bookingId) => api.put(`/api/bookings/${bookingId}/cancel`),
+    // Check-in to booking
+    checkInBooking: (bookingId) =>
+      api.post(`/api/bookings/${bookingId}/check-in`),
   },
 
   // ZaloPay payment integration
