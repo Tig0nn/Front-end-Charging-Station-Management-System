@@ -121,6 +121,8 @@ function useMySessions() {
 // 1) GIAO DỊCH
 const TransactionHistory = () => {
   const { data: sessions, loading, error, reload } = useMySessions();
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailSession, setDetailSession] = useState(null);
 
   if (loading)
     return (
@@ -184,6 +186,18 @@ const TransactionHistory = () => {
     );
   }
 
+  // Hàm mở modal chi tiết
+  const handleOpenDetailModal = (session) => {
+    setDetailSession(session);
+    setShowDetailModal(true);
+  };
+
+  // Hàm đóng modal chi tiết
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setDetailSession(null);
+  };
+
   const headers = [
     "Ngày",
     "Trạm sạc",
@@ -222,7 +236,11 @@ const TransactionHistory = () => {
         </thead>
         <tbody className="divide-y divide-gray-200">
           {sessions.map((s) => (
-            <tr key={s.sessionId} className="hover:bg-gray-50 cursor-pointer">
+            <tr
+              key={s.sessionId}
+              className="hover:bg-gray-50 cursor-pointer"
+              onClick={() => handleOpenDetailModal(s)}
+            >
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                 {formatDateTime(s.startTime).date} <br />
                 <div className="text-muted small">
@@ -256,6 +274,168 @@ const TransactionHistory = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Modal Chi tiết Phiên sạc */}
+      {showDetailModal && detailSession && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={handleCloseDetailModal}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-2xl font-bold text-gray-900">
+                Chi tiết phiên sạc
+              </h3>
+              <button
+                onClick={handleCloseDetailModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <i className="bi bi-x-lg text-2xl"></i>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="space-y-4">
+              {/* Thông tin trạm */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <i className="bi bi-geo-alt text-[#22c55e]"></i>
+                  Thông tin trạm sạc
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-sm text-gray-500">Trạm sạc:</span>
+                    <p className="font-medium">{detailSession.stationName}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">Trụ sạc:</span>
+                    <p className="font-medium">
+                      {detailSession.chargingPointName || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Thông tin thời gian */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <i className="bi bi-clock text-[#22c55e]"></i>
+                  Thông tin thời gian
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-sm text-gray-500">Bắt đầu:</span>
+                    <p className="font-medium">
+                      {formatDateTime(detailSession.startTime).date}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {formatDateTime(detailSession.startTime).time}
+                    </p>
+                  </div>
+                  {detailSession.endTime && (
+                    <div>
+                      <span className="text-sm text-gray-500">Kết thúc:</span>
+                      <p className="font-medium">
+                        {formatDateTime(detailSession.endTime).date}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {formatDateTime(detailSession.endTime).time}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-sm text-gray-500">Thời lượng:</span>
+                    <p className="font-medium">
+                      {formatDuration(detailSession.durationMin)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Thông tin năng lượng & chi phí */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <i className="bi bi-lightning-charge text-[#22c55e]"></i>
+                  Năng lượng & Chi phí
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-sm text-gray-500">
+                      Lượng điện đã sạc:
+                    </span>
+                    <p className="font-medium text-lg">
+                      {Number(detailSession.energyKwh || 0).toFixed(2)} kWh
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">Tổng chi phí:</span>
+                    <p className="font-medium text-lg text-[#22c55e]">
+                      {formatCurrency(detailSession.costTotal)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trạng thái */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <i className="bi bi-info-circle text-[#22c55e]"></i>
+                  Trạng thái
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-sm text-gray-500">
+                      Trạng thái phiên:
+                    </span>
+                    <p className="font-medium">
+                      {detailSession.status === "COMPLETED" ? (
+                        <span className="text-green-600">Đã hoàn thành</span>
+                      ) : (
+                        <span className="text-yellow-600">Đang tiến hành</span>
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-500">
+                      Trạng thái thanh toán:
+                    </span>
+                    <p className="font-medium">
+                      {detailSession.paymentStatus === "PAID" ? (
+                        <span className="text-green-600">Đã thanh toán</span>
+                      ) : detailSession.paymentStatus === "PENDING" ? (
+                        <span className="text-yellow-600">Đang xử lý</span>
+                      ) : (
+                        <span className="text-red-600">Chưa thanh toán</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Session ID */}
+              <div className="text-center pt-2 border-t">
+                <span className="text-xs text-gray-400">
+                  ID: {detailSession.sessionId}
+                </span>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleCloseDetailModal}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -144,7 +144,7 @@ export default function ChargingSessionPage() {
           // (Phòng trường hợp timer bị dừng do lỗi mạng tạm thời)
           if (!timerRef.current) {
             console.log("Polling đã TẮT, khởi động lại...");
-            timerRef.current = setInterval(fetchSession, 2000);
+            timerRef.current = setInterval(fetchSession, 1000);
           }
         } else {
           console.log("Quay lại tab, phiên đã kết thúc. Không gọi API.");
