@@ -565,9 +565,7 @@ const BookingForm = () => {
                     >
                       {availabilityMessage}
                     </div>
-                  )}
-
-                  <div className="mb-6">
+                  )}                  <div className="mb-6">
                     <label className="block font-semibold mb-2">
                       Mức pin mong muốn: {desiredPercentage}%
                       {availabilityMessage.includes("✅") && (
@@ -577,6 +575,7 @@ const BookingForm = () => {
                         </span>
                       )}
                     </label>
+                    {/* OLD SLIDER - Basic style without gradient
                     <input
                       type="range"
                       min="20"
@@ -585,6 +584,60 @@ const BookingForm = () => {
                       value={desiredPercentage}
                       onChange={(e) => setDesiredPercentage(e.target.value)}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      disabled={!availabilityMessage.includes("✅")}
+                    />
+                    */}
+                    
+                    {/* Thanh pin với css mới */}
+                    <style>
+                      {`
+                        #booking-slider::-webkit-slider-thumb {
+                          appearance: none;
+                          width: 20px;
+                          height: 20px;
+                          border-radius: 50%;
+                          background: ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'};
+                          cursor: pointer;
+                          border: 3px solid white;
+                          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                          transition: all 0.3s ease;
+                        }
+                        #booking-slider::-webkit-slider-thumb:hover {
+                          transform: scale(1.2);
+                          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+                        }
+                        #booking-slider::-moz-range-thumb {
+                          width: 20px;
+                          height: 20px;
+                          border-radius: 50%;
+                          background: ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'};
+                          cursor: pointer;
+                          border: 3px solid white;
+                          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                          transition: all 0.3s ease;
+                        }
+                        #booking-slider::-moz-range-thumb:hover {
+                          transform: scale(1.2);
+                          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+                        }
+                      `}
+                    </style>
+                    <input
+                      id="booking-slider"
+                      type="range"
+                      min="20"
+                      max={Math.floor(maxPercentage)}
+                      step="1"
+                      value={desiredPercentage}
+                      onChange={(e) => setDesiredPercentage(e.target.value)}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300"
+                      style={{
+                        background: `linear-gradient(to right, 
+                          ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'} 0%, 
+                          ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'} ${((desiredPercentage - 20) / (Math.floor(maxPercentage) - 20)) * 100}%, 
+                          #e5e7eb ${((desiredPercentage - 20) / (Math.floor(maxPercentage) - 20)) * 100}%, 
+                          #e5e7eb 100%)`
+                      }}
                       disabled={!availabilityMessage.includes("✅")}
                     />
                     <div className="flex justify-between text-sm text-gray-600 mt-1">

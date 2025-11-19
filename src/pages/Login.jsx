@@ -98,13 +98,12 @@ function Login() {
           setLoginErr("Mật khẩu không chính xác.");
         } else if (result.error === "User Not Found") {
           setLoginErr("Tài khoản không tồn tại.");
-        } else{
+        } else {
           setLoginErr(result.error || "Đăng nhập thất bại.");
         }
       }
     } catch (err) {
       setLoginErr("Lỗi đăng nhập: " + err);
-
     } finally {
       setIsSubmitting(false);
     }
@@ -115,7 +114,12 @@ function Login() {
       <div className="w-full lg:w-2/5 bg-white flex flex-col px-8 sm:px-12 lg:px-16 py-8 relative z-10">
         {/* Logo và tên ở góc trái trên cùng */}
         <div className="flex items-center gap-4 mb-8 -ml-2">
-          <img src={logo} alt="Logo" className="h-28 object-contain cursor-pointer" onClick={() => navigate("/")} />
+          <img
+            src={logo}
+            alt="Logo"
+            className="h-28 object-contain cursor-pointer"
+            onClick={() => navigate("/")}
+          />
           <span className="text-3xl font-bold text-gray-900">T-Green</span>
         </div>
 
@@ -143,10 +147,11 @@ function Login() {
                   value={form.email}
                   onChange={handleChangeValue}
                   onFocus={handleFocus}
-                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${loginErr
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
+                    loginErr
                       ? "border-red-500 ring-2 ring-red-500"
                       : "border-gray-300"
-                    }`}
+                  }`}
                   required
                 />
               </div>
@@ -162,10 +167,11 @@ function Login() {
                   value={form.password}
                   onChange={handleChangeValue}
                   onFocus={handleFocus}
-                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${loginErr
+                  className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
+                    loginErr
                       ? "border-red-500 ring-2 ring-red-500"
                       : "border-gray-300"
-                    }`}
+                  }`}
                   required
                 />
               </div>
@@ -203,10 +209,11 @@ function Login() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full h-12 text-white font-semibold rounded-lg transition-all duration-200 ${isSubmitting
+                className={`w-full h-12 text-white font-semibold !rounded-lg transition-all duration-200 ${
+                  isSubmitting
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-600/50"
-                  }`}
+                }`}
               >
                 {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
               </button>{" "}

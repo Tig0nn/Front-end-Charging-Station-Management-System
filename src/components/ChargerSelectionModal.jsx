@@ -98,12 +98,12 @@ export default function ChargerSelectionModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [station]);
 
-  // 🆕 Auto-select charger from QR code
+  //  Auto-select charger from QR code
   useEffect(() => {
     if (preSelectedPointId && chargers.length > 0 && !selectedCharger) {
       const charger = chargers.find((c) => c.pointId === preSelectedPointId);
       if (charger && charger.status === "AVAILABLE") {
-        console.log("✅ Auto-selecting charger from QR:", charger);
+        console.log(" Auto-selecting charger from QR:", charger);
         setSelectedCharger(charger);
         // Skip to vehicle selection
         setView("vehicles");
@@ -264,9 +264,80 @@ export default function ChargerSelectionModal({
     </>
   );
 
+  
+
   const renderVehicleView = () => (
     <>
-      <div className="flex-1 overflow-y-auto px-8 py-7 modal-body-scroll">
+    
+      {/* =================== SLIDER FIXED AT TOP =================== */}
+      {vehicles.length > 0 && (
+        <div className="px-8 pt-7 pb-5 border-b bg-white sticky top-0 z-20">
+          <label
+            htmlFor="soc-slider"
+            className="block font-semibold text-gray-700 mb-2"
+          >
+            Sạc đến mức pin mong muốn:{" "}
+            <span className="font-bold text-emerald-600">{targetSoc}%</span>
+          </label>          <style>
+            {`
+              #soc-slider::-webkit-slider-thumb {
+                appearance: none;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'};
+                cursor: pointer;
+                border: 3px solid white;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+              }
+              #soc-slider::-webkit-slider-thumb:hover {
+                transform: scale(1.2);
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+              }
+              #soc-slider::-moz-range-thumb {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'};
+                cursor: pointer;
+                border: 3px solid white;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+              }
+              #soc-slider::-moz-range-thumb:hover {
+                transform: scale(1.2);
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+              }
+            `}
+          </style>
+          <input
+            id="soc-slider"
+            type="range"
+            min="10"
+            max="100"
+            step="1"
+            value={targetSoc}
+            onChange={(e) => setTargetSoc(parseInt(e.target.value))}
+            className="w-full h-2 rounded-lg cursor-pointer appearance-none transition-all duration-300"
+            style={{
+              background: `linear-gradient(to right, 
+                ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'} 0%, 
+                ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'} ${((targetSoc - 10) / 90) * 100}%, 
+                #e5e7eb ${((targetSoc - 10) / 90) * 100}%, 
+                #e5e7eb 100%)`
+            }}
+          />
+
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>10%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      )}
+
+      {/*Danh sách xe   */}
+      <div className="flex-1 overflow-y-auto px-8 py-7">
         {vehicleLoading ? (
           <div className="text-center py-10">
             <ArrowPathIcon className="w-10 h-10 text-emerald-500 animate-spin mx-auto" />
@@ -278,86 +349,60 @@ export default function ChargerSelectionModal({
             <p className="text-red-500 font-semibold">{error}</p>
           </div>
         ) : (
-          // --- BẮT ĐẦU KHỐI NỘI DUNG CHÍNH ---
-          <>
-            <div className="space-y-3">
-              {vehicles.length > 0 ? (
-                vehicles.map((vehicle) => (
-                  <div
-                    key={vehicle.vehicleId}
-                    onClick={() => handleSelectVehicle(vehicle)}
-                    className={`flex items-center gap-4 rounded-lg border-2 p-4 cursor-pointer transition-all ${
-                      selectedVehicle?.vehicleId === vehicle.vehicleId
-                        ? "border-emerald-500 bg-emerald-50"
-                        : "border-gray-200 hover:border-gray-400"
-                    }`}
-                  >
-                    <TruckIcon className="h-8 w-8 text-gray-600" />
-                    <div>
-                      <p className="font-semibold">
-                        {vehicle.brand} {vehicle.model}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {vehicle.licensePlate}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Mức pin hiện tại:{" "}
-                        <span className="font-bold">
-                          {vehicle.currentSocPercent}%
-                        </span>
-                      </p>
-                    </div>
-                    {selectedVehicle?.vehicleId === vehicle.vehicleId && (
-                      <CheckCircleIcon className="h-6 w-6 text-emerald-600 ml-auto" />
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-500">
-                  Bạn chưa có phương tiện nào.
-                </p>
-              )}
-            </div>
-
-            {/* --- ĐẶT THANH TRƯỢT VÀO ĐÂY --- */}
-            {vehicles.length > 0 && (
-              <div className="mt-6 pt-6 border-t">
-                <label
-                  htmlFor="soc-slider"
-                  className="block font-semibold text-gray-700 mb-2"
+          <div className="space-y-3 mt-2">
+            {vehicles.length > 0 ? (
+              vehicles.map((vehicle) => (
+                <div
+                  key={vehicle.vehicleId}
+                  onClick={() => handleSelectVehicle(vehicle)}
+                  className={`flex items-center gap-4 rounded-lg border-2 p-4 cursor-pointer transition-all
+                  ${
+                    selectedVehicle?.vehicleId === vehicle.vehicleId
+                      ? "border-emerald-500 bg-emerald-50 shadow-md"
+                      : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
+                  }
+                `}
                 >
-                  Sạc đến mức pin mong muốn:{" "}
-                  <span className="font-bold text-emerald-600">
-                    {targetSoc}%
-                  </span>
-                </label>
-                <input
-                  id="soc-slider"
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="5"
-                  value={targetSoc}
-                  onChange={(e) => setTargetSoc(parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>10%</span>
-                  <span>100%</span>
+                  <TruckIcon className="h-8 w-8 text-gray-600" />
+
+                  <div>
+                    <p className="font-semibold">
+                      {vehicle.brand} {vehicle.model}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {vehicle.licensePlate}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Pin:{" "}
+                      <span className="font-bold">
+                        {vehicle.currentSocPercent}%
+                      </span>
+                    </p>
+                  </div>
+
+                  {selectedVehicle?.vehicleId === vehicle.vehicleId && (
+                    <CheckCircleIcon className="h-6 w-6 text-emerald-600 ml-auto" />
+                  )}
                 </div>
-              </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">
+                Bạn chưa có phương tiện nào.
+              </p>
             )}
-          </>
-          // --- KẾT THÚC KHỐI NỘI DUNG CHÍNH ---
+          </div>
         )}
       </div>
-      <div className="px-8 py-5 border-t flex justify-between gap-3">
+
+      {/* Nút*/}
+      <div className="px-8 py-5 border-t flex justify-between gap-3 bg-white">
         <button
           className="px-7 py-3.5 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-2"
           onClick={handleGoBackToChargerSelection}
         >
           <ChevronLeftIcon className="w-5 h-5" /> Quay lại
         </button>
+
         <button
           className="px-7 py-3.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
           onClick={handleConfirmAndStartCharging}

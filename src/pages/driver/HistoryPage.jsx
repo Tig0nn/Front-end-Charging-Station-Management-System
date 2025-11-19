@@ -265,8 +265,8 @@ const TransactionHistory = () => {
                     Đã hoàn thành
                   </span>
                 ) : (
-                  <span className="text-red-600 font-medium">
-                    Chưa hoàn thành
+                  <span className="text-yellow-600 font-medium">
+                    Đang tiến hành
                   </span>
                 )}
               </td>
