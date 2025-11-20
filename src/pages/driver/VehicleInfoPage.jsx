@@ -396,6 +396,20 @@ const VehicleInfoPage = () => {
   // Vehicle Card Component
   const VehicleCard = ({ vehicle }) => (
     <Card className="h-100 shadow-sm border-0">
+      {vehicle.imageUrl && (
+        <Card.Img
+          variant="top"
+          src={vehicle.imageUrl}
+          alt={`${vehicle.brandDisplayName || vehicle.brand} ${
+            vehicle.modelName || vehicle.model
+          }`}
+          style={{
+            height: "180px",
+            objectFit: "cover",
+            borderBottom: "1px solid #dee2e6",
+          }}
+        />
+      )}
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start mb-3">
           <div>
