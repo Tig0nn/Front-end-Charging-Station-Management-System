@@ -18,7 +18,6 @@ import toast from "react-hot-toast";
 import { vehiclesAPI } from "../../lib/apiServices.js";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
-
 const VehicleInfoPage = () => {
   // Vehicle data state
   const [vehicles, setVehicles] = useState([]);
@@ -74,7 +73,6 @@ const VehicleInfoPage = () => {
         model: vehicleData.model,
       };
 
-
       const response = await vehiclesAPI.createVehicle(processedData);
       const newVehicle =
         response?.data?.result || response?.data || response?.result;
@@ -115,7 +113,6 @@ const VehicleInfoPage = () => {
         processedData.model = vehicleData.model;
       }
 
-
       const response = await vehiclesAPI.updateVehicle(
         vehicleId,
         processedData
@@ -131,7 +128,6 @@ const VehicleInfoPage = () => {
         );
         setSelectedVehicle(updatedVehicle);
       }
-
 
       toast.success("Thông tin xe đã được cập nhật thành công!");
       return { success: true, data: updatedVehicle };
@@ -160,7 +156,6 @@ const VehicleInfoPage = () => {
   const deleteVehicle = async (vehicleId) => {
     try {
       setFormLoading(true);
-
 
       await vehiclesAPI.deleteVehicle(vehicleId);
 
@@ -494,7 +489,7 @@ const VehicleInfoPage = () => {
             style={{
               backgroundColor: "#22c55e",
               borderColor: "#22c55e",
-              color: "white"
+              color: "white",
             }}
             onClick={fetchVehicles}
             disabled={loading}
@@ -502,11 +497,7 @@ const VehicleInfoPage = () => {
           >
             {loading ? (
               <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                />
+                <Spinner as="span" animation="border" size="sm" />
                 <span>Đang tải...</span>
               </>
             ) : (

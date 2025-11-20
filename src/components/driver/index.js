@@ -1,3 +1,4 @@
 export { default as ProfileHeader } from "./ProfileHeader";
 export { default as ProfileTabs } from "./ProfileTabs";
 export { default as PersonalInfoForm } from "./PersonalInfoForm";
+export { default as VehicleSelector } from "./VehicleSelector";
