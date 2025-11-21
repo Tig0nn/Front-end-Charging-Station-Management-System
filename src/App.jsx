@@ -31,6 +31,7 @@ import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import RequireRole from "./components/RequireRole.jsx";
+import ForgotPassword from "./pages/ForgetPassword.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
@@ -87,6 +88,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Trang bổ sung thông tin: để ngoài guard */}
       <Route

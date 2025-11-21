@@ -616,7 +616,8 @@ const BookingForm = () => {
                     <input
                       id="booking-slider"
                       type="range"
-                      min="20"
+                      min="20
+                      "
                       max={Math.floor(maxPercentage)}
                       step="1"
                       value={desiredPercentage}
