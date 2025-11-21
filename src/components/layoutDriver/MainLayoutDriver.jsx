@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router";
 import { Toaster } from "react-hot-toast";
 import Header from "./Header";
 import { usersAPI } from "../../lib/apiServices";
+import { VehicleSelector } from "../driver";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const MainLayoutDriver = ({ children }) => {
@@ -406,13 +407,16 @@ const MainLayoutDriver = ({ children }) => {
                 ))}
               </div>
             </Col>
+            <Col className="d-flex justify-content-end align-items-center">
+              <VehicleSelector />
+            </Col>
           </Row>
         </div>{" "}
         {/* Dynamic Content - No Card Wrapper, Full Width */}
         {children}
       </Container>
 
-      {/* 🎨 Toast Notifications - Driver */}
+      {/* Toast Notifications - Driver */}
       <Toaster
         position="top-right"
         toastOptions={{

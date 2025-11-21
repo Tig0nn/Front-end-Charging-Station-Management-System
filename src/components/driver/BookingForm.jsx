@@ -58,7 +58,6 @@ const BookingForm = () => {
 
   // States
   const [bookingTime, setBookingTime] = useState(null);
-  const [vehicles, setVehicles] = useState([]);
   const [stations, setStations] = useState([]);
   const [chargers, setChargers] = useState([]);
 
@@ -98,8 +97,16 @@ const BookingForm = () => {
   };
 
   useEffect(() => {
-    loadVehicles();
     loadStations();
+    // Lấy vehicleId từ localStorage và tự động chọn
+    const savedVehicleId = localStorage.getItem("selectedVehicleId");
+    if (savedVehicleId) {
+      setSelectedVehicle(savedVehicleId);
+    } else {
+      // Nếu không có xe nào được lưu, có thể thông báo cho người dùng
+      toast.error("Vui lòng chọn một xe từ trang chính trước khi đặt chỗ.");
+    }
+
     const defaultTime = new Date();
     defaultTime.setHours(defaultTime.getHours() + 1);
 
@@ -116,15 +123,6 @@ const BookingForm = () => {
 
     setBookingTime(defaultTime);
   }, []);
-
-  const loadVehicles = async () => {
-    try {
-      const response = await apiServices.vehicles.getMyVehicles();
-      setVehicles(response?.data?.result || response?.result || []);
-    } catch (err) {
-      console.error("Error loading vehicles:", err);
-    }
-  };
 
   const loadStations = async () => {
     try {
@@ -350,7 +348,7 @@ const BookingForm = () => {
       <div className="relative z-20 -mt-20">
         <div className="max-w-6xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-xl p-4 md:p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               {/* Date & Time */}
               <div className="border border-gray-200 rounded p-3 hover:border-blue-500">
                 <label className="text-xs font-semibold text-gray-600 block mb-1">
@@ -369,25 +367,6 @@ const BookingForm = () => {
                   customInput={<CustomInputButton />}
                   wrapperClassName="w-full"
                 />
-              </div>
-
-              {/* Vehicle */}
-              <div className="border border-gray-200 rounded p-3 hover:border-blue-500">
-                <label className="text-xs font-semibold text-gray-600 block mb-1">
-                  <i className="bi bi-car-front"></i> Xe của bạn
-                </label>
-                <select
-                  className="w-full border-0 focus:outline-none focus:ring-0 text-sm p-0"
-                  value={selectedVehicle}
-                  onChange={(e) => setSelectedVehicle(e.target.value)}
-                >
-                  <option value="">Chọn xe</option>
-                  {vehicles.map((v) => (
-                    <option key={v.vehicleId} value={v.vehicleId}>
-                      {v.licensePlate} - {v.model}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               {/* Station */}
@@ -554,7 +533,6 @@ const BookingForm = () => {
               {selectedCharger && (
                 <div className="border-t pt-6">
                   <h3 className="text-xl font-bold mb-4">Thông tin đặt chỗ</h3>
-
                   {availabilityMessage && (
                     <div
                       className={`p-4 rounded-lg mb-4 ${
@@ -565,7 +543,8 @@ const BookingForm = () => {
                     >
                       {availabilityMessage}
                     </div>
-                  )}                  <div className="mb-6">
+                  )}{" "}
+                  <div className="mb-6">
                     <label className="block font-semibold mb-2">
                       Mức pin mong muốn: {desiredPercentage}%
                       {availabilityMessage.includes("✅") && (
@@ -587,7 +566,7 @@ const BookingForm = () => {
                       disabled={!availabilityMessage.includes("✅")}
                     />
                     */}
-                    
+
                     {/* Thanh pin với css mới */}
                     <style>
                       {`
@@ -596,7 +575,13 @@ const BookingForm = () => {
                           width: 20px;
                           height: 20px;
                           border-radius: 50%;
-                          background: ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'};
+                          background: ${
+                            desiredPercentage < 20
+                              ? "#dc2626"
+                              : desiredPercentage <= 50
+                              ? "#eab308"
+                              : "#059669"
+                          };
                           cursor: pointer;
                           border: 3px solid white;
                           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -610,7 +595,13 @@ const BookingForm = () => {
                           width: 20px;
                           height: 20px;
                           border-radius: 50%;
-                          background: ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'};
+                          background: ${
+                            desiredPercentage < 20
+                              ? "#dc2626"
+                              : desiredPercentage <= 50
+                              ? "#eab308"
+                              : "#059669"
+                          };
                           cursor: pointer;
                           border: 3px solid white;
                           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -634,10 +625,30 @@ const BookingForm = () => {
                       className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300"
                       style={{
                         background: `linear-gradient(to right, 
-                          ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'} 0%, 
-                          ${desiredPercentage < 20 ? '#dc2626' : desiredPercentage <= 50 ? '#eab308' : '#059669'} ${((desiredPercentage - 20) / (Math.floor(maxPercentage) - 20)) * 100}%, 
-                          #e5e7eb ${((desiredPercentage - 20) / (Math.floor(maxPercentage) - 20)) * 100}%, 
-                          #e5e7eb 100%)`
+                          ${
+                            desiredPercentage < 20
+                              ? "#dc2626"
+                              : desiredPercentage <= 50
+                              ? "#eab308"
+                              : "#059669"
+                          } 0%, 
+                          ${
+                            desiredPercentage < 20
+                              ? "#dc2626"
+                              : desiredPercentage <= 50
+                              ? "#eab308"
+                              : "#059669"
+                          } ${
+                          ((desiredPercentage - 20) /
+                            (Math.floor(maxPercentage) - 20)) *
+                          100
+                        }%, 
+                          #e5e7eb ${
+                            ((desiredPercentage - 20) /
+                              (Math.floor(maxPercentage) - 20)) *
+                            100
+                          }%, 
+                          #e5e7eb 100%)`,
                       }}
                       disabled={!availabilityMessage.includes("✅")}
                     />
@@ -646,7 +657,6 @@ const BookingForm = () => {
                       <span>{Math.floor(maxPercentage)}%</span>
                     </div>
                   </div>
-
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                     <h4 className="font-semibold mb-2">
                       <i className="bi bi-info-circle"></i> Thông tin đặt cọc
@@ -663,7 +673,6 @@ const BookingForm = () => {
                       <li>• Tiền cọc sẽ được hoàn hoặc trừ vào hóa đơn sạc.</li>
                     </ul>
                   </div>
-
                   <div className="flex gap-4">
                     <button
                       onClick={() => setSearchResults(null)}

@@ -18,7 +18,6 @@ import toast from "react-hot-toast";
 import { vehiclesAPI } from "../../lib/apiServices.js";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
-
 const VehicleInfoPage = () => {
   // Vehicle data state
   const [vehicles, setVehicles] = useState([]);
@@ -30,11 +29,16 @@ const VehicleInfoPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState(null);
-
-  // Form states - CHỈ CẦN licensePlate và model
+  // Form states - licensePlate, model và 4 ảnh xe
   const [formData, setFormData] = useState({
     licensePlate: "",
     model: "", // Enum model: VINFAST_VF8, TESLA_MODEL_3, etc.
+    documentFrontImage: null, // Ảnh mặt trước đăng ký xe (cà vẹt)
+    documentBackImage: null, // Ảnh mặt sau giấy đăng ký xe
+    frontImage: null, // Ảnh đầu xe
+    sideLeftImage: null, // Ảnh thân xe - bên hông trái
+    sideRightImage: null, // Ảnh thân xe - bên hông phải
+    rearImage: null, // Ảnh đuôi xe
   });
 
   // 2-step selection states
@@ -63,19 +67,48 @@ const VehicleInfoPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-  // Create vehicle
+  }; // Create vehicle
   const createVehicle = async (vehicleData) => {
     try {
       setFormLoading(true);
 
-      const processedData = {
-        licensePlate: vehicleData.licensePlate,
-        model: vehicleData.model,
-      };
+      // Create FormData for multipart/form-data
+      const formDataToSend = new FormData();
 
+      // Append text fields
+      formDataToSend.append("licensePlate", vehicleData.licensePlate);
+      formDataToSend.append("model", vehicleData.model);
 
-      const response = await vehiclesAPI.createVehicle(processedData);
+      // Append image files if they exist
+      if (vehicleData.documentFrontImage) {
+        formDataToSend.append(
+          "documentFrontImage",
+          vehicleData.documentFrontImage
+        );
+      }
+      if (vehicleData.documentBackImage) {
+        formDataToSend.append(
+          "documentBackImage",
+          vehicleData.documentBackImage
+        );
+      }
+      if (vehicleData.frontImage) {
+        formDataToSend.append("frontImage", vehicleData.frontImage);
+      }
+      if (vehicleData.sideLeftImage) {
+        formDataToSend.append("sideLeftImage", vehicleData.sideLeftImage);
+      }
+      if (vehicleData.sideRightImage) {
+        formDataToSend.append("sideRightImage", vehicleData.sideRightImage);
+      }
+      if (vehicleData.rearImage) {
+        formDataToSend.append("rearImage", vehicleData.rearImage);
+      }
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+      const response = await vehiclesAPI.createVehicle(formDataToSend);
+      console.log("Đã gọi api createVehicle");
       const newVehicle =
         response?.data?.result || response?.data || response?.result;
 
@@ -87,7 +120,6 @@ const VehicleInfoPage = () => {
       return { success: true, data: newVehicle };
     } catch (err) {
       let errorMessage = "Không thể tạo xe mới";
-
       if (err.response?.data?.code === 5002) {
         errorMessage = "Biển số xe đã tồn tại trong hệ thống";
       } else if (err.response?.data?.message) {
@@ -115,7 +147,6 @@ const VehicleInfoPage = () => {
         processedData.model = vehicleData.model;
       }
 
-
       const response = await vehiclesAPI.updateVehicle(
         vehicleId,
         processedData
@@ -131,7 +162,6 @@ const VehicleInfoPage = () => {
         );
         setSelectedVehicle(updatedVehicle);
       }
-
 
       toast.success("Thông tin xe đã được cập nhật thành công!");
       return { success: true, data: updatedVehicle };
@@ -160,7 +190,6 @@ const VehicleInfoPage = () => {
   const deleteVehicle = async (vehicleId) => {
     try {
       setFormLoading(true);
-
 
       await vehiclesAPI.deleteVehicle(vehicleId);
 
@@ -251,13 +280,19 @@ const VehicleInfoPage = () => {
       setLoadingModels(false);
     }
   };
-
   // Reset form data
   const resetForm = () => {
     setFormData({
       licensePlate: "",
       model: "",
+      documentFrontImage: null,
+      documentBackImage: null,
+      frontImage: null,
+      sideLeftImage: null,
+      sideRightImage: null,
+      rearImage: null,
     });
+
     setSelectedBrand("");
     setModels([]);
     setValidated(false);
@@ -283,6 +318,30 @@ const VehicleInfoPage = () => {
   const handleModelChange = (e) => {
     const model = e.target.value;
     setFormData((prev) => ({ ...prev, model }));
+  };
+
+  // Handle image file change
+  const handleImageChange = (e, imageType) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Chỉ chấp nhận file ảnh định dạng JPG, JPEG, PNG");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Kích thước ảnh không được vượt quá 5MB");
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        [imageType]: file,
+      }));
+    }
   };
 
   // Handle add vehicle
@@ -396,6 +455,20 @@ const VehicleInfoPage = () => {
   // Vehicle Card Component
   const VehicleCard = ({ vehicle }) => (
     <Card className="h-100 shadow-sm border-0">
+      {vehicle.imageUrl && (
+        <Card.Img
+          variant="top"
+          src={vehicle.imageUrl}
+          alt={`${vehicle.brandDisplayName || vehicle.brand} ${
+            vehicle.modelName || vehicle.model
+          }`}
+          style={{
+            height: "180px",
+            objectFit: "cover",
+            borderBottom: "1px solid #dee2e6",
+          }}
+        />
+      )}
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start mb-3">
           <div>
@@ -480,7 +553,7 @@ const VehicleInfoPage = () => {
             style={{
               backgroundColor: "#22c55e",
               borderColor: "#22c55e",
-              color: "white"
+              color: "white",
             }}
             onClick={fetchVehicles}
             disabled={loading}
@@ -488,11 +561,7 @@ const VehicleInfoPage = () => {
           >
             {loading ? (
               <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                />
+                <Spinner as="span" animation="border" size="sm" />
                 <span>Đang tải...</span>
               </>
             ) : (
@@ -563,7 +632,6 @@ const VehicleInfoPage = () => {
                 Vui lòng nhập biển số xe.
               </Form.Control.Feedback>
             </Form.Group>
-
             {/* Step 1: Chọn hãng xe */}
             <Form.Group className="mb-3" controlId="addBrand">
               <Form.Label>
@@ -586,7 +654,6 @@ const VehicleInfoPage = () => {
                 Vui lòng chọn hãng xe.
               </Form.Control.Feedback>
             </Form.Group>
-
             {/* Step 2: Chọn model xe */}
             {selectedBrand && (
               <Form.Group className="mb-3" controlId="addModel">
@@ -653,8 +720,378 @@ const VehicleInfoPage = () => {
                   </>
                 )}
               </Form.Group>
-            )}
+            )}{" "}
+            {/* Upload ảnh xe */}
+            <div className="mb-4">
+              <h6 className="mb-3">
+                <i className="bi bi-camera me-2"></i>
+                Ảnh xe (Tùy chọn)
+              </h6>
 
+              <Row className="g-3">
+                {/* Ảnh giấy đăng ký xe mặt trước */}
+                <Col md={6}>
+                  <Card className="me-2 border shadow-sm h-100">
+                    <Card.Body>
+                      <div className="mb-2">
+                        <Form.Label className="fw-semibold mb-2">
+                          <i className=" text-primary"></i>
+                          Ảnh mặt trước giấy đăng ký xe
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={(e) =>
+                            handleImageChange(e, "documentFrontImage")
+                          }
+                          size="sm"
+                        />
+                      </div>
+                      {formData.documentFrontImage ? (
+                        <div className="mt-3">
+                          <div className="position-relative">
+                            <img
+                              src={URL.createObjectURL(
+                                formData.documentFrontImage
+                              )}
+                              alt="Ảnh mặt trước cà vẹt"
+                              className="img-fluid rounded shadow-sm"
+                              style={{
+                                height: "180px",
+                                width: "100%",
+                                objectFit: "cover",
+                                border: "2px solid #22c55e",
+                              }}
+                            />
+                            <Badge
+                              bg="success"
+                              className="position-absolute top-0 end-0 m-2"
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              Đã chọn
+                            </Badge>
+                          </div>
+                          <small className="text-muted d-block mt-2 text-truncate">
+                            {formData.documentFrontImage.name}
+                          </small>
+                        </div>
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center bg-light rounded mt-3"
+                          style={{ height: "180px" }}
+                        >
+                          <div className="text-center text-muted">
+                            <i className="bi bi-file-earmark-image fs-1 d-block mb-2"></i>
+                            <small>Chưa có ảnh</small>
+                          </div>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* Ảnh giấy đăng ký xe mặt sau */}
+                <Col md={6}>
+                  <Card className="border shadow-sm h-100">
+                    <Card.Body>
+                      <div className="mb-2">
+                        <Form.Label className="fw-semibold mb-2">
+                          <i className=" me-2 text-primary"></i>
+                          Ảnh mặt sau giấy đăng ký xe
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={(e) =>
+                            handleImageChange(e, "documentBackImage")
+                          }
+                          size="sm"
+                        />
+                      </div>
+                      {formData.documentBackImage ? (
+                        <div className="mt-3">
+                          <div className="position-relative">
+                            <img
+                              src={URL.createObjectURL(
+                                formData.documentBackImage
+                              )}
+                              alt="Ảnh mặt sau cà vẹt"
+                              className="img-fluid rounded shadow-sm"
+                              style={{
+                                height: "180px",
+                                width: "100%",
+                                objectFit: "cover",
+                                border: "2px solid #22c55e",
+                              }}
+                            />
+                            <Badge
+                              bg="success"
+                              className="position-absolute top-0 end-0 m-2"
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              Đã chọn
+                            </Badge>
+                          </div>
+                          <small className="text-muted d-block mt-2 text-truncate">
+                            {formData.documentBackImage.name}
+                          </small>
+                        </div>
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center bg-light rounded mt-3"
+                          style={{ height: "180px" }}
+                        >
+                          <div className="text-center text-muted">
+                            <i className="bi bi-file-earmark-image fs-1 d-block mb-2"></i>
+                            <small>Chưa có ảnh</small>
+                          </div>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* Ảnh đầu xe */}
+                <Col md={6}>
+                  <Card className="border shadow-sm h-100">
+                    <Card.Body>
+                      <div className="mb-2">
+                        <Form.Label className="fw-semibold mb-2">
+                          <i className=" me-2 text-info"></i>
+                          Ảnh đầu xe
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={(e) => handleImageChange(e, "frontImage")}
+                          size="sm"
+                        />
+                      </div>
+                      {formData.frontImage ? (
+                        <div className="mt-3">
+                          <div className="position-relative">
+                            <img
+                              src={URL.createObjectURL(formData.frontImage)}
+                              alt="Preview đầu xe"
+                              className="img-fluid rounded shadow-sm"
+                              style={{
+                                height: "180px",
+                                width: "100%",
+                                objectFit: "cover",
+                                border: "2px solid #22c55e",
+                              }}
+                            />
+                            <Badge
+                              bg="success"
+                              className="position-absolute top-0 end-0 m-2"
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              Đã chọn
+                            </Badge>
+                          </div>
+                          <small className="text-muted d-block mt-2 text-truncate">
+                            {formData.frontImage.name}
+                          </small>
+                        </div>
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center bg-light rounded mt-3"
+                          style={{ height: "180px" }}
+                        >
+                          <div className="text-center text-muted">
+                            <i className="bi bi-card-image fs-1 d-block mb-2"></i>
+                            <small>Chưa có ảnh</small>
+                          </div>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* Ảnh thân xe - bên hông */}
+                {/* Ảnh thân xe - bên trái */}
+                <Col md={6}>
+                  <Card className="border shadow-sm h-100">
+                    <Card.Body>
+                      <div className="mb-2">
+                        <Form.Label className="fw-semibold mb-2">
+                          <i className="me-2 text-warning"></i>
+                          Ảnh thân xe (bên trái)
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={(e) =>
+                            handleImageChange(e, "sideLeftImage")
+                          }
+                          size="sm"
+                        />
+                      </div>
+                      {formData.sideLeftImage ? (
+                        <div className="mt-3">
+                          <div className="position-relative">
+                            <img
+                              src={URL.createObjectURL(formData.sideLeftImage)}
+                              alt="Preview thân xe"
+                              className="img-fluid rounded shadow-sm"
+                              style={{
+                                height: "180px",
+                                width: "100%",
+                                objectFit: "cover",
+                                border: "2px solid #22c55e",
+                              }}
+                            />
+                            <Badge
+                              bg="success"
+                              className="position-absolute top-0 end-0 m-2"
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              Đã chọn
+                            </Badge>
+                          </div>
+                          <small className="text-muted d-block mt-2 text-truncate">
+                            {formData.sideLeftImage.name}
+                          </small>
+                        </div>
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center bg-light rounded mt-3"
+                          style={{ height: "180px" }}
+                        >
+                          <div className="text-center text-muted">
+                            <i className="bi bi-image fs-1 d-block mb-2"></i>
+                            <small>Chưa có ảnh</small>
+                          </div>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* Ảnh thân xe - bên phải */}
+                <Col md={6}>
+                  <Card className="border shadow-sm h-100">
+                    <Card.Body>
+                      <div className="mb-2">
+                        <Form.Label className="fw-semibold mb-2">
+                          <i className=" me-2 text-warning"></i>
+                          Ảnh thân xe (bên phải)
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={(e) =>
+                            handleImageChange(e, "sideRightImage")
+                          }
+                          size="sm"
+                        />
+                      </div>
+                      {formData.sideRightImage ? (
+                        <div className="mt-3">
+                          <div className="position-relative">
+                            <img
+                              src={URL.createObjectURL(formData.sideRightImage)}
+                              alt="Preview thân xe"
+                              className="img-fluid rounded shadow-sm"
+                              style={{
+                                height: "180px",
+                                width: "100%",
+                                objectFit: "cover",
+                                border: "2px solid #22c55e",
+                              }}
+                            />
+                            <Badge
+                              bg="success"
+                              className="position-absolute top-0 end-0 m-2"
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              Đã chọn
+                            </Badge>
+                          </div>
+                          <small className="text-muted d-block mt-2 text-truncate">
+                            {formData.sideRightImage.name}
+                          </small>
+                        </div>
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center bg-light rounded mt-3"
+                          style={{ height: "180px" }}
+                        >
+                          <div className="text-center text-muted">
+                            <i className="bi bi-image fs-1 d-block mb-2"></i>
+                            <small>Chưa có ảnh</small>
+                          </div>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                {/* Ảnh đuôi xe */}
+                <Col md={6}>
+                  <Card className="border shadow-sm h-100">
+                    <Card.Body>
+                      <div className="mb-2">
+                        <Form.Label className="fw-semibold mb-2">
+                          <i className="me-2 text-danger"></i>
+                          Ảnh đuôi xe
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={(e) => handleImageChange(e, "rearImage")}
+                          size="sm"
+                        />
+                      </div>
+                      {formData.rearImage ? (
+                        <div className="mt-3">
+                          <div className="position-relative">
+                            <img
+                              src={URL.createObjectURL(formData.rearImage)}
+                              alt="Preview đuôi xe"
+                              className="img-fluid rounded shadow-sm"
+                              style={{
+                                height: "180px",
+                                width: "100%",
+                                objectFit: "cover",
+                                border: "2px solid #22c55e",
+                              }}
+                            />
+                            <Badge
+                              bg="success"
+                              className="position-absolute top-0 end-0 m-2"
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              Đã chọn
+                            </Badge>
+                          </div>
+                          <small className="text-muted d-block mt-2 text-truncate">
+                            {formData.rearImage.name}
+                          </small>
+                        </div>
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center bg-light rounded mt-3"
+                          style={{ height: "180px" }}
+                        >
+                          <div className="text-center text-muted">
+                            <i className="bi bi-card-image fs-1 d-block mb-2"></i>
+                            <small>Chưa có ảnh</small>
+                          </div>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
+
+              <Alert variant="light" className="mt-3 mb-0 border">
+                <small className="text-muted">
+                  <i className="bi bi-info-circle me-2"></i>
+                  Chấp nhận file JPG, JPEG, PNG. Tối đa 5MB/ảnh
+                </small>
+              </Alert>
+            </div>
             <div className="d-flex justify-content-end gap-2">
               <Button
                 variant="secondary"
