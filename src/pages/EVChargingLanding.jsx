@@ -37,7 +37,6 @@ export default function EVChargingLanding() {
         if (err?.response?.status === 401) {
           setError(
             "API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access."
-            "API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access."
           );
         } else {
           setError(
