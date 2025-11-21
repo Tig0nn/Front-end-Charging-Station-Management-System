@@ -30,12 +30,13 @@ export default function EVChargingLanding() {
         const response = await plansAPI.getPlans();
         setPlans(response.data?.result || response.data || []);
         setError(null);
+        console.log("Fetched subscription plans:", response.data);
       } catch (err) {
         console.error("Failed to fetch subscription plans:", err);
 
         if (err?.response?.status === 401) {
           setError(
-            "⚠️ API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access."
+            "API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access."
           );
         } else {
           setError(
@@ -60,10 +61,9 @@ export default function EVChargingLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="relative z-50 bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div>
+      <nav>
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
               <div className="w-15 h-15 flex items-center justify-center">
@@ -129,7 +129,6 @@ export default function EVChargingLanding() {
 
       {/* Hero Section */}
       <section className="py-10 relative min-h-screen flex flex-col justify-center overflow-hidden">
-        {/* Background Image */}
         <div
           className="absolute inset-0 w-full h-full bg-cover bg-center"
           style={{
@@ -141,11 +140,7 @@ export default function EVChargingLanding() {
         {/* Gradient Overlay - Emerald Green */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/80 via-emerald-500/70 to-teal-600/80"></div>
 
-        {/* Subtle Pattern Overlay */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-        </div>
+
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="mb-8">
@@ -182,9 +177,9 @@ export default function EVChargingLanding() {
 
       {/* Features Section */}
       <section id="features" className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
               Tiện ích{" "}
               <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                 gì mà nhiều thế?
@@ -196,7 +191,7 @@ export default function EVChargingLanding() {
           </div>
 
           {/* Detailed Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
+          <div className="grid lg:grid-cols-3 gap-8 mt-16">
             {[
               {
                 icon: BadgeDollarSign,
@@ -235,7 +230,7 @@ export default function EVChargingLanding() {
             ].map((feature, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl p-6 border border-gray-200 hover:border-emerald-500 hover:shadow-lg transition-all hover:scale-105 group"
+                className="bg-white rounded-xl p-6 border border-gray-200 hover:border-emerald-500 hover:shadow-lg transition-all hover:scale-105"
               >
                 <feature.icon className="w-12 h-12 text-emerald-600 mb-4 group-hover:scale-110 transition-transform" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -255,7 +250,7 @@ export default function EVChargingLanding() {
       >
         {/* Feature Tabs */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
             Tràn ngập ưu đãi{" "}
             <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               hấp dẫn!

@@ -282,156 +282,151 @@ const TransactionHistory = () => {
           onClick={handleCloseDetailModal}
         >
           <div
-            className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6"
+            className="bg-white rounded-xl shadow-2xl max-w-lg w-full mt-15"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">
+            <div className="flex justify-between items-center px-6 py-2 border-b">
+              <h3 className="text-lg font-bold text-gray-900">
                 Chi tiết phiên sạc
               </h3>
               <button
                 onClick={handleCloseDetailModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <i className="bi bi-x-lg text-2xl"></i>
+                <i className="bi bi-x-lg text-lg"></i>
               </button>
             </div>
 
             {/* Content */}
-            <div className="space-y-4">
+            <div className="p-4 space-y-3">
               {/* Thông tin trạm */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <div>
+                <h6 className="font-semibold mb-2 pb-2 border-b flex items-center gap-2 text-sm" style={{ color: "#22c55e" }}>
                   <i className="bi bi-geo-alt text-[#22c55e]"></i>
                   Thông tin trạm sạc
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
+                </h6>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-sm text-gray-500">Trạm sạc:</span>
-                    <p className="font-medium">{detailSession.stationName}</p>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Trạm sạc</small>
+                      <div className="font-semibold text-sm">{detailSession.stationName}</div>
+                    </div>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">Trụ sạc:</span>
-                    <p className="font-medium">
-                      {detailSession.chargingPointName || "N/A"}
-                    </p>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Trụ sạc</small>
+                      <div className="font-semibold text-sm">
+                        {detailSession.chargingPointName || "N/A"}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Thông tin thời gian */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <div>
+                <h6 className="font-semibold mb-2 pb-2 border-b flex items-center gap-2 text-sm" style={{ color: "#22c55e" }}>
                   <i className="bi bi-clock text-[#22c55e]"></i>
                   Thông tin thời gian
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
+                </h6>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-sm text-gray-500">Bắt đầu:</span>
-                    <p className="font-medium">
-                      {formatDateTime(detailSession.startTime).date}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {formatDateTime(detailSession.startTime).time}
-                    </p>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Bắt đầu</small>
+                      <div className="font-semibold text-sm">
+                        {formatDateTime(detailSession.startTime).date}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {formatDateTime(detailSession.startTime).time}
+                      </div>
+                    </div>
                   </div>
                   {detailSession.endTime && (
                     <div>
-                      <span className="text-sm text-gray-500">Kết thúc:</span>
-                      <p className="font-medium">
-                        {formatDateTime(detailSession.endTime).date}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {formatDateTime(detailSession.endTime).time}
-                      </p>
+                      <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                        <small className="text-muted d-block mb-1 text-xs">Kết thúc</small>
+                        <div className="font-semibold text-sm">
+                          {formatDateTime(detailSession.endTime).date}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {formatDateTime(detailSession.endTime).time}
+                        </div>
+                      </div>
                     </div>
                   )}
-                  <div>
-                    <span className="text-sm text-gray-500">Thời lượng:</span>
-                    <p className="font-medium">
-                      {formatDuration(detailSession.durationMin)}
-                    </p>
+                  <div className={detailSession.endTime ? "col-span-2" : ""}>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Thời lượng</small>
+                      <div className="font-semibold text-sm">
+                        {formatDuration(detailSession.durationMin)}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Thông tin năng lượng & chi phí */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <div>
+                <h6 className="font-semibold mb-2 pb-2 border-b flex items-center gap-2 text-sm" style={{ color: "#22c55e" }}>
                   <i className="bi bi-lightning-charge text-[#22c55e]"></i>
                   Năng lượng & Chi phí
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
+                </h6>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-sm text-gray-500">
-                      Lượng điện đã sạc:
-                    </span>
-                    <p className="font-medium text-lg">
-                      {Number(detailSession.energyKwh || 0).toFixed(2)} kWh
-                    </p>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Lượng điện đã sạc</small>
+                      <div className="font-semibold text-xl" style={{ color: "#22c55e" }}>
+                        {Number(detailSession.energyKwh || 0).toFixed(2)} kWh
+                      </div>
+                    </div>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">Tổng chi phí:</span>
-                    <p className="font-medium text-lg text-[#22c55e]">
-                      {formatCurrency(detailSession.costTotal)}
-                    </p>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Tổng chi phí</small>
+                      <div className="font-semibold text-xl" style={{ color: "#22c55e" }}>
+                        {formatCurrency(detailSession.costTotal)}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Trạng thái */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <div>
+                <h6 className="font-semibold mb-2 pb-2 border-b flex items-center gap-2 text-sm" style={{ color: "#22c55e" }}>
                   <i className="bi bi-info-circle text-[#22c55e]"></i>
                   Trạng thái
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
+                </h6>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-sm text-gray-500">
-                      Trạng thái phiên:
-                    </span>
-                    <p className="font-medium">
-                      {detailSession.status === "COMPLETED" ? (
-                        <span className="text-green-600">Đã hoàn thành</span>
-                      ) : (
-                        <span className="text-yellow-600">Đang tiến hành</span>
-                      )}
-                    </p>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Trạng thái phiên</small>
+                      <div className="font-semibold text-sm">
+                        {detailSession.status === "COMPLETED" ? (
+                          <span className="text-green-600">Đã hoàn thành</span>
+                        ) : (
+                          <span className="text-yellow-600">Đang tiến hành</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">
-                      Trạng thái thanh toán:
-                    </span>
-                    <p className="font-medium">
-                      {detailSession.paymentStatus === "PAID" ? (
-                        <span className="text-green-600">Đã thanh toán</span>
-                      ) : detailSession.paymentStatus === "PENDING" ? (
-                        <span className="text-yellow-600">Đang xử lý</span>
-                      ) : (
-                        <span className="text-red-600">Chưa thanh toán</span>
-                      )}
-                    </p>
+                    <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
+                      <small className="text-muted d-block mb-1 text-xs">Trạng thái thanh toán</small>
+                      <div className="font-semibold text-sm">
+                        {detailSession.paymentStatus === "PAID" ? (
+                          <span className="text-green-600">Đã thanh toán</span>
+                        ) : detailSession.paymentStatus === "PENDING" ? (
+                          <span className="text-yellow-600">Đang xử lý</span>
+                        ) : (
+                          <span className="text-red-600">Chưa thanh toán</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Session ID */}
-              <div className="text-center pt-2 border-t">
-                <span className="text-xs text-gray-400">
-                  ID: {detailSession.sessionId}
-                </span>
-              </div>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleCloseDetailModal}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-              >
-                Đóng
-              </button>
             </div>
           </div>
         </div>
@@ -557,7 +552,7 @@ const CostAnalysis = () => {
             />
             <Tooltip formatter={(v) => [formatCurrency(v), "Chi phí"]} />
             <Legend />
-            <Bar dataKey="cost" name="Chi phí" fill="#10B981" />
+            <Bar dataKey="cost" name="Chi phí" fill="#22c55e" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -584,7 +579,7 @@ const CostAnalysis = () => {
                 dataKey="kwh"
                 name="kWh"
                 type="monotone"
-                stroke="#3B82F6"
+                stroke="#22c55e"
                 strokeWidth={2}
                 dot={{ r: 3 }}
               />
@@ -604,7 +599,7 @@ const CostAnalysis = () => {
               <YAxis allowDecimals={false} />
               <Tooltip formatter={(v) => [v, "Phiên sạc"]} />
               <Legend />
-              <Bar dataKey="sessions" name="Phiên sạc" fill="#F59E0B" />
+              <Bar dataKey="sessions" name="Phiên sạc" fill="#22c55e" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -908,7 +903,7 @@ export default function HistoryPage() {
       {/* 4 thẻ thống kê */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl">
+          <span className="text-[#22c55e] text-2xl">
             <i className="bi bi-cash-stack"></i>
           </span>
           <div>
@@ -918,7 +913,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl">
+          <span className="text-[#22c55e] text-2xl">
             <i className="bi bi-lightning-fill"></i>
           </span>
           <div>
@@ -928,7 +923,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl">
+          <span className="text-[#22c55e] text-2xl">
             <i className="bi bi-clock-fill"></i>
           </span>
           <div>
@@ -938,7 +933,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
-          <span className="text-[#2bf0b5] text-2xl">
+          <span className="text-[#22c55e] text-2xl">
             <i className="bi bi-cash-coin"></i>
           </span>
           <div>
