@@ -139,10 +139,10 @@ export default function Signup() {
     console.log(email, password, confirmed_password);
   };
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-row-reverse">
       <ToastContainer  position="top-right" autoClose={3000} />
       {/* Left Side - Register Form */}
-      <div className="w-full lg:w-2/5 bg-white flex flex-col px-8 sm:px-12 lg:px-16 py-8 relative z-10">
+      <div className="w-full lg:w-2/5 bg-white flex flex-row px-8 sm:px-12 lg:px-16 py-8 relative z-10">
         {/* Logo và tên ở góc trái trên cùng */}
         <div className="flex items-center gap-4 mb-8 -ml-2">
           <img src={logo} alt="Logo" className="h-28 object-contain cursor-pointer" onClick={() => navigate("/")} />

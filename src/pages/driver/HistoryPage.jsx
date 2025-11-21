@@ -442,7 +442,7 @@ const CostAnalysis = () => {
 
   if (error) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-semibold">Chi phí theo tháng</h2>
@@ -473,25 +473,17 @@ const CostAnalysis = () => {
 
   if (!sessions.length) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <h2 className="text-2xl font-semibold">Chi phí theo tháng</h2>
-            <button
-              className="inline-flex items-center gap-2 px-3 py-2 text-white rounded hover:opacity-90"
-              style={{ backgroundColor: "#22c55e" }}
-              onClick={reload}
-            >
-              <i className="bi bi-arrow-clockwise" />
-              <span>Làm mới</span>
-            </button>
           </div>
           <EmptyState
             icon="bi-graph-up"
             message="Chưa có dữ liệu để theo dõi và tính toán"
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-xl font-semibold mb-3">Năng lượng tiêu thụ</h3>
             <EmptyState
@@ -533,7 +525,7 @@ const CostAnalysis = () => {
   const sessionData = months.map((m) => ({ month: m, sessions: countMap[m] }));
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col-reverse">
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Chi phí theo tháng</h2>
         <ResponsiveContainer width="100%" height={360}>
@@ -557,7 +549,6 @@ const CostAnalysis = () => {
         </ResponsiveContainer>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-xl font-semibold mb-3">Năng lượng tiêu thụ</h3>
           <ResponsiveContainer width="100%" height={260}>
@@ -603,7 +594,6 @@ const CostAnalysis = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
     </div>
   );
 };
@@ -857,7 +847,7 @@ export default function HistoryPage() {
   return (
     <div>
       {/* Header với nút làm mới */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold">Tổng quan</h2>
         <button
           className="inline-flex items-center gap-2 px-4 py-2 text-white !rounded-md font-semibold transition-all hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -901,7 +891,7 @@ export default function HistoryPage() {
       </div>
 
       {/* 4 thẻ thống kê */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3">
           <span className="text-[#22c55e] text-2xl">
             <i className="bi bi-cash-stack"></i>

@@ -320,14 +320,14 @@ export default function StationOverview() {
       )}
 
       {/* Charging Points Grid - New Styling */}
-      <div className="row g-4">
+      <div className="grid grid-cols-7 gap-4 items-center">
         {chargingPoints.map((point) => {
           const statusInfo = getStatusInfo(point);
           const isCharging = statusInfo.text === "Đang sạc";
           const sessionInfo = point.currentSessionInfo;
 
           return (
-            <div key={point.pointId} className="col-12 col-md-6 col-lg-4">
+            <div key={point.pointId} >
               <div
                 className="border-2 rounded-lg p-4 h-100"
                 style={{

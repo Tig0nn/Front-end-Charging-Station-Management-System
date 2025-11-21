@@ -250,7 +250,7 @@ const StaffReports = () => {
           </div>
 
           {/* Bộ lọc trạng thái */}
-          <ButtonGroup className="mb-3 w-100">
+          <ButtonGroup className="mb-3 w-50">
             <Button
               style={{
                 backgroundColor: filterStatus === "ALL" ? "#22c55e" : "transparent",
@@ -298,6 +298,19 @@ const StaffReports = () => {
               Đã xử lý (
               {reports.filter((r) => r.status === "DONE").length})
             </Button>
+                          <Form.Group>
+                            <Form.Label className="small text-muted">Mức độ</Form.Label>
+                            <Form.Select
+                              value={filterStatus}
+                              onChange={(e) => setFilterStatus(e.target.value)}
+                            >
+                              <option value="DONE">done</option>
+                              <option value="WORKING">đang</option>
+                              <option value="WAITING">đợi</option>
+                              <option value="MEDIUM">Trung bình</option>
+                              <option value="LOW">Thấp</option>
+                            </Form.Select>
+                          </Form.Group>
           </ButtonGroup>
 
           {error ? (

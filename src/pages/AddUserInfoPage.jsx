@@ -105,8 +105,8 @@ export default function AddUserInfoPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-green-50 signup-page">
-      <div className="w-[500px] bg-white rounded-xl shadow p-8">
+    <div className="flex flex-row items-center justify-start bg-green-50 signup-page">
+      <div className="w-[1000px] bg-white rounded-xl shadow p-8 h-[1000px]">
         <div className="text-center mb-6">
           <h1 className="text-xl font-semibold text-gray-800">
             Vui lòng nhập thông tin
@@ -259,7 +259,7 @@ export default function AddUserInfoPage() {
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-3 w-full py-2.5 text-white font-semibold !rounded-lg bg-gradient-to-r from-[#e82a2a] to-[#f00707] hover:opacity-90 transition"
+            className="mt-3 w-[20px] py-2.5 text-white font-semibold !rounded-lg bg-gradient-to-r from-[#e82a2a] to-[#f00707] hover:opacity-90 transition"
           >
             Đăng xuất
           </button>

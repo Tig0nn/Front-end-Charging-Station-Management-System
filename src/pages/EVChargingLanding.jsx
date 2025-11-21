@@ -16,9 +16,7 @@ import { plansAPI } from "../lib/apiServices";
 import LoadingSpinner from "../components/loading_spins/LoadingSpinner";
 
 export default function EVChargingLanding() {
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(0);
+  const navigate = useNavigate();  const [activeFeature, setActiveFeature] = useState(0);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,14 +62,14 @@ export default function EVChargingLanding() {
     <div>
       <nav>
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex flex-col-reverse justify-between items-center py-4">
             <div className="flex items-center space-x-3">
               <div className="w-15 h-15 flex items-center justify-center">
                 <img src="src/assets/image/logo.png" className="w-15 h-15" />
               </div>
               <span className="text-xl font-bold text-gray-900">T-Green</span>
             </div>
-            <div className="hidden md:flex space-x-8">
+            <div className="md:flex space-x-8">
               <a
                 href="#features"
                 className="font-bold text-decoration-none hover:scale-105 transition-colors"
@@ -112,25 +110,14 @@ export default function EVChargingLanding() {
                 </button>
               </Link>
             </div>
-
-            <button
-              className="md:hidden text-gray-900"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="py-10 relative min-h-screen flex flex-col justify-center overflow-hidden">
+      <section>
         <div
-          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          className="w-full h-full max-h-screen bg-center bg-cover top-0 left-0 "
           style={{
             backgroundImage:
               "url(https://images.unsplash.com/photo-1669349412975-a9dd0d2292ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVjdHJpYyUyMGNhciUyMGNoYXJnaW5nJTIwZ3JlZW58ZW58MXx8fHwxNzYzMDM4MjU3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral)",
@@ -138,13 +125,13 @@ export default function EVChargingLanding() {
         ></div>
 
         {/* Gradient Overlay - Emerald Green */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/80 via-emerald-500/70 to-teal-600/80"></div>
+        <div className="bg-gradient-to-br from-emerald-600/80 via-emerald-500/70 to-teal-600/80"></div>
 
 
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white border border-white/30 mb-6">
+            <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white border border-white/30 mb-6">
               <Zap className="w-4 h-4 mr-2" />
               Hệ thống trạm sạc xe điện thông minh
             </div>
@@ -159,7 +146,7 @@ export default function EVChargingLanding() {
               Bạn có xe điện? Chúng tôi có trạm sạc! Hãy tin tưởng vào T-GREEN.
             </p>
 
-            <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+            <div className="flex flex-col sm:flex-row justify-end items-center space-y-4 sm:space-y-0 sm:space-x-6">
               <button
                 onClick={() => navigate("/signup")}
                 className="font-bold !rounded-2xl group px-8 py-4 
@@ -265,7 +252,7 @@ export default function EVChargingLanding() {
         )}
         {error && <div className="text-center text-red-600 px-4">{error}</div>}
         {!loading && !error && plans.length > 0 && (
-          <div className="flex flex-col lg:flex-row justify-center mb-8 max-w-7xl mx-auto px-4">
+          <div className="flex flex-col lg:flex-row-reverse justify-center mb-8 max-w-7xl mx-auto px-4">
             <div className="flex flex-col sm:flex-row lg:flex-col space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-0 lg:space-y-4 lg:mr-8 mb-8 lg:mb-0">
               {/* HIỂN THỊ TÊN CÁC GÓI */}
               {plans.map((plan, index) => (
@@ -283,9 +270,9 @@ export default function EVChargingLanding() {
             </div>
 
             {/* Feature Content */}
-            <div className="flex-1 max-w-2xl">
+            <div className="max-w-2xl">
               <div className="bg-white rounded-2xl p-8 border border-emerald-300 shadow-xl">
-                <div className="flex items-center mb-6">
+                <div className="flex flex-col justify-start items-end mb-6">
                   <h3 className="text-2xl font-bold text-gray-900">
                     {plans[activeFeature]?.name}
                   </h3>
