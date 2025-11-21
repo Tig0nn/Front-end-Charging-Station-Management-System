@@ -254,7 +254,7 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={!agree || isSubmitting}
-                className={`w-full h-12 text-white font-semibold rounded-lg transition-all duration-200 ${!agree || isSubmitting
+                className={`w-full h-12 text-white font-semibold !rounded-lg transition-all duration-200 ${!agree || isSubmitting
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-600/50"
                   }`}

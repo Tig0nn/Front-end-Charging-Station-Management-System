@@ -1,7 +1,8 @@
 // src/pages/PaymentPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { plansAPI, dashboardAPI } from "../../lib/apiServices";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Import các component con
 import PlanCard from "../../components/PlanCard";
@@ -322,6 +323,7 @@ export default function PaymentPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Error banner */}
         {error && availablePlans.length > 0 && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Form, Spinner, Alert } from "react-bootstrap";
+import { Row, Col, Card, Form, Spinner, Alert, Button } from "react-bootstrap";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -305,8 +305,8 @@ const Reports = () => {
                   {period === "weekly"
                     ? "Doanh thu tuần này (7 ngày)"
                     : period === "monthly"
-                    ? "Doanh thu 6 tháng gần nhất"
-                    : "Doanh thu năm nay (12 tháng)"}
+                      ? "Doanh thu 6 tháng gần nhất"
+                      : "Doanh thu năm nay (12 tháng)"}
                 </small>
               </div>
               <div className="d-flex gap-2">
@@ -320,17 +320,28 @@ const Reports = () => {
                   <option value="monthly">6 tháng</option>
                   <option value="yearly">Theo năm</option>
                 </Form.Select>
-                <button
-                  className="btn btn-outline-success btn-sm "
-                  onClick={() => loadReportsData(period)}
+                <Button
+                  onClick= {() => loadReportsData(period)}
                   disabled={loading}
+                  className="d-flex align-items-center gap-2"
+                  style={{
+                    backgroundColor: "#22c55e",
+                    borderColor: "#22c55e",
+                    color: "white",
+                  }}
                 >
                   {loading ? (
-                    <Spinner size="sm" animation="border" variant="success" />
+                    <>
+                      <Spinner as="span" animation="border" size="sm" />
+                      <span>Đang tải...</span>
+                    </>
                   ) : (
-                    <i className="bi bi-arrow-clockwise variant-success"></i>
+                    <>
+                      <i className="bi bi-arrow-clockwise"></i>
+                      <span>Làm mới</span>
+                    </>
                   )}
-                </button>
+                </Button>
               </div>
             </Card.Header>
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { staffAPI } from "../../lib/apiServices";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Modal } from "react-bootstrap";
 import {
   Container,
@@ -143,6 +144,7 @@ const StaffReports = () => {
 
   return (
     <Container fluid className="p-4">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Form Báo cáo sự cố */}
       <Card className="shadow-sm mb-4">
         <Card.Body className="p-4">
@@ -199,9 +201,9 @@ const StaffReports = () => {
               className="w-100 py-2"
               disabled={submitting}
               style={{
-                backgroundColor: filterStatus === "ALL" ? "#22c55e" : "transparent",
+                backgroundColor: "#22c55e",
                 borderColor: "#22c55e",
-                color: filterStatus === "ALL" ? "white" : "#22c55e",
+                color: "white",
                 fontWeight: "bold"
               }}
             >
@@ -286,15 +288,15 @@ const StaffReports = () => {
             </Button>
             <Button
               style={{
-                backgroundColor: filterStatus === "RESOLVED" ? "#22c55e" : "transparent",
+                backgroundColor: filterStatus === "DONE" ? "#22c55e" : "transparent",
                 borderColor: "#22c55e",
-                color: filterStatus === "RESOLVED" ? "white" : "#22c55e",
+                color: filterStatus === "DONE" ? "white" : "#22c55e",
                 fontWeight: "bold"
               }}
-              onClick={() => setFilterStatus("RESOLVED")}
+              onClick={() => setFilterStatus("DONE")}
             >
               Đã xử lý (
-              {reports.filter((r) => r.status === "RESOLVED").length})
+              {reports.filter((r) => r.status === "DONE").length})
             </Button>
           </ButtonGroup>
 

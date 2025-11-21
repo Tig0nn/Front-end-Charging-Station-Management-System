@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "leaflet/dist/leaflet.css";
 import "./MapPage.css";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices.js";
@@ -340,6 +341,7 @@ export default function MapPage() {
 
   return (
     <div className="map-page-container">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Map Container - Bên trái */}
       <div className="map-container">
         {/* Header cho Map với thanh tìm kiếm */}

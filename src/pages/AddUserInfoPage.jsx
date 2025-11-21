@@ -246,10 +246,10 @@ export default function AddUserInfoPage() {
           <button
             type="submit"
             disabled={!agree || isSubmitting}
-            className={`w-full py-2.5 text-white font-semibold rounded-lg transition ${
+            className={`w-full py-2.5 text-white font-semibold !rounded-lg transition ${
               !agree || isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#2bf0b5] hover:bg-[#00ffc6] cursor-pointer"
+                : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-600/50"
             }`}
           >
             {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
@@ -259,7 +259,7 @@ export default function AddUserInfoPage() {
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-3 w-full py-2.5 text-white font-semibold rounded-lg bg-gradient-to-r from-[#e82a2a] to-[#f00707] hover:opacity-90 transition"
+            className="mt-3 w-full py-2.5 text-white font-semibold !rounded-lg bg-gradient-to-r from-[#e82a2a] to-[#f00707] hover:opacity-90 transition"
           >
             Đăng xuất
           </button>

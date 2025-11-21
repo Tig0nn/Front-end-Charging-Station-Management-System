@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { staffAPI, stationsAPI } from "../../lib/apiServices";
 
 const AddStation = () => {
@@ -150,6 +151,7 @@ const AddStation = () => {
 
   return (
     <Container>
+      <ToastContainer position="top-right" autoClose={3000} />
       <Row className="mb-4">
         <Col>
           <h1>Add New Charging Station</h1>

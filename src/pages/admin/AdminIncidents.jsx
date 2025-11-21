@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Container,
   Row,
@@ -176,6 +177,7 @@ const AdminIncidents = () => {
 
   return (
     <Container fluid className="p-4">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>

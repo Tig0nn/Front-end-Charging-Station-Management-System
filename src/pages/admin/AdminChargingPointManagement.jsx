@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Badge } from "react-bootstrap";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Search, MapPin, Zap, Plus, Trash2 } from "lucide-react";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
@@ -44,7 +45,7 @@ const AdminChargingPointManagement = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [showErrorOnly, setShowErrorOnly] = useState(false);
+    const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, ERROR, IN_USE, MAINTENANCE, AVAILABLE
     const [deleteModal, setDeleteModal] = useState({
         show: false,
         point: null,
@@ -174,14 +175,29 @@ const AdminChargingPointManagement = () => {
         .filter(
             (station) =>
                 station.stationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                station.address?.toLowerCase().includes(searchTerm.toLowerCase())
+                station.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                station.chargingPoints.some((point) =>
+                    point.name?.toLowerCase().includes(searchTerm.toLowerCase())
+                )
         )
         .filter((station) => {
-            if (!showErrorOnly) return true;
-            // Chỉ hiển thị trạm có ít nhất 1 trụ lỗi
-            return station.chargingPoints.some(
-                (p) => p.status === "OUT_OF_SERVICE" || p.status === "UNAVAILABLE"
-            );
+            if (statusFilter === "ALL") return true;
+            
+            return station.chargingPoints.some((p) => {
+                if (statusFilter === "ERROR") {
+                    return p.status === "OUT_OF_SERVICE" || p.status === "UNAVAILABLE";
+                }
+                if (statusFilter === "IN_USE") {
+                    return p.status === "CHARGING" || (p.status === "AVAILABLE" && p.currentSessionId);
+                }
+                if (statusFilter === "MAINTENANCE") {
+                    return p.status === "MAINTENANCE";
+                }
+                if (statusFilter === "AVAILABLE") {
+                    return p.status === "AVAILABLE" && !p.currentSessionId;
+                }
+                return true;
+            });
         });
 
     // Handle create charging point (placeholder)
@@ -303,6 +319,7 @@ const AdminChargingPointManagement = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 py-8 px-4">
+            <ToastContainer position="top-right" autoClose={3000} />
             <div className="max-w-7xl mx-auto">
                 {/* Delete Confirmation Modal */}
                 {deleteModal.show && (
@@ -584,7 +601,7 @@ const AdminChargingPointManagement = () => {
                         <button
                             onClick={() => loadStationsData(true)}
                             disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg font-semibold transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 text-white !rounded-lg font-semibold transition-colors"
                             style={{ backgroundColor: "#22c55e" }}
                             onMouseEnter={(e) =>
                                 !loading &&
@@ -619,21 +636,23 @@ const AdminChargingPointManagement = () => {
                         />
                         <input
                             type="text"
-                            placeholder="Tìm trạm sạc..."
+                            placeholder="Tìm theo tên trạm sạc hoặc tên trụ sạc..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22c55e] focus:border-transparent"
                         />
                     </div>
-                    <button
-                        onClick={() => setShowErrorOnly(!showErrorOnly)}
-                        className={`px-6 py-3 rounded-lg font-semibold transition-colors ${showErrorOnly
-                            ? "bg-[#22c55e] text-white"
-                            : "bg-white text-gray-700 border border-gray-300"
-                            }`}
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-6 py-3 border border-gray-300 rounded-lg font-semibold bg-white text-gray-700 focus:ring-2 focus:ring-[#22c55e] focus:border-transparent cursor-pointer"
                     >
-                        {showErrorOnly ? "Hiển thị tất cả" : "Chỉ trạm có lỗi"}
-                    </button>
+                        <option value="ALL">Tất cả trạng thái</option>
+                        <option value="AVAILABLE">Sẵn sàng</option>
+                        <option value="IN_USE">Đang sử dụng</option>
+                        <option value="MAINTENANCE">Bảo trì</option>
+                        <option value="ERROR">Lỗi</option>
+                    </select>
                 </div>
 
                 {/* Stats */}
@@ -717,7 +736,7 @@ const AdminChargingPointManagement = () => {
                                         onClick={() =>
                                             setCreateModal({ show: true, stationId: station.stationId })
                                         }
-                                        className="flex items-center gap-2 px-4 py-2 bg-white text-[#22c55e] rounded-lg font-semibold hover:bg-green-50 transition-colors"
+                                        className="flex items-center gap-2 px-4 py-2 bg-white text-[#22c55e] !rounded-lg font-semibold hover:bg-green-50 transition-colors"
                                     >
                                         <Plus size={20} />
                                         Tạo trụ sạc
@@ -810,7 +829,7 @@ const AdminChargingPointManagement = () => {
                                                                         chargingPower: point.chargingPower,
                                                                     });
                                                                 }}
-                                                                className="flex-1 px-3 py-2 text-white text-sm rounded-lg font-semibold transition-colors"
+                                                                className="flex-1 px-3 py-2 text-white text-sm !rounded-lg font-semibold transition-colors"
                                                                 style={{ backgroundColor: "#22c55e" }}
                                                                 onMouseEnter={(e) =>
                                                                     (e.currentTarget.style.backgroundColor = "#16a34a")
@@ -830,7 +849,7 @@ const AdminChargingPointManagement = () => {
                                                                     stationId: station.stationId,
                                                                 })
                                                             }
-                                                            className="px-3 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors"
+                                                            className="px-3 py-2 bg-red-100 text-red-700 text-sm !rounded-lg hover:bg-red-200 transition-colors"
                                                             title="Xóa trụ sạc"
                                                         >
                                                             <Trash2 size={16} />
@@ -849,8 +868,13 @@ const AdminChargingPointManagement = () => {
                 {filteredStations.length === 0 && (
                     <div className="text-center py-12">
                         <p className="text-gray-500 text-lg">
-                            {showErrorOnly
-                                ? "Không có trạm nào có trụ sạc lỗi"
+                            {statusFilter !== "ALL"
+                                ? `Không tìm thấy trạm nào có trụ sạc ${
+                                    statusFilter === "ERROR" ? "lỗi" :
+                                    statusFilter === "IN_USE" ? "đang sử dụng" :
+                                    statusFilter === "MAINTENANCE" ? "bảo trì" :
+                                    "sẵn sàng"
+                                }`
                                 : "Không tìm thấy trạm sạc nào"}
                         </p>
                     </div>

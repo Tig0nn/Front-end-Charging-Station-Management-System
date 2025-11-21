@@ -10,7 +10,8 @@ import {
   Form,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { stationsAPI, staffAPI } from "../../lib/apiServices";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
@@ -180,6 +181,7 @@ const StationsList = () => {
 
   return (
     <div>
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <div className="mb-4 d-flex justify-content-between align-items-center">
         <div>

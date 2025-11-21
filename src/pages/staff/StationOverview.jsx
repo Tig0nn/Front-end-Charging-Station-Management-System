@@ -8,7 +8,8 @@ import {
 } from "react-bootstrap";
 import { chargingPointsAPI } from "../../lib/apiServices";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Hàm định dạng công suất từ "POWER_22KW" thành "22kW"
 const formatPower = (powerString) => {
@@ -169,6 +170,7 @@ export default function StationOverview() {
 
   return (
     <Container className="py-4">
+      <ToastContainer  position="top-right" autoClose={3000} />
       {/* Header với nút Làm mới */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>

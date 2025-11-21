@@ -14,7 +14,8 @@ import {
   Alert,
 } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { vehiclesAPI } from "../../lib/apiServices.js";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
@@ -467,6 +468,7 @@ const VehicleInfoPage = () => {
 
   return (
     <Container fluid className="px-0">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>

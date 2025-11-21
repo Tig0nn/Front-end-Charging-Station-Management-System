@@ -12,7 +12,8 @@ import {
   Modal,
   Form,
 } from "react-bootstrap";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { BiEdit } from "react-icons/bi";
 import PlanCard from "../../components/PlanCard"; // Sử dụng PlanCard thống nhất
@@ -90,6 +91,7 @@ const UsersList = () => {
       try {
         setLoading(true);
         const res = await usersAPI.getDriver();
+        console.log("Danh sách tài xế:", res.data);
         setUsers(res?.data?.result || []);
       } catch (err) {
         console.error("Lỗi khi tải danh sách tài xế:", err);
@@ -235,7 +237,7 @@ const UsersList = () => {
             VIP
           </Badge>
         );
-      case "premium":
+      case "pay_as_you_go":
         return (
           <Badge
             bg="secondary"
@@ -243,7 +245,7 @@ const UsersList = () => {
             className="px-3 py-2 rounded-pill"
             style={style}
           >
-            Premium
+            Linh hoạt
           </Badge>
         );
       default:
@@ -302,6 +304,7 @@ const UsersList = () => {
 
   return (
     <Container className="py-4">
+      <ToastContainer position="top-right" autoClose={3000} />
       <Row>
         <Col>
           <h2 className="fw-bold">Quản lý tài xế</h2>
@@ -394,10 +397,10 @@ const UsersList = () => {
         </Col>
         <Col xs="auto">
           <Button
-            variant="primary"
-            size="lg"
+            size="md"
             onClick={() => handleShowPlanModal()}
-            className="d-flex align-items-center gap-2 px-4"
+            className="d-flex align-items-center gap-2 px-4 border-0 text-white"
+            style={{ backgroundColor: "#22c55e" }}
           >
             <FaPlus /> Thêm gói mới
           </Button>

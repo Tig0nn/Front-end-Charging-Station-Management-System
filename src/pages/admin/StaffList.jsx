@@ -35,25 +35,6 @@ const StaffList = () => {
     }
   };
 
-  const getPositionBadge = (position) => {
-    const badges = {
-      MANAGER: { color: "primary", text: "Quản lý" },
-      TECHNICIAN: { color: "success", text: "Kỹ thuật viên" },
-      STAFF: { color: "info", text: "Nhân viên" },
-      ADMIN: { color: "danger", text: "Quản trị viên" },
-    };
-    const badge = badges[position] || { color: "secondary", text: position || "Không rõ" };
-    return (
-      <Badge
-        bg={badge.color}
-        text={badge.color === "light" ? "dark" : "light"}
-        className="px-3 py-2 rounded-pill text-capitalize"
-        style={{ minWidth: "90px", textAlign: "center", fontWeight: 500 }}
-      >
-        {badge.text}
-      </Badge>
-    );
-  };
 
   return (
     <Container className="py-4">
@@ -85,7 +66,6 @@ const StaffList = () => {
                   <th>Tên</th>
                   <th>Liên hệ</th>
                   <th>Mã nhân viên</th>
-                  <th>Chức vụ</th>
                   <th>Trạm</th>
                 </tr>
               </thead>
@@ -101,7 +81,6 @@ const StaffList = () => {
                       </span>
                     </td>
                     <td>{staff.employeeNo || "—"}</td>
-                    <td>{getPositionBadge(staff.position)}</td>
                     <td>{staff.stationName || "—"}</td>
                   </tr>
                 ))}

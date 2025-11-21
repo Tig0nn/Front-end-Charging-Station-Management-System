@@ -10,7 +10,8 @@ import {
   Badge,
 } from "react-bootstrap";
 import { usersAPI, walletAPI } from "../../lib/apiServices";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CashTopup = () => {
   const [loading, setLoading] = useState(false);
@@ -137,6 +138,7 @@ const CashTopup = () => {
   };
   return (
     <Container fluid className="py-4">
+      <ToastContainer  position="top-right" autoClose={3000} />
       <Row className="justify-content-center">
         <Col md={8} lg={6}>
           {/* Main Card */}
@@ -183,7 +185,7 @@ const CashTopup = () => {
                         minWidth: "100px",
                         fontSize: "15px",
                         fontWeight: "600",
-                        backgroundColor: "#3b82f6",
+                        backgroundColor: "#22c55e",
                         border: "none",
                         borderRadius: "12px",
                       }}

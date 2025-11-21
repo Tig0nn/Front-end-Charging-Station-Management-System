@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices";
 import { QRCodeSVG } from "qrcode.react";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Download, Search, MapPin, Zap } from "lucide-react";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner";
 
@@ -173,6 +174,7 @@ const QRCodeManager = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -188,7 +190,7 @@ const QRCodeManager = () => {
             <button
               onClick={loadStationsData}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg font-semibold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-white !rounded-lg font-semibold transition-colors"
               style={{ backgroundColor: "#22c55e" }}
               onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = "#16a34a")}
               onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = "#22c55e")}
@@ -328,7 +330,7 @@ const QRCodeManager = () => {
                               onClick={() =>
                                 downloadQR(point, station.stationName)
                               }
-                              className="flex-1 px-3 py-2 text-white text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                              className="flex-1 px-3 py-2 text-white text-sm !rounded-lg transition-colors flex items-center justify-center gap-2"
                               style={{ backgroundColor: "#22c55e" }}
                               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#16a34a"}
                               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#22c55e"}
@@ -341,7 +343,7 @@ const QRCodeManager = () => {
                                 navigator.clipboard.writeText(qrUrl);
                                 toast.success("Đã sao chép link!");
                               }}
-                              className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors"
+                              className="px-3 py-2 bg-gray-200 text-gray-700 text-sm !rounded-lg hover:bg-gray-300 transition-colors"
                               title="Copy link"
                             >
                               <i className="bi bi-clipboard2-fill"></i>

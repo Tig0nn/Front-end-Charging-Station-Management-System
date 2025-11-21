@@ -3,7 +3,8 @@ import { Card, Button, Form, Row, Col, Spinner, Alert } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useAuth } from "../../hooks/useAuth.jsx";
 import { usersAPI } from "../../lib/apiServices.js";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
 const ProfileInfoPage = () => {
@@ -238,6 +239,7 @@ const ProfileInfoPage = () => {
 
   return (
     <div className="p-3">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Header của trang với nút chỉnh sửa */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>

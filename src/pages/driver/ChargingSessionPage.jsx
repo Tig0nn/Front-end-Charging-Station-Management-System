@@ -2,7 +2,8 @@
 // Thêm 'useRef' và 'useCallback' để quản lý polling (setInterval)
 // và xử lý state một cách chính xác, ổn định.
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { chargingPointsAPI } from "../../lib/apiServices.js";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
@@ -521,6 +522,7 @@ export default function ChargingSessionPage() {
   // 5. MÀN HÌNH ĐANG SẠC - CARD LAYOUT DESIGN
   return (
     <div className="min-h-screen bg-gray-50">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Back Button */}
       <button
         onClick={() => navigate("/driver/map")}

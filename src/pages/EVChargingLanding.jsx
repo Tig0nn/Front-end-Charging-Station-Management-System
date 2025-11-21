@@ -5,17 +5,12 @@ import {
   BadgeDollarSign,
   MapPin,
   Zap,
-  Users,
-  Settings,
+  BookCheck,
   BarChart3,
   Shield,
-  Smartphone,
   CreditCard,
-  Car,
-  ChevronRight,
   Menu,
   X,
-  Wifi,
 } from "lucide-react";
 import { plansAPI } from "../lib/apiServices";
 import LoadingSpinner from "../components/loading_spins/LoadingSpinner";
@@ -182,22 +177,6 @@ export default function EVChargingLanding() {
               </button>
             </div>
           </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mt-16">
-            {[
-              { number: "1000+", label: "Trạm sạc" },
-              { number: "50K+", label: "Người dùng" },
-              { number: "24/7", label: "Hỗ trợ" },
-            ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-lg">
-                  {stat.number}
-                </div>
-                <div className="text-white/80 text-sm drop-shadow-md">{stat.label}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -232,8 +211,8 @@ export default function EVChargingLanding() {
               },
               {
                 icon: CreditCard,
-                title: "Thanh toán Đa dạng",
-                description: "Hỗ trợ nhiều hình thức thanh toán.",
+                title: "Thanh toán qua Ví",
+                description: "Tiện lợi và tự động.",
               },
               {
                 icon: BarChart3,
@@ -246,6 +225,12 @@ export default function EVChargingLanding() {
                 title: "Bảo mật Cao",
                 description:
                   "Đảm bảo an toàn thông tin và giao dịch của người dùng",
+              },
+              {
+                icon: BookCheck,
+                title: "Đặt chỗ trước",
+                description:
+                  "Đặt chỗ trạm sạc trước để đảm bảo có chỗ khi bạn đến",
               },
             ].map((feature, index) => (
               <div
@@ -292,11 +277,10 @@ export default function EVChargingLanding() {
                 <button
                   key={plan.planId || index}
                   onClick={() => setActiveFeature(index)}
-                  className={`flex items-center px-6 py-4 rounded-xl transition-all text-left ${
-                    activeFeature === index
+                  className={`flex items-center px-6 py-4 mt-3 !rounded-xl transition-all text-left ${activeFeature === index
                       ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/40"
                       : "bg-white text-gray-700 hover:bg-emerald-50 border border-emerald-200"
-                  }`}
+                    }`}
                 >
                   <span className="font-medium">{plan.name}</span>
                 </button>
@@ -457,7 +441,6 @@ export default function EVChargingLanding() {
 
           <div className="border-t border-white mt-8 pt-8 text-center text-white">
             <p>&copy; 2025 T-Green - Một sản phẩm đến từ SWP391</p>
-            <p>Mọi thông tin chỉ là minh họa.</p>
           </div>
         </div>
       </footer>
