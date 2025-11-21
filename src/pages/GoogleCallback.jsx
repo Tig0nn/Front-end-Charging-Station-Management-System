@@ -71,7 +71,7 @@ const GoogleCallback = () => {
         }
       } catch (err) {
         // Lỗi từ API hoặc network
-        console.error("❌ Callback error:", err);
+        console.error("Callback error:", err);
         let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
 
         if (err.response) {
@@ -113,7 +113,7 @@ const GoogleCallback = () => {
           color: "white",
         }}
       >
-        <div style={{ fontSize: "48px" }}>❌</div>
+        <div style={{ fontSize: "48px" }}></div>
         <h2 style={{ color: "#e74c3c" }}>Đăng nhập Google thất bại</h2>
         <p style={{ color: "#7f8c8d", textAlign: "center", maxWidth: "500px" }}>
           {error}

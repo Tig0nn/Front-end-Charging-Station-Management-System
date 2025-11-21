@@ -76,6 +76,11 @@ const MainLayoutAdmin = ({ children }) => {
       label: "Mã QR",
       icon: "bi-qr-code",
     },
+    {
+      path: "/admin/vehicle-approvals",
+      label: "Duyệt xe",
+      icon: "bi-car-front-fill",
+    },
   ];
 
   const isActiveTab = (path) => location.pathname === path;

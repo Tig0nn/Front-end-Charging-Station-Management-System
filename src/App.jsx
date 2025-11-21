@@ -25,6 +25,7 @@ import QRCodeManager from "./pages/admin/QRCodeManager";
 import WalletPage from "./Pages/driver/WalletPage";
 import BookingPage from "./pages/driver/BookingPage";
 import AdminChargingPointManagement from "./pages/admin/AdminChargingPointManagement.jsx";
+import VehicleApprovalPage from "./pages/admin/VehicleApprovalPage.jsx";
 // import { usersAPI } from "./lib/apiServices"; // Not needed - layout components handle API calls
 import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
@@ -129,6 +130,11 @@ function App() {
                 <Route
                   path="/charging-points"
                   element={<AdminChargingPointManagement />}
+                />
+                {/* Vehicle Approvals Route */}
+                <Route
+                  path="/vehicle-approvals"
+                  element={<VehicleApprovalPage />}
                 />
                 {/* 404 Page */}
                 <Route path="*" element={<NotFound />} />

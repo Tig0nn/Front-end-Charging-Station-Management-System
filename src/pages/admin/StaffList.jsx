@@ -28,7 +28,7 @@ const StaffList = () => {
       setStaffs(response.data.result || []);
       setError(null);
     } catch (err) {
-      console.error("❌ Error fetching staff:", err);
+      console.error("Error fetching staff:", err);
       setError("Không thể tải danh sách nhân viên");
     } finally {
       setLoading(false);
@@ -42,7 +42,10 @@ const StaffList = () => {
       STAFF: { color: "info", text: "Nhân viên" },
       ADMIN: { color: "danger", text: "Quản trị viên" },
     };
-    const badge = badges[position] || { color: "secondary", text: position || "Không rõ" };
+    const badge = badges[position] || {
+      color: "secondary",
+      text: position || "Không rõ",
+    };
     return (
       <Badge
         bg={badge.color}

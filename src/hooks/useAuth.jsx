@@ -302,7 +302,7 @@ export const AuthProvider = ({ children }) => {
       // Client-side logout là đủ nếu backend không cung cấp proper logout endpoint
       console.log("✅ Client-side logout completed");
     } catch (error) {
-      console.error("❌ Logout error:", error);
+      console.error("Logout error:", error);
     } finally {
       // Always redirect to login page (guaranteed to happen)
       window.location.href = "/login";

@@ -45,7 +45,7 @@ export default function MainLayoutStaff({ children }) {
       // Trigger storage event for other components
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("❌ Error fetching staff profile:", error);
+      console.error("Error fetching staff profile:", error);
     }
   }, []);
 

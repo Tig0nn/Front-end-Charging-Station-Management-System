@@ -148,6 +148,12 @@ const apiServices = {
     updateVehicle: (vehicleId, vehicleData) =>
       api.put(`/api/vehicles/${vehicleId}`, vehicleData),
     deleteVehicle: (vehicleId) => api.delete(`/api/vehicles/${vehicleId}`),
+    // Admin vehicle approval
+    getPendingVehicles: () => api.get("/api/vehicles/pending"),
+    approveVehicle: (vehicleId) =>
+      api.put(`/api/vehicles/${vehicleId}/approve`),
+    rejectVehicle: (vehicleId, reason) =>
+      api.put(`/api/vehicles/${vehicleId}/reject?rejectionReason=${reason}`),
   },
   chargingSessions: {
     // Lịch sử sạc của driver hiện tại

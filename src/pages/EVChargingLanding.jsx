@@ -40,7 +40,7 @@ export default function EVChargingLanding() {
 
         if (err?.response?.status === 401) {
           setError(
-            "⚠️ API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access."
+            "API /api/plans yêu cầu authentication. Backend cần cho phép endpoint này là PUBLIC hoặc cho phép anonymous access."
           );
         } else {
           setError(
@@ -160,9 +160,7 @@ export default function EVChargingLanding() {
             </div>
 
             <h1 className="text-10xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              <span className="text-white drop-shadow-lg">
-                T-GREEN
-              </span>
+              <span className="text-white drop-shadow-lg">T-GREEN</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
@@ -194,7 +192,9 @@ export default function EVChargingLanding() {
                 <div className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-lg">
                   {stat.number}
                 </div>
-                <div className="text-white/80 text-sm drop-shadow-md">{stat.label}</div>
+                <div className="text-white/80 text-sm drop-shadow-md">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -281,7 +281,9 @@ export default function EVChargingLanding() {
           </p>
         </div>
         {loading && (
-          <div><LoadingSpinner /></div>
+          <div>
+            <LoadingSpinner />
+          </div>
         )}
         {error && <div className="text-center text-red-600 px-4">{error}</div>}
         {!loading && !error && plans.length > 0 && (

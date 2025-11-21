@@ -197,11 +197,11 @@ const BookingForm = () => {
         const apiMessage =
           response?.data?.message || "Trạm đã được đặt trong thời gian này";
         const translatedMessage = translateMessage(apiMessage);
-        setAvailabilityMessage(`❌ ${translatedMessage}`);
+        setAvailabilityMessage(`${translatedMessage}`);
         setMaxPercentage(100);
       }
     } catch (err) {
-      setAvailabilityMessage("❌ Không thể kiểm tra tình trạng");
+      setAvailabilityMessage("Không thể kiểm tra tình trạng");
       setMaxPercentage(100);
       console.error("Error checking availability:", err);
     } finally {
@@ -513,7 +513,7 @@ const BookingForm = () => {
                                 ) : (
                                   <>
                                     <div className="font-semibold mb-1">
-                                      ❌ Không khả dụng
+                                      Không khả dụng
                                     </div>
                                     <div>
                                       {translateMessage(availability.message)}

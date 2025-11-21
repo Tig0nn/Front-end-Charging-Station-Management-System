@@ -110,7 +110,9 @@ const AddStation = () => {
     const coordinates = await getCoordinatesFromAddress(formData.address);
 
     if (!coordinates) {
-      toast.error("Không thể lấy tọa độ từ địa chỉ. Vui lòng kiểm tra lại địa chỉ.");
+      toast.error(
+        "Không thể lấy tọa độ từ địa chỉ. Vui lòng kiểm tra lại địa chỉ."
+      );
       return;
     }
 
@@ -134,8 +136,8 @@ const AddStation = () => {
       toast.success("Tạo trạm sạc mới thành công!");
       navigate("/admin/stations");
     } catch (err) {
-      console.error("❌ Lỗi khi tạo trạm:", err);
-      console.error("❌ Error response:", err.response?.data);
+      console.error("Lỗi khi tạo trạm:", err);
+      console.error("Error response:", err.response?.data);
       const errorMsg = err.response?.data?.message || err.message;
       toast.error(`Không thể tạo trạm sạc: ${errorMsg}`);
     }
@@ -206,7 +208,7 @@ const AddStation = () => {
                       )}
                       {geocoding.error && (
                         <Form.Text className="text-danger">
-                          ⚠️ {geocoding.error}
+                          {geocoding.error}
                         </Form.Text>
                       )}
                     </Form.Group>

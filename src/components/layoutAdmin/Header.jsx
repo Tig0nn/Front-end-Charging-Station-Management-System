@@ -22,7 +22,7 @@ const Header = () => {
         console.log("Admin header profile data:", profileData);
         setAdminProfile(profileData);
       } catch (err) {
-        console.error("❌ Fetch admin profile failed:", err);
+        console.error("Fetch admin profile failed:", err);
       }
     };
     fetchAdminProfile();
