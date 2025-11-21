@@ -28,7 +28,7 @@ const StaffList = () => {
       setStaffs(response.data.result || []);
       setError(null);
     } catch (err) {
-      console.error("❌ Error fetching staff:", err);
+      console.error("Error fetching staff:", err);
       setError("Không thể tải danh sách nhân viên");
     } finally {
       setLoading(false);

@@ -45,7 +45,7 @@ const ProfileLayout = () => {
       // Trigger storage event to notify other components
       window.dispatchEvent(new Event("storage"));
     } catch (err) {
-      console.error("❌ Error fetching driver info:", err);
+      console.error("Error fetching driver info:", err);
       // Fallback: Lấy từ localStorage nếu API lỗi
       const cachedUser = JSON.parse(localStorage.getItem("user") || "{}");
       setUserData(cachedUser);

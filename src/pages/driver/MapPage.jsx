@@ -86,7 +86,7 @@ export default function MapPage() {
         // Clear URL params sau khi xử lý
         setSearchParams({});
       } else {
-        console.warn("⚠️ Station not found for pointId:", pointId);
+        console.warn("Station not found for pointId:", pointId);
         alert("Không tìm thấy trạm sạc. Vui lòng thử lại.");
         setSearchParams({});
       }
@@ -183,7 +183,7 @@ export default function MapPage() {
 
       console.log(` Loaded ${mappedStations.length} stations`);
     } catch (err) {
-      console.error("❌ Error fetching stations:", err);
+      console.error("Error fetching stations:", err);
       setError("Không thể tải danh sách trạm sạc");
       setStations([]);
     } finally {
@@ -203,7 +203,7 @@ export default function MapPage() {
           setMapCenter(location);
         },
         (error) => {
-          console.warn("⚠️ Could not get user location:", error);
+          console.warn("Could not get user location:", error);
         }
       );
     }
@@ -277,9 +277,9 @@ export default function MapPage() {
         throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
       }
     } catch (err) {
-      console.error("❌ LỖI khi bắt đầu phiên sạc:", err);
+      console.error("LỖI khi bắt đầu phiên sạc:", err);
       toast.error(
-        `❌ Không thể bắt đầu phiên sạc: ${
+        `Không thể bắt đầu phiên sạc: ${
           err.response?.data?.message || err.message
         }`
       );

@@ -97,7 +97,7 @@ export default function AddUserInfoPage() {
       // Force reload để App.jsx check lại
       window.location.href = "/driver";
     } catch (err) {
-      console.error("❌ Error:", err);
+      console.error("Error:", err);
       alert(err?.response?.data?.message || err.message || "Đã có lỗi xảy ra");
     } finally {
       setIsSubmitting(false);

@@ -56,7 +56,7 @@ const AdminIncidents = () => {
       setFilteredIncidents(data);
       calculateStats(data);
     } catch (err) {
-      console.error("❌ Error loading incidents:", err);
+      console.error("Error loading incidents:", err);
       setError(
         err.response?.data?.message ||
           err.message ||

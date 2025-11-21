@@ -307,7 +307,7 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <div className="text-red-500 text-5xl mb-4"></div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Lỗi kết nối</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
@@ -328,7 +328,7 @@ export default function PaymentPage() {
         {/* Error banner */}
         {error && availablePlans.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-700 text-sm">⚠️ {error}</p>
+            <p className="text-red-700 text-sm">{error}</p>
           </div>
         )}
 

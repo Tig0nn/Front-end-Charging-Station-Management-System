@@ -42,7 +42,7 @@ export const handleLogout = async () => {
 
     window.location.href = "/login";
   } catch (error) {
-    console.error("❌ Logout API error:", error);
+    console.error("Logout API error:", error);
     clearAuth();
     // Nếu API không tồn tại, vẫn clear local và logout
     localStorage.clear();

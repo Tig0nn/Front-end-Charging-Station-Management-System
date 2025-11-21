@@ -45,7 +45,7 @@ export default function MainLayoutStaff({ children }) {
       // Trigger storage event for other components
       window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("❌ Error fetching staff profile:", error);
+      console.error("Error fetching staff profile:", error);
     }
   }, []);
 
@@ -118,7 +118,7 @@ export default function MainLayoutStaff({ children }) {
   const tabs = [
     {
       path: "/staff/station",
-      label: "Điểm sạc",
+      label: "Trụ sạc",
       icon: "bi-gear-fill",
     },
     {
@@ -228,7 +228,7 @@ export default function MainLayoutStaff({ children }) {
                     style={{ fontSize: "20px", color: "#2bf0b5" }}
                   ></i>
                   <span className="text-muted" style={{ fontSize: "13px" }}>
-                    Điểm sạc hoạt động
+                    Trụ sạc hoạt động
                   </span>
                 </div>
                 <h3

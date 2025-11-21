@@ -271,8 +271,7 @@ export const AuthProvider = ({ children }) => {
 
       return {
         success: false,
-        error:
-          error.response?.data?.message || error.message || "Login failed",
+        error: error.response?.data?.message || error.message || "Login failed",
       };
     } finally {
       setLoading(false);
@@ -297,12 +296,13 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("driverTab");
       localStorage.removeItem("adminTab");
       localStorage.removeItem("staffTab");
+      localStorage.removeItem("selectedVehicleId");
 
       // KHÔNG gọi API logout vì backend redirect về Google (gây lỗi CORS)
       // Client-side logout là đủ nếu backend không cung cấp proper logout endpoint
       console.log("✅ Client-side logout completed");
     } catch (error) {
-      console.error("❌ Logout error:", error);
+      console.error("Logout error:", error);
     } finally {
       // Always redirect to login page (guaranteed to happen)
       window.location.href = "/login";

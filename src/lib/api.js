@@ -7,16 +7,24 @@ export const api = axios.create({
   baseURL,
   headers: {
     "ngrok-skip-browser-warning": "69420",
-    "Content-Type": "application/json",
+    //"Content-Type": "application/json",
   },
 });
-
+// Thêm token xác thực vào header của mỗi request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("authToken");
   if (token) {
     config.headers = config.headers || {};
     config.headers["Authorization"] = `Bearer ${token}`;
   }
+   // Tự động set Content-Type dựa trên loại data
+  if (config.data instanceof FormData) {
+      // FormData → Để axios tự set multipart/form-data với boundary
+      delete config.headers["Content-Type"];
+    } else if (config.data && typeof config.data === "object") {
+      // Object → Set application/json
+      config.headers["Content-Type"] = "application/json";
+    }
   return config;
 });
 

@@ -235,33 +235,29 @@ const MyBookings = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2">
-                    <i className="bi bi-lightning-charge-fill text-yellow-500"></i>
                     <span className="text-gray-700">
                       <strong>Trụ sạc:</strong> {booking.chargingPointName}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="bi bi-car-front-fill text-blue-500"></i>
                     <span className="text-gray-700">
                       <strong>Xe:</strong> {booking.vehicleLicensePlate} (
                       {booking.vehicleModel})
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="bi bi-clock-fill text-purple-500"></i>
                     <span className="text-gray-700">
                       <strong>Giờ đặt:</strong>{" "}
                       {formatDateTime(booking.bookingTime)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="bi bi-battery-charging text-green-500"></i>
                     <span className="text-gray-700">
-                      <strong>Mức pin:</strong> {booking.desiredPercentage}%
+                      <strong>Mức pin mong muốn:</strong>{" "}
+                      {booking.desiredPercentage}%
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="bi bi-coin text-orange-500"></i>
                     <span className="text-gray-700">
                       <strong>Tiền cọc:</strong>{" "}
                       {formatCurrency(booking.depositAmount)}
@@ -269,7 +265,6 @@ const MyBookings = () => {
                   </div>
                   {booking.estimatedEndTime && (
                     <div className="flex items-center gap-2">
-                      <i className="bi bi-flag-fill text-gray-500"></i>
                       <span className="text-gray-700">
                         <strong>Dự kiến kết thúc:</strong>{" "}
                         {formatDateTime(booking.estimatedEndTime)}
