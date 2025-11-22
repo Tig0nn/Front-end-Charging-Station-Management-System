@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import apiServices from "../../lib/apiServices";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../loading_spins/LoadingSpinner";
+import { useNavigate } from "react-router-dom";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
-  
+
   // State cho modal chọn targetSocPercent
   const [showChargingModal, setShowChargingModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -16,6 +17,8 @@ const MyBookings = () => {
   useEffect(() => {
     loadBookings();
   }, []);
+  // thêm useNavigate để chuyển khi đã có session sạc
+  const navigate = useNavigate();
 
   const loadBookings = async () => {
     try {
@@ -101,6 +104,14 @@ const MyBookings = () => {
     );
   };
 
+  useEffect(() => {
+    const activeId = localStorage.getItem("activeSessionId");
+    if (activeId) {
+      alert("Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng...");
+      navigate(`/driver/session/${activeId}`, { replace: true });
+    }
+  }, [navigate]);
+
   const canCheckIn = (booking) => {
     // Chỉ hiện nút "Sạc ngay" khi status CONFIRMED và trong khoảng ±10 phút
     if (booking.bookingStatus !== "CONFIRMED") return false;
@@ -121,11 +132,11 @@ const MyBookings = () => {
   const handleCheckIn = async (booking) => {
     // Mở modal để chọn targetSocPercent
     setSelectedBooking(booking);
-    
+
     // Tính toán maxTargetSoc: currentSocPercent + desiredPercentage
     const currentSoc = booking.currentSocPercent || 0;
     const maxTargetSoc = Math.min(100, currentSoc + booking.desiredPercentage);
-    
+
     // Set giá trị mặc định là maxTargetSoc
     setTargetSocPercent(maxTargetSoc);
     setShowChargingModal(true);
@@ -136,24 +147,26 @@ const MyBookings = () => {
 
     try {
       setActionLoading(selectedBooking.id);
-      
+
       // Bước 1: Check-in booking
       await apiServices.bookings.checkInBooking(selectedBooking.id);
-      
+
       // Bước 2: Bắt đầu phiên sạc
       const chargingData = {
         chargingPointId: selectedBooking.chargingPointId,
         vehicleId: selectedBooking.vehicleId,
-        targetSocPercent: parseInt(targetSocPercent)
+        targetSocPercent: parseInt(targetSocPercent),
       };
-      
-      await apiServices.chargingPoints.startCharging(chargingData);
-      
-      toast.success("Bắt đầu sạc thành công!", {
-        icon: "⚡",
-        duration: 5000,
-      });
-      
+      // Gọi API bắt đầu sạc
+      const response = await apiServices.chargingPoints.startCharging(
+        chargingData
+      );
+      const sessionId = response.data?.result?.sessionId;
+      if (sessionId) {
+        toast.success("Khởi động phiên sạc thành công!");
+        localStorage.setItem("activeSessionId", sessionId);
+        navigate(`/driver/session/${sessionId}`);
+      }
       setShowChargingModal(false);
       setSelectedBooking(null);
       loadBookings();
@@ -385,26 +398,33 @@ const MyBookings = () => {
               <i className="bi bi-lightning-charge-fill text-green-500"></i>
               Chọn mức pin mục tiêu
             </h3>
-            
+
             <div className="mb-6">
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">
-                  <strong>Pin hiện tại:</strong> {selectedBooking.currentSocPercent || 0}%
+                  <strong>Pin hiện tại:</strong>{" "}
+                  {selectedBooking.currentSocPercent || 0}%
                 </p>
                 <p className="text-sm text-gray-600 mb-2">
-                  <strong>Mức pin mong muốn:</strong> {selectedBooking.desiredPercentage}%
+                  <strong>Mức pin mong muốn:</strong>{" "}
+                  {selectedBooking.desiredPercentage}%
                 </p>
                 <p className="text-sm text-green-600 font-semibold">
                   <strong>Mức pin tối đa có thể sạc:</strong>{" "}
-                  {Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage)}%
+                  {Math.min(
+                    100,
+                    (selectedBooking.currentSocPercent || 0) +
+                      selectedBooking.desiredPercentage
+                  )}
+                  %
                 </p>
               </div>
 
               <label className="block font-semibold mb-2">
                 Mức pin mục tiêu: {targetSocPercent}%
               </label>
-              
-              <style>
+
+              {/* <style>
                 {`
                   #target-soc-slider::-webkit-slider-thumb {
                     appearance: none;
@@ -436,37 +456,55 @@ const MyBookings = () => {
                     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
                   }
                 `}
-              </style>
-              
+              </style> */}
+
               <input
                 id="target-soc-slider"
                 type="range"
                 min={selectedBooking.currentSocPercent || 0}
-                max={Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage)}
+                max={Math.min(
+                  100,
+                  (selectedBooking.currentSocPercent || 0) +
+                    selectedBooking.desiredPercentage
+                )}
                 step="1"
                 value={targetSocPercent}
                 onChange={(e) => setTargetSocPercent(e.target.value)}
                 className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300"
+                // style={{
+                //   background: `linear-gradient(to right,
+                //     ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"} 0%,
+                //     ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"} ${
+                //     ((targetSocPercent - (selectedBooking.currentSocPercent || 0)) /
+                //       (Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage) -
+                //        (selectedBooking.currentSocPercent || 0))) * 100
+                //   }%,
+                //     #e5e7eb ${
+                //     ((targetSocPercent - (selectedBooking.currentSocPercent || 0)) /
+                //       (Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage) -
+                //        (selectedBooking.currentSocPercent || 0))) * 100
+                //   }%,
+                //     #e5e7eb 100%)`,
+                // }}
                 style={{
-                  background: `linear-gradient(to right, 
-                    ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"} 0%, 
-                    ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"} ${
-                    ((targetSocPercent - (selectedBooking.currentSocPercent || 0)) /
-                      (Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage) - 
-                       (selectedBooking.currentSocPercent || 0))) * 100
-                  }%, 
-                    #e5e7eb ${
-                    ((targetSocPercent - (selectedBooking.currentSocPercent || 0)) /
-                      (Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage) - 
-                       (selectedBooking.currentSocPercent || 0))) * 100
-                  }%, 
-                    #e5e7eb 100%)`,
+                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${
+                    ((targetSocPercent - 10) / 90) * 100
+                  }%, #e5e7eb ${
+                    ((targetSocPercent - 10) / 90) * 100
+                  }%, #e5e7eb 100%)`,
                 }}
               />
-              
+
               <div className="flex justify-between text-sm text-gray-600 mt-1">
                 <span>{selectedBooking.currentSocPercent || 0}%</span>
-                <span>{Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage)}%</span>
+                <span>
+                  {Math.min(
+                    100,
+                    (selectedBooking.currentSocPercent || 0) +
+                      selectedBooking.desiredPercentage
+                  )}
+                  %
+                </span>
               </div>
             </div>
 

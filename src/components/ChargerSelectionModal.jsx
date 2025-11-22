@@ -204,6 +204,7 @@ export default function ChargerSelectionModal({
 
   const renderChargerView = () => (
     <>
+      {" "}
       <div className="px-8 pt-7 pb-5 border-b bg-white sticky top-0 z-20">
         <label
           htmlFor="soc-slider"
@@ -213,27 +214,23 @@ export default function ChargerSelectionModal({
           <span className="font-bold text-emerald-600">{targetSoc}%</span>
         </label>
 
-        <input
-          id="soc-slider"
-          type="range"
-          min="10"
-          max="100"
-          step="1"
-          value={targetSoc}
-          onChange={(e) => setTargetSoc(parseInt(e.target.value))}
-          className={`
-    w-full h-2 rounded-lg cursor-pointer appearance-none 
-    transition-all duration-300
-
-    ${targetSoc < 20 ? "bg-red-300 accent-red-600" : ""}
-    ${
-      targetSoc >= 20 && targetSoc <= 50
-        ? "bg-yellow-300 accent-yellow-500"
-        : ""
-    }
-    ${targetSoc > 50 ? "bg-emerald-300 accent-emerald-600" : ""}
-  `}
-        />
+        <div className="relative">
+          <input
+            id="soc-slider"
+            type="range"
+            min="10"
+            max="100"
+            step="1"
+            value={targetSoc}
+            onChange={(e) => setTargetSoc(parseInt(e.target.value))}
+            className="w-full h-2 rounded-lg cursor-pointer appearance-none bg-gray-200"
+            style={{
+              background: `linear-gradient(to right, #10b981 0%, #10b981 ${
+                ((targetSoc - 10) / 90) * 100
+              }%, #e5e7eb ${((targetSoc - 10) / 90) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
+        </div>
 
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>10%</span>

@@ -42,7 +42,7 @@ export default function MapPage() {
 
   // Logic 1: Kiểm tra session đang hoạt động
   useEffect(() => {
-    const activeId = localStorage.getItem("currentSessionId");
+    const activeId = localStorage.getItem("activeSessionId");
     if (activeId) {
       alert("Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng...");
       navigate(`/driver/session/${activeId}`, { replace: true });
@@ -97,7 +97,7 @@ export default function MapPage() {
 
   // Logic 4: Các handlers UI
   const handleOpenChargerModal = (station) => {
-    if (localStorage.getItem("currentSessionId")) {
+    if (localStorage.getItem("activeSessionId")) {
       alert("Bạn đang trong một phiên sạc.");
       return;
     }

@@ -577,7 +577,7 @@ const BookingForm = () => {
                     */}
 
                     {/* Thanh pin với css mới */}
-                    <style>
+                    {/* <style>
                       {`
                         #booking-slider::-webkit-slider-thumb {
                           appearance: none;
@@ -621,48 +621,54 @@ const BookingForm = () => {
                           box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
                         }
                       `}
-                    </style>
+                    </style> */}
                     <input
                       id="booking-slider"
                       type="range"
-                      min="20
-                      "
+                      min="10"
                       max={Math.floor(maxPercentage)}
                       step="1"
                       value={desiredPercentage}
                       onChange={(e) => setDesiredPercentage(e.target.value)}
                       className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300"
+                      // style={{
+                      //   background: `linear-gradient(to right,
+                      //     ${
+                      //       desiredPercentage < 20
+                      //         ? "#dc2626"
+                      //         : desiredPercentage <= 50
+                      //         ? "#eab308"
+                      //         : "#059669"
+                      //     } 0%,
+                      //     ${
+                      //       desiredPercentage < 20
+                      //         ? "#dc2626"
+                      //         : desiredPercentage <= 50
+                      //         ? "#eab308"
+                      //         : "#059669"
+                      //     } ${
+                      //     ((desiredPercentage - 20) /
+                      //       (Math.floor(maxPercentage) - 20)) *
+                      //     100
+                      //   }%,
+                      //     #e5e7eb ${
+                      //       ((desiredPercentage - 20) /
+                      //         (Math.floor(maxPercentage) - 20)) *
+                      //       100
+                      //     }%,
+                      //     #e5e7eb 100%)`,
+                      // }}
                       style={{
-                        background: `linear-gradient(to right, 
-                          ${
-                            desiredPercentage < 20
-                              ? "#dc2626"
-                              : desiredPercentage <= 50
-                              ? "#eab308"
-                              : "#059669"
-                          } 0%, 
-                          ${
-                            desiredPercentage < 20
-                              ? "#dc2626"
-                              : desiredPercentage <= 50
-                              ? "#eab308"
-                              : "#059669"
-                          } ${
-                          ((desiredPercentage - 20) /
-                            (Math.floor(maxPercentage) - 20)) *
-                          100
-                        }%, 
-                          #e5e7eb ${
-                            ((desiredPercentage - 20) /
-                              (Math.floor(maxPercentage) - 20)) *
-                            100
-                          }%, 
-                          #e5e7eb 100%)`,
+                        background: `linear-gradient(to right, #10b981 0%, #10b981 ${
+                          ((desiredPercentage - 10) / 90) * 100
+                        }%, #e5e7eb ${
+                          ((desiredPercentage - 10) / 90) * 100
+                        }%, #e5e7eb 100%)`,
                       }}
                       disabled={!availabilityMessage.includes("✅")}
                     />
                     <div className="flex justify-between text-sm text-gray-600 mt-1">
-                      <span>20%</span>
+                      <span>10%</span>
                       <span>{Math.floor(maxPercentage)}%</span>
                     </div>
                   </div>
