@@ -153,6 +153,7 @@ export default function PaymentPage() {
               pricePerKwh: planData.pricePerKwh || 0,
               pricePerMinute: planData.pricePerMinute || 0,
               benefits: planData.benefits || "",
+              daysUntilExpiry: planData.daysUntilExpiry || 0,
             };
             setCurrentSubscription(currentPlan);
           } else {
@@ -338,7 +339,21 @@ export default function PaymentPage() {
             <p className="text-red-700 text-sm">{error}</p>
           </div>
         )}
-
+        <div className="text-start mb-8">
+          {currentSubscription.daysUntilExpiry !== undefined ? (
+            <>
+              <p className="!text-lg font-bold !text-[#22c55e] mb-2">
+                <i class="bi bi-hourglass-split" />
+                Gói hiện tại: {currentSubscription ? currentSubscription.planName : "Chưa đăng ký gói"} - Hết hạn sau {currentSubscription.daysUntilExpiry} ngày
+              </p>
+            </>
+          ) : (
+            <p className="!text-lg font-bold !text-[#22c55e] mb-2">
+              <i class="bi bi-hourglass-split"/>
+              Gói hiện tại: {currentSubscription ? currentSubscription.planName : "Chưa đăng ký gói"}
+            </p>
+          )}
+        </div>
         {/* --- Phần Gói Dịch Vụ --- */}
         {availablePlans.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">

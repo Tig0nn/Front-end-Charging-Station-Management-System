@@ -20,16 +20,7 @@ const PlanCard = ({
     );
   };
 
-  // Format billing type để hiển thị
-  const getBillingTypeLabel = (billingType) => {
-    const typeMap = {
-      MONTHLY_SUBSCRIPTION: "Theo tháng",
-      PAY_AS_YOU_GO: "Trả theo lượt",
-      PREPAID: "Trả trước",
-      POSTPAID: "Trả sau",
-    };
-    return typeMap[billingType] || billingType;
-  };
+
 
   const cardClasses = `relative rounded-2xl p-6 transition-all duration-300 ease-in-out ${
     mode === "driver" ? "cursor-pointer" : "cursor-default"
@@ -73,24 +64,6 @@ const PlanCard = ({
           {formatPrice(plan.monthlyFee)}
         </p>
 
-        {/* Billing Type Badge */}
-        {plan.billingType && (
-          <div className="inline-block">
-            <span className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full border border-gray-300">
-              {getBillingTypeLabel(plan.billingType)}
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="bg-gray-50 rounded-lg p-3 mb-4">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center text-green-600">
-            <span className="font-medium">Giá Mỗi Phút</span>
-          </div>
-          <span className="font-bold text-green-600">
-            {`${Number(plan.pricePerMinute || 0).toLocaleString("vi-VN")}đ`}
-          </span>
-        </div>
       </div>
       <div className="bg-gray-50 rounded-lg p-3 mb-4">
         <div className="flex items-center justify-between text-sm">
