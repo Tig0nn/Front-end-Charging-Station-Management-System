@@ -189,7 +189,7 @@ const apiServices = {
     cancelBooking: (bookingId) => api.put(`/api/bookings/${bookingId}/cancel`),
     // Check-in to booking
     checkInBooking: (bookingId) =>
-      api.post(`/api/bookings/${bookingId}/check-in`),
+      api.put(`/api/bookings/${bookingId}/check-in`),
   },
 
   // ZaloPay payment integration

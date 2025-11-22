@@ -344,7 +344,11 @@ export default function PaymentPage() {
             <>
               <p className="!text-lg font-bold !text-[#22c55e] mb-2">
                 <i class="bi bi-hourglass-split" />
-                Gói hiện tại: {currentSubscription ? currentSubscription.planName : "Chưa đăng ký gói"} - Hết hạn sau {currentSubscription.daysUntilExpiry} ngày
+                Gói hiện tại:{" "}
+                {currentSubscription
+                  ? currentSubscription.planName
+                  : "Chưa đăng ký gói"}{" "}
+                - Hết hạn sau {currentSubscription.daysUntilExpiry} ngày
               </p>
             </>
           ) : (
@@ -362,6 +366,7 @@ export default function PaymentPage() {
                 key={plan.id}
                 plan={plan}
                 isSelected={selectedPlan?.id === plan.id}
+                currentPlanName={currentSubscription?.planName}
                 onSelect={(plan) => {
                   if (!plan.isCurrent) {
                     handleSubscribe(plan);
@@ -447,9 +452,7 @@ export default function PaymentPage() {
 
               <div className="alert alert-info mb-3">
                 <i className="bi bi-wallet2 me-2"></i>
-                <small>
-                  Số tiền sẽ được trừ trực tiếp từ ví của bạn.
-                </small>
+                <small>Số tiền sẽ được trừ trực tiếp từ ví của bạn.</small>
               </div>
 
               <div className="alert alert-success mb-0">

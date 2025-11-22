@@ -47,11 +47,12 @@ const StationsList = () => {
       setLoading(false);
     }
   };
-
   // Khi bấm nút "Chỉnh sửa"
   const handleEditClick = (station) => {
     setEditingId(station.stationId);
     setEditData({ ...station });
+    // Set nhân viên hiện tại nếu có
+    setSelectedStaffId(station.staffId || "");
   };
 
   // Khi thay đổi dữ liệu trong ô input
@@ -59,7 +60,6 @@ const StationsList = () => {
     const { name, value } = e.target;
     setEditData((prev) => ({ ...prev, [name]: value }));
   };
-
   // Khi bấm "Lưu"
   const handleSave = async () => {
     try {
@@ -68,30 +68,41 @@ const StationsList = () => {
         totalPoints: Number(editData.totalPoints || 0),
         activePoints: Number(editData.activePoints || 0),
         maintenancePoints: Number(editData.maintenancePoints || 0),
+        // Thêm staffId nếu có chọn nhân viên
+        staffId: selectedStaffId || null,
       };
 
       await stationsAPI.update(editingId, dataToSend);
       toast.success("Cập nhật trạm sạc thành công!");
 
-      setStations((prev) =>
-        prev.map((s) => (s.stationId === editingId ? dataToSend : s))
-      );
+      // Reload lại danh sách trạm và nhân viên để cập nhật trạng thái
+      await fetchStations();
+
+      // Reload lại danh sách staff để cập nhật stationId mới
+      const res = await staffAPI.getAllStaffs();
+      const allStaffs = res.data.result || [];
+      setStaffs(allStaffs);
+
       setEditingId(null);
+      setSelectedStaffId("");
+      // setSearchText(""); // COMMENT: Không cần reset search text nữa
     } catch (err) {
       console.error("Lỗi khi cập nhật:", err);
       toast.error("Không thể cập nhật trạm sạc. Vui lòng thử lại.");
     }
   };
-
   // Khi bấm "Hủy"
   const handleCancel = () => {
     setEditingId(null);
     setEditData({});
+    setSelectedStaffId("");
+    // setSearchText(""); // COMMENT: Không cần reset search text nữa
   };
 
   // Gọi api xóa trạm
   const handleDelete = async (stationId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa trạm sạc này không?")) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa trạm sạc này không?"))
+      return;
 
     try {
       await stationsAPI.delete(stationId);
@@ -117,21 +128,40 @@ const StationsList = () => {
       }
     };
     fetchStaff();
-  }, []);
+  }, []); // ============ COMMENT CŨ: Lọc theo search text ============
+  // useEffect(() => {
+  //   if (searchText.trim() === "") {
+  //     setSearchStaff(staffs); // hiển thị toàn bộ khi rỗng
+  //   } else {
+  //     const filtered = staffs.filter((s) =>
+  //       (s.fullName || s.name || "")
+  //         .toLowerCase()
+  //         .includes(searchText.toLowerCase())
+  //     );
+  //     setSearchStaff(filtered);
+  //   }
+  // }, [searchText, staffs]);
+  // ============ END COMMENT CŨ ============
 
-  // Lọc danh sách khi searchText thay đổi
+  // ============ COMMENT CŨ: Lọc chỉ nhân viên chưa có trạm ============
+  // useEffect(() => {
+  //   if (!editingId) {
+  //     setSearchStaff(staffs);
+  //     return;
+  //   }
+  //   // Lọc: Chỉ hiển thị nhân viên chưa có trạm (stationId === null)
+  //   // HOẶC đang được gán vào trạm đang edit
+  //   const availableStaffs = staffs.filter((staff) => {
+  //     return !staff.stationId || staff.stationId === editingId;
+  //   });
+  //   setSearchStaff(availableStaffs);
+  // }, [staffs, editingId]);
+  // ============ END COMMENT CŨ ============
+
+  // ✅ MỚI: Hiển thị TẤT CẢ nhân viên (cho phép chuyển nhân viên giữa các trạm)
   useEffect(() => {
-    if (searchText.trim() === "") {
-      setSearchStaff(staffs); // hiển thị toàn bộ khi rỗng
-    } else {
-      const filtered = staffs.filter((s) =>
-        (s.fullName || s.name || "")
-          .toLowerCase()
-          .includes(searchText.toLowerCase())
-      );
-      setSearchStaff(filtered);
-    }
-  }, [searchText, staffs]);
+    setSearchStaff(staffs); // Hiển thị toàn bộ nhân viên
+  }, [staffs]);
 
   //  Gọi API lấy danh sách trạm khi component mount
   useEffect(() => {
@@ -336,39 +366,86 @@ const StationsList = () => {
                         <small>{station.usagePercent || 0}%</small>
                       </td>
 
-                    
-
-                      {/* Chức năng tìm kiếm nhân viên */}
+                      {/* Chức năng chọn nhân viên */}
                       <td className="text-center">
                         {editingId === station.stationId ? (
                           <>
-                            <Form.Control
+                            {/* ============ COMMENT CŨ: Ô tìm kiếm nhân viên ============ */}
+                            {/* <Form.Control
                               type="text"
                               placeholder="Tìm kiếm nhân viên..."
                               value={searchText}
                               onChange={(e) => setSearchText(e.target.value)}
                               className="mb-2"
-                            />
+                            /> */}
+                            {/* ============ END COMMENT CŨ ============ */}{" "}
+                            {/* ✅ GIỮ LẠI: Dropdown chọn nhân viên */}
                             <Form.Select
                               name="staffId"
                               value={selectedStaffId}
                               onChange={(e) =>
                                 setSelectedStaffId(e.target.value)
                               }
-                              required
                             >
                               <option value="">
                                 -- Chọn nhân viên phụ trách --
                               </option>
-                              {searchStaff.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                  {s.fullName}
-                                </option>
-                              ))}
+                              {searchStaff.map((s) => {
+                                // Kiểm tra nhân viên có đang quản lý trạm khác không
+                                const isCurrentStation =
+                                  s.stationId === editingId;
+                                const hasOtherStation =
+                                  s.stationId && s.stationId !== editingId;
+
+                                let displayText = `${s.fullName}`;
+                                if (s.employeeNo) {
+                                  displayText += ` (${s.employeeNo})`;
+                                }
+
+                                if (isCurrentStation) {
+                                  displayText += " - Đang quản lý trạm này";
+                                } else if (hasOtherStation) {
+                                  displayText += ` - Đang quản lý: ${
+                                    s.stationName || "Trạm khác"
+                                  }`;
+                                }
+
+                                return (
+                                  <option key={s.staffId} value={s.staffId}>
+                                    {displayText}
+                                  </option>
+                                );
+                              })}
                             </Form.Select>
+                            {searchStaff.length === 0 && (
+                              <small className="text-muted d-block mt-1">
+                                Không có nhân viên khả dụng
+                              </small>
+                            )}
+                            {/* Cảnh báo khi chọn nhân viên đang quản lý trạm khác */}
+                            {selectedStaffId &&
+                              searchStaff.find(
+                                (s) => s.staffId === selectedStaffId
+                              )?.stationId &&
+                              searchStaff.find(
+                                (s) => s.staffId === selectedStaffId
+                              )?.stationId !== editingId && (
+                                <small className="text-warning d-block mt-1">
+                                  <i className="bi bi-exclamation-triangle me-1"></i>
+                                  Nhân viên này sẽ được chuyển từ trạm cũ sang
+                                  trạm này
+                                </small>
+                              )}
                           </>
                         ) : (
-                          station.staffName || "Chưa có nhân viên"
+                          <div>
+                            {station.staffName || "Chưa có nhân viên"}
+                            {station.employeeNo && (
+                              <div className="text-muted small">
+                                ({station.employeeNo})
+                              </div>
+                            )}
+                          </div>
                         )}
                       </td>
 

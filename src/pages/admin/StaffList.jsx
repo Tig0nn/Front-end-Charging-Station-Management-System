@@ -37,7 +37,7 @@ const StaffList = () => {
 
 
   return (
-    <Container className="py-4">
+    <Container fluid className="p-0 mt-4">
       <Row>
         <Col>
           <h2 className="fw-bold">Quản lý nhân viên</h2>

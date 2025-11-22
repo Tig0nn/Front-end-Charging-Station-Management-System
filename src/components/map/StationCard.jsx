@@ -8,6 +8,10 @@ import {
 } from "@heroicons/react/24/solid";
 import { CircleStackIcon } from "@heroicons/react/24/outline";
 
+/**
+ * StationCard - Hiển thị thông tin 1 trạm sạc dạng card
+ * Chức năng: Hiển thị tên, địa chỉ, trạng thái, khoảng cách, số trụ, actions
+ */
 const StationCard = ({
   station,
   isSelected,
@@ -17,6 +21,7 @@ const StationCard = ({
   onStartCharging,
   calculateDistance,
 }) => {
+  // Hàm tạo badge trạng thái
   const getStatusBadge = (status) => {
     const statusConfig = {
       OPERATIONAL: {
@@ -58,16 +63,19 @@ const StationCard = ({
       onClick={() => onStationClick && onStationClick(station)}
       style={{ cursor: "pointer" }}
     >
+      {/* Header: Tên + Trạng thái */}
       <div className="station-card-header">
         <h3 className="station-name">{station.stationName}</h3>
         {getStatusBadge(station.status)}
       </div>
 
+      {/* Địa chỉ */}
       <p className="station-address">
         <MapPinIcon className="icon-sm" />
         <span>{station.address}</span>
       </p>
 
+      {/* Khoảng cách (nếu có GPS) */}
       {userLocation && station.latitude && station.longitude && (
         <p className="station-distance">
           🗺️ Cách bạn{" "}
@@ -80,6 +88,8 @@ const StationCard = ({
           km
         </p>
       )}
+
+      {/* Thông tin số lượng trụ */}
       <div className="station-info">
         <span className="info-item">
           <BoltIcon className="icon-sm" />
@@ -90,7 +100,10 @@ const StationCard = ({
           {station.availableChargingPoints || 0} trống
         </span>
       </div>
+
+      {/* Action buttons */}
       <div className="station-card-actions">
+        {/* Nút "Chỉ đường" */}
         <button
           className="action-button-secondary"
           onClick={(e) => {
@@ -101,6 +114,8 @@ const StationCard = ({
           <MapIcon className="icon-btn" />
           Chỉ đường
         </button>
+
+        {/* Nút "Sạc ngay" */}
         <button
           className="action-button-primary"
           onClick={(e) => {

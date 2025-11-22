@@ -303,7 +303,7 @@ const UsersList = () => {
   };
 
   return (
-    <Container className="py-4">
+    <Container fluid className="p-0 mt-4">
       <ToastContainer position="top-right" autoClose={3000} />
       <Row>
         <Col>
@@ -625,38 +625,62 @@ const UsersList = () => {
             <div>
               {/* Personal Information */}
               <div className="mb-4">
-
-                <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                <h5
+                  className="fw-semibold mb-3 border-bottom pb-2"
+                  style={{ color: "#22c55e" }}
+                >
                   <i className="bi bi-person-circle me-2"></i>
                   Thông tin cá nhân
                 </h5>
                 <Row className="g-3">
                   <Col md={6}>
-
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
-                      <small className="text-muted d-block mb-1">Họ và tên</small>
-                      <div className="fw-semibold">{selectedUser.fullName || "—"}</div>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
+                      <small className="text-muted d-block mb-1">
+                        Họ và tên
+                      </small>
+                      <div className="fw-semibold">
+                        {selectedUser.fullName || "—"}
+                      </div>
                     </div>
                   </Col>
                   <Col md={6}>
-
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
                       <small className="text-muted d-block mb-1">Email</small>
-                      <div className="fw-semibold">{selectedUser.email || "—"}</div>
+                      <div className="fw-semibold">
+                        {selectedUser.email || "—"}
+                      </div>
                     </div>
                   </Col>
                   <Col md={6}>
-
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
-                      <small className="text-muted d-block mb-1">Số điện thoại</small>
-                      <div className="fw-semibold">{selectedUser.phone || "—"}</div>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
+                      <small className="text-muted d-block mb-1">
+                        Số điện thoại
+                      </small>
+                      <div className="fw-semibold">
+                        {selectedUser.phone || "—"}
+                      </div>
                     </div>
                   </Col>
                   <Col md={6}>
-
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
-                      <small className="text-muted d-block mb-1">Ngày tham gia</small>
-                      <div className="fw-semibold">{selectedUser.joinDate || "—"}</div>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
+                      <small className="text-muted d-block mb-1">
+                        Ngày tham gia
+                      </small>
+                      <div className="fw-semibold">
+                        {selectedUser.joinDate || "—"}
+                      </div>
                     </div>
                   </Col>
                 </Row>
@@ -664,23 +688,33 @@ const UsersList = () => {
 
               {/* Subscription Information */}
               <div className="mb-4">
-
-                <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                <h5
+                  className="fw-semibold mb-3 border-bottom pb-2"
+                  style={{ color: "#22c55e" }}
+                >
                   <i className="bi bi-star-fill me-2"></i>
                   Thông tin gói dịch vụ
                 </h5>
                 <Row className="g-3">
                   <Col md={6}>
-
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
-                      <small className="text-muted d-block mb-1">Gói hiện tại</small>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
+                      <small className="text-muted d-block mb-1">
+                        Gói hiện tại
+                      </small>
                       <div>{getPlanBadge(selectedUser.planName)}</div>
                     </div>
                   </Col>
                   <Col md={6}>
-
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
-                      <small className="text-muted d-block mb-1">Trạng thái</small>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
+                      <small className="text-muted d-block mb-1">
+                        Trạng thái
+                      </small>
                       <div>{getStatusBadge(selectedUser.status)}</div>
                     </div>
                   </Col>
@@ -689,29 +723,46 @@ const UsersList = () => {
 
               {/* Usage Statistics */}
               <div className="mb-4">
-
-                <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                <h5
+                  className="fw-semibold mb-3 border-bottom pb-2"
+                  style={{ color: "#22c55e" }}
+                >
                   <i className="bi bi-graph-up me-2"></i>
                   Thống kê sử dụng
                 </h5>
                 <Row className="g-3">
                   <Col md={6}>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
+                      <small className="text-muted d-block mb-1">
+                        Tổng số phiên sạc
+                      </small>
 
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
-                      <small className="text-muted d-block mb-1">Tổng số phiên sạc</small>
-
-                      <div className="fw-semibold fs-4" style={{ color: "#22c55e" }}>
+                      <div
+                        className="fw-semibold fs-4"
+                        style={{ color: "#22c55e" }}
+                      >
                         {selectedUser.sessionCount ?? 0}
                       </div>
                     </div>
                   </Col>
                   <Col md={6}>
+                    <div
+                      className="border rounded p-3"
+                      style={{ backgroundColor: "#f0fdf4" }}
+                    >
+                      <small className="text-muted d-block mb-1">
+                        Tổng chi tiêu
+                      </small>
 
-                    <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
-                      <small className="text-muted d-block mb-1">Tổng chi tiêu</small>
-
-                      <div className="fw-semibold fs-4" style={{ color: "#22c55e" }}>
-                        {(selectedUser.totalSpent ?? 0).toLocaleString("vi-VN")}₫
+                      <div
+                        className="fw-semibold fs-4"
+                        style={{ color: "#22c55e" }}
+                      >
+                        {(selectedUser.totalSpent ?? 0).toLocaleString("vi-VN")}
+                        ₫
                       </div>
                     </div>
                   </Col>
@@ -721,13 +772,18 @@ const UsersList = () => {
               {/* Additional Info */}
               {selectedUser.address && (
                 <div className="mb-3">
-
-                  <h5 className="fw-semibold mb-3 border-bottom pb-2" style={{ color: "#22c55e" }}>
+                  <h5
+                    className="fw-semibold mb-3 border-bottom pb-2"
+                    style={{ color: "#22c55e" }}
+                  >
                     <i className="bi bi-geo-alt-fill me-2"></i>
                     Địa chỉ
                   </h5>
 
-                  <div className="border rounded p-3" style={{ backgroundColor: "#f0fdf4" }}>
+                  <div
+                    className="border rounded p-3"
+                    style={{ backgroundColor: "#f0fdf4" }}
+                  >
                     <div className="fw-semibold">{selectedUser.address}</div>
                   </div>
                 </div>

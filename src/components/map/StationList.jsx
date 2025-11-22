@@ -4,6 +4,10 @@ import { QrCodeIcon } from "@heroicons/react/24/outline";
 import StationCard from "./StationCard";
 import QRScannerModal from "../QRScannerModal";
 
+/**
+ * StationList - Sidebar hiển thị danh sách trạm sạc
+ * Chức năng: Filter, hiển thị cards, QR scanner
+ */
 const StationList = ({
   stations,
   error,
@@ -18,13 +22,14 @@ const StationList = ({
 }) => {
   const [showQRModal, setShowQRModal] = useState(false);
 
+  // Filter trạm theo tên
   const filteredStations = stations.filter((station) =>
     station.stationName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="map-sidebar">
-      {/* Station count with QR button */}
+      {/* Header: Tiêu đề + Số lượng + Nút QR */}
       <div className="station-count-header">
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <h3 className="station-count-title">Trạm sạc</h3>
@@ -33,6 +38,7 @@ const StationList = ({
           </span>
         </div>
 
+        {/* Nút QR Scanner */}
         <button
           onClick={() => setShowQRModal(true)}
           className="qr-scan-button"
@@ -65,8 +71,9 @@ const StationList = ({
         </button>
       </div>
 
-      {/* Station List */}
+      {/* Danh sách trạm */}
       <div className="station-list">
+        {/* Trường hợp 1: Có lỗi */}
         {error && (
           <div className="error-message">
             <XCircleIcon className="error-icon" />
@@ -77,12 +84,14 @@ const StationList = ({
           </div>
         )}
 
+        {/* Trường hợp 2: Không có kết quả */}
         {filteredStations.length === 0 && !error && (
           <div className="no-stations">
             <p>Không tìm thấy trạm sạc nào</p>
           </div>
         )}
 
+        {/* Trường hợp 3: Render danh sách */}
         {filteredStations.map((station) => (
           <StationCard
             key={station.stationId}

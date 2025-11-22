@@ -299,7 +299,7 @@ const AdminChargingPointManagement = () => {
             }
           >
             <div
-              className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+              className="bg-white rounded-xl shadow-2xl  p-6"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -331,7 +331,7 @@ const AdminChargingPointManagement = () => {
                   </p>
                 </div>
                 <p className="text-sm text-gray-500 mt-3">
-                  Hành động này không thể hoàn tác.
+                  ⚠️ Hành động này không thể hoàn tác.
                 </p>
               </div>
 
