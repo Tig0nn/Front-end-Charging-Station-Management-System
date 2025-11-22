@@ -198,13 +198,6 @@ function Login() {
                     Ghi nhớ đăng nhập
                   </label>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => navigate("/forgot-password")}
-                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
-                >
-                  Quên mật khẩu?
-                </button>
               </div>
               {/* Login Button */}
               <button

@@ -59,8 +59,8 @@ const AdminIncidents = () => {
       console.error("Error loading incidents:", err);
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Không thể tải danh sách báo cáo sự cố"
+        err.message ||
+        "Không thể tải danh sách báo cáo sự cố"
       );
     } finally {
       setLoading(false);
@@ -468,6 +468,32 @@ const AdminIncidents = () => {
                   <small className="text-muted d-block">Mô tả chi tiết</small>
                   <div className="bg-light p-3 rounded mt-1">
                     {selectedIncident.description}
+                  </div>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col md={12}>
+                  <small className="text-muted d-block">Ảnh sự cố</small>
+                  <div className="bg-light p-3 rounded mt-1">
+                    {selectedIncident?.imageUrl ? (
+                      <img
+                        src={selectedIncident.imageUrl}
+                        alt="Ảnh sự cố"
+                        className="img-fluid rounded shadow-sm"
+                        style={{
+                          height: "50%",
+                          width: "50%",
+                          objectFit: "cover",
+                          border: "2px solid #22c55e",
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.replaceWith(document.createTextNode("Không có ảnh"));
+                        }}
+                      />
+                    ) : (
+                      <p className="text-muted">Không có ảnh</p>
+                    )}
                   </div>
                 </Col>
               </Row>

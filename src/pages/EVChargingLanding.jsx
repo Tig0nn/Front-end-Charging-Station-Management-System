@@ -200,7 +200,7 @@ export default function EVChargingLanding() {
                 icon: MapPin,
                 title: "Bản đồ Thông minh",
                 description:
-                  "Tìm kiếm trạm sạc gần nhất với thông tin chi tiết và realtime",
+                  "Tìm kiếm trạm sạc gần nhất với thông tin chi tiết",
               },
               {
                 icon: CreditCard,
@@ -294,20 +294,12 @@ export default function EVChargingLanding() {
                 {/* HIỂN THỊ CHI TIẾT GÓI */}
                 <div className="space-y-4 text-gray-700">
                   <p>
-                    <strong>Loại thanh toán:</strong>{" "}
-                    {plans[activeFeature]?.name}
-                  </p>
-                  <p>
                     <strong>Phí hàng tháng:</strong>{" "}
                     {formatCurrency(plans[activeFeature]?.monthlyFee)}
                   </p>
                   <p>
                     <strong>Giá mỗi kWh:</strong>{" "}
                     {formatCurrency(plans[activeFeature]?.pricePerKwh)}
-                  </p>
-                  <p>
-                    <strong>Giá mỗi phút:</strong>{" "}
-                    {formatCurrency(plans[activeFeature]?.pricePerMinute)}
                   </p>
                   <p>
                     <strong>Quyền lợi khác:</strong>{" "}

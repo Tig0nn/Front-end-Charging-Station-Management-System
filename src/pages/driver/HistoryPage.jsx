@@ -254,7 +254,7 @@ const TransactionHistory = () => {
                 {formatDuration(s.durationMin)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                {Number(s.energyKwh || 0).toFixed(1)} kW
+                {Number(s.energyKwh || 0).toFixed(1)} kWh
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                 {formatCurrency(s.costTotal)}
@@ -918,7 +918,7 @@ export default function HistoryPage() {
           </span>
           <div>
             <div className="text-sm text-gray-500">Tổng lượng điện đã sạc</div>
-            <div className="text-lg font-bold">{totalEnergy.toFixed(1)} kW</div>
+            <div className="text-lg font-bold">{totalEnergy.toFixed(1)} kWh</div>
           </div>
         </div>
 

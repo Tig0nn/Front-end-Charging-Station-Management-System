@@ -14,6 +14,8 @@ import {
   ListGroup,
   ButtonGroup,
 } from "react-bootstrap";
+
+
 const formatDateTime = (iso) => {
   const d = new Date(iso);
   const dd = String(d.getDate()).padStart(2, "0");
@@ -96,7 +98,31 @@ const StaffReports = () => {
     chargingPointId: "",
     description: "",
     severity: "",
+    image: "",
   });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Chỉ chấp nhận file ảnh định dạng JPG, JPEG, PNG");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Kích thước ảnh không được vượt quá 5MB");
+        return;
+      }
+
+      setReport((prev) => ({
+        ...prev,
+        image: file,
+      }));
+    }
+  };
   const [charging_point, setChargingPoint] = useState([]);
   const handleChangeValue = (e) => {
     setReport({
@@ -107,8 +133,17 @@ const StaffReports = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    const formData = new FormData();
+    formData.append("stationId", report.stationId);
+    formData.append("chargingPointId", report.chargingPointId);
+    formData.append("description", report.description);
+    formData.append("severity", report.severity);
+
+    if (report.image) {
+      formData.append("image", report.image); // key "image" phải đúng với backend
+    }
     try {
-      const response = await staffAPI.submitReport(report);
+      const response = await staffAPI.submitReport(formData);
       console.log("Submit report response:", response.data);
       toast.success("Đã gửi báo cáo thành công!");
       const reports = await staffAPI.getStaffReport();
@@ -119,6 +154,7 @@ const StaffReports = () => {
         chargingPointId: "",
         description: "",
         severity: "",
+        image: "",
       });
 
       // Reset luôn các input/select trong giao diện
@@ -193,6 +229,48 @@ const StaffReports = () => {
                 placeholder="Vui lòng mô tả chi tiết về sự cố"
                 required
               />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Ảnh sự cố</Form.Label>
+              <Card className="border shadow-sm h-100">
+                <Card.Body>
+                  <div className="mb-2">
+                    <Form.Control
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={(e) => handleImageChange(e)}
+                      size="sm"
+                    />
+                  </div>
+                  {report.image ? (
+                    <div className="mt-3">
+                      <div className="position-relative">
+                        <img
+                          src={URL.createObjectURL(report.image)}
+                          alt="Ảnh sự cố"
+                          className="img-fluid rounded shadow-sm"
+                          style={{
+                            height: "30%",
+                            width: "30%",
+                            objectFit: "cover",
+                            border: "2px solid #22c55e",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="d-flex align-items-center justify-content-center bg-light rounded mt-3"
+                      style={{ height: "180px" }}
+                    >
+                      <div className="text-center text-muted">
+                        <i className="bi bi-card-image fs-1 d-block mb-2"></i>
+                        <small>Chưa có ảnh</small>
+                      </div>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
             </Form.Group>
 
             <Button
@@ -461,6 +539,25 @@ const StaffReports = () => {
                   <br />{selectedReport.description}
                 </p>
               </div>
+              {selectedReport?.imageUrl ? (
+                <img
+                  src={selectedReport.imageUrl}
+                  alt="Ảnh sự cố"
+                  className="img-fluid rounded shadow-sm"
+                  style={{
+                    height: "50%",
+                    width: "50%",
+                    objectFit: "cover",
+                    border: "2px solid #22c55e",
+                  }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.replaceWith(document.createTextNode("Không có ảnh"));
+                  }}
+                />
+              ) : (
+                <p className="text-muted">Không có ảnh</p>
+              )}
             </>
           )}
         </Modal.Body>

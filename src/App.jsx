@@ -31,12 +31,11 @@ import AddUserInfoPage from "./pages/AddUserInfoPage";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import RequireRole from "./components/RequireRole.jsx";
-import ForgotPassword from "./pages/ForgetPassword.jsx";
 
 // Guard: gọi API getDriverInfo, merge vào localStorage, sau đó check phone
 function RequireDriverInfo({ children }) {
   const loc = useLocation();
-  const { user, loading } = useAuth(); // ✅ Dùng user từ AuthContext thay vì localStorage
+  const { user, loading } = useAuth(); 
 
   // Kiểm tra token để xác định đã đăng nhập
   const isAuthenticated = !!localStorage.getItem("authToken");
@@ -88,7 +87,6 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/auth/google/callback" element={<GoogleCallback />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Trang bổ sung thông tin: để ngoài guard */}
       <Route
