@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { stationsAPI } from "../lib/apiServices";
 
+/**
+ * useStations - Hook quản lý danh sách trạm sạc
+ * Chức năng: Fetch và normalize data từ API
+ */
 export const useStations = () => {
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,6 +15,7 @@ export const useStations = () => {
       setLoading(true);
       const response = await stationsAPI.getAllDetails();
 
+      // Parse response theo nhiều format khác nhau
       let stationsData = [];
       if (response.data?.result && Array.isArray(response.data.result)) {
         stationsData = response.data.result;
@@ -20,15 +25,15 @@ export const useStations = () => {
         stationsData = response.data;
       }
 
-      // Helper: Lấy tổng từ chuỗi summary "T:8 | H:8..."
+      // Helper: Parse tổng số trụ từ summary string "T:8 | H:8..."
       const getTotalFromSummary = (summary) => {
         if (!summary) return 0;
         const totalMatch = summary.match(/T:(\d+)/);
         return totalMatch && totalMatch[1] ? parseInt(totalMatch[1], 10) : 0;
       };
 
+      // Normalize data
       const mappedStations = stationsData.map((station) => {
-        // Logic ưu tiên lấy tổng số trụ
         let realTotal = 0;
         if (station.totalChargingPoints > 0) {
           realTotal = station.totalChargingPoints;
@@ -39,17 +44,13 @@ export const useStations = () => {
         }
 
         return {
-          ...station, // Giữ lại các field gốc
+          ...station,
           stationId: station.stationId,
-          stationName: station.name, // Map name -> stationName cho thống nhất UI
-
-          // Các field tính toán lại
+          stationName: station.name,
           chargingPointsCount: realTotal,
           totalChargingPoints: realTotal,
           availableChargingPoints: station.availableChargingPoints || 0,
           activeChargingPoints: station.activeChargingPoints || 0,
-
-          // Default info
           pricePerKwh: "3,500đ/kWh",
           hotline: station.contactPhone || "N/A",
           email: station.operatorName

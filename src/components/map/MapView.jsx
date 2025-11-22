@@ -1,16 +1,11 @@
 import React, { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import {
-  MapPinIcon,
-  MapIcon,
-  CheckBadgeIcon,
-  XCircleIcon,
-} from "@heroicons/react/24/solid";
-import RoutingControl from "../RoutingControl";
+import { MapIcon } from "@heroicons/react/24/solid";
+import RoutingControl from "./RoutingControl";
 import MapController from "./MapController";
 
-// Custom icons
+// Icon cho marker trạm sạc (xanh lá)
 const stationIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
@@ -22,6 +17,7 @@ const stationIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
+// Icon cho marker vị trí user (xanh dương)
 const userIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
@@ -33,15 +29,16 @@ const userIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-// Component để zoom đến station khi click
+/**
+ * ZoomToStation - Component helper tự động zoom đến trạm khi được chọn
+ */
 const ZoomToStation = ({ station }) => {
   const map = useMap();
 
   useEffect(() => {
     if (station) {
-      // Sử dụng flyTo để có animation mượt mà
       map.flyTo([station.latitude, station.longitude], 18, {
-        duration: 0.5, // Animation 0.5 giây
+        duration: 0.5,
       });
     }
   }, [station, map]);
@@ -49,6 +46,10 @@ const ZoomToStation = ({ station }) => {
   return null;
 };
 
+/**
+ * MapView - Component hiển thị bản đồ Leaflet
+ * Chức năng: Render map, markers (trạm + user), popup, routing
+ */
 const MapView = ({
   mapCenter,
   userLocation,
@@ -60,6 +61,7 @@ const MapView = ({
   onShowDirections,
   onRouteFound,
 }) => {
+  // Helper: Lấy thông tin hiển thị cho trạng thái trạm
   const getStatusDisplay = (status) => {
     const statusConfig = {
       OPERATIONAL: { text: "Hoạt động", className: "text-green-600" },
@@ -82,13 +84,11 @@ const MapView = ({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* MapController không còn tự động reset zoom */}
       <MapController center={mapCenter} zoom={13} shouldResetZoom={false} />
 
-      {/* Zoom to selected station */}
       {selectedStation && <ZoomToStation station={selectedStation} />}
 
-      {/* User Location Marker */}
+      {/* Marker vị trí user */}
       {userLocation && (
         <Marker position={userLocation} icon={userIcon}>
           <Popup className="custom-popup">
@@ -99,7 +99,7 @@ const MapView = ({
         </Marker>
       )}
 
-      {/* Station Markers */}
+      {/* Markers trạm sạc */}
       {stations.map((station) => {
         if (!station.latitude || !station.longitude) return null;
 
@@ -119,6 +119,7 @@ const MapView = ({
             <Popup className="custom-popup" maxWidth={300}>
               <div className="popup-content-inner">
                 <h3 className="popup-title">{station.stationName}</h3>
+
                 <div className="popup-content">
                   <p>
                     <strong>
@@ -130,6 +131,7 @@ const MapView = ({
                     </strong>{" "}
                     {station.address}
                   </p>
+
                   <p>
                     <strong>
                       <i
@@ -140,6 +142,7 @@ const MapView = ({
                     </strong>{" "}
                     {station.hotline || "N/A"}
                   </p>
+
                   <p>
                     <strong>
                       <i
@@ -153,7 +156,6 @@ const MapView = ({
                     </span>
                   </p>
 
-                  {/* Trụ sạc sẵn sàng */}
                   <p>
                     <strong>
                       <i
@@ -176,10 +178,8 @@ const MapView = ({
                     </span>
                   </p>
 
-                  {/* 2. Dòng hiển thị tổng số trụ */}
                   <p>
                     <strong>
-                      {/* Bạn có thể dùng icon khác nếu muốn, ví dụ: bi-hdd-stack-fill */}
                       <i
                         className="bi bi-diagram-3-fill"
                         style={{ marginRight: "6px", color: "#6b7280" }}
@@ -192,16 +192,12 @@ const MapView = ({
                         fontSize: "16px",
                       }}
                     >
-                      {/* Dùng logic này để lấy tổng số trụ chính xác:
-                    Ưu tiên totalChargingPoints, nếu nó = 0 (như trong log) thì dùng chargingPointsCount 
-                  */}
                       {(station.totalChargingPoints > 0
                         ? station.totalChargingPoints
                         : station.chargingPointsCount) || 0}
                     </span>
                   </p>
 
-                  {/* Nhân viên phụ trách */}
                   {station.staffName && (
                     <p>
                       <strong>
@@ -215,6 +211,7 @@ const MapView = ({
                     </p>
                   )}
                 </div>
+
                 <button
                   className="popup-button"
                   onClick={() => onShowDirections(station)}
@@ -229,7 +226,7 @@ const MapView = ({
         );
       })}
 
-      {/* Routing Control */}
+      {/* Routing Control - Vẽ đường đi */}
       {showRoute && userLocation && routeDestination && (
         <RoutingControl
           start={userLocation}

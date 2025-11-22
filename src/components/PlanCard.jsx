@@ -6,7 +6,27 @@ const PlanCard = ({
   isSelected,
   onSelect,
   mode = "driver", // "driver" | "admin" - mode để phân biệt context sử dụng
+  currentPlanName, // Tên gói hiện tại của user
 }) => {
+  // Định nghĩa thứ tự các gói (số càng cao = gói càng cao cấp)
+  const planHierarchy = {
+    "Linh hoạt": 1,
+    "Tiết kiệm": 2,
+    "Cao cấp": 3,
+  };
+
+  // Kiểm tra xem có phải là downgrade không
+  const isDowngrade = () => {
+    if (!currentPlanName || plan.isCurrent) return false;
+
+    const currentPlanLevel = planHierarchy[currentPlanName] || 0;
+    const thisPlanLevel = planHierarchy[plan.name] || 0;
+
+    // Nếu gói hiện tại cao hơn gói này => đây là downgrade
+    return currentPlanLevel > thisPlanLevel;
+  };
+
+  const cannotUpgrade = plan.isCurrent || isDowngrade();
   // Format giá tiền
   const formatPrice = (price) => {
     if (price === 0) return "Miễn phí";
@@ -20,17 +40,6 @@ const PlanCard = ({
     );
   };
 
-  // Format billing type để hiển thị
-  const getBillingTypeLabel = (billingType) => {
-    const typeMap = {
-      MONTHLY_SUBSCRIPTION: "Theo tháng",
-      PAY_AS_YOU_GO: "Trả theo lượt",
-      PREPAID: "Trả trước",
-      POSTPAID: "Trả sau",
-    };
-    return typeMap[billingType] || billingType;
-  };
-
   const cardClasses = `relative rounded-2xl p-6 transition-all duration-300 ease-in-out ${
     mode === "driver" ? "cursor-pointer" : "cursor-default"
   } h-full flex flex-col
@@ -39,12 +48,14 @@ const PlanCard = ({
         ? "bg-green-50 border-2 border-green-400 shadow-md"
         : isSelected
         ? "bg-blue-50 border-2 border-blue-500 shadow-xl transform -translate-y-2"
+        : cannotUpgrade
+        ? "bg-gray-50 border border-gray-300 opacity-60"
         : "bg-white border border-gray-200 hover:shadow-lg hover:border-blue-400"
     }`;
 
   const buttonClasses = `w-full mt-auto py-3 px-4 rounded-lg font-semibold transition-all duration-300 ease-in-out
     ${
-      plan.isCurrent
+      cannotUpgrade
         ? "bg-gray-200 text-gray-500 cursor-not-allowed"
         : isSelected
         ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg"
@@ -55,7 +66,7 @@ const PlanCard = ({
     <div
       className={cardClasses}
       onClick={() =>
-        mode === "driver" && !plan.isCurrent && onSelect && onSelect(plan)
+        mode === "driver" && !cannotUpgrade && onSelect && onSelect(plan)
       }
     >
       {/* Badge hiện tại */}
@@ -66,32 +77,23 @@ const PlanCard = ({
           </span>
         </div>
       )}
+
+      {/* Badge không thể nâng cấp (downgrade) */}
+      {!plan.isCurrent && isDowngrade() && (
+        <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2">
+          <span className="bg-gray-400 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-md">
+            Không khả dụng
+          </span>
+        </div>
+      )}
       {/* Header: Tên và giá */}
       <div className="text-center mb-4">
         <h3 className="text-xl font-bold text-gray-800 mb-2">{plan.name}</h3>
         <p className="text-4xl font-extrabold text-gray-900 mb-2">
           {formatPrice(plan.monthlyFee)}
         </p>
+      </div>
 
-        {/* Billing Type Badge */}
-        {plan.billingType && (
-          <div className="inline-block">
-            <span className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full border border-gray-300">
-              {getBillingTypeLabel(plan.billingType)}
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="bg-gray-50 rounded-lg p-3 mb-4">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center text-green-600">
-            <span className="font-medium">Giá Mỗi Phút</span>
-          </div>
-          <span className="font-bold text-green-600">
-            {`${Number(plan.pricePerMinute || 0).toLocaleString("vi-VN")}đ`}
-          </span>
-        </div>
-      </div>
       <div className="bg-gray-50 rounded-lg p-3 mb-4">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center text-green-600">
@@ -136,13 +138,17 @@ const PlanCard = ({
       {mode === "driver" && onSelect && (
         <button
           className={buttonClasses}
-          disabled={plan.isCurrent}
+          disabled={cannotUpgrade}
           onClick={(e) => {
             e.stopPropagation();
-            !plan.isCurrent && onSelect(plan);
+            !cannotUpgrade && onSelect(plan);
           }}
         >
-          {plan.isCurrent ? "Đang sử dụng" : "Nâng cấp"}
+          {plan.isCurrent
+            ? "Đang sử dụng"
+            : isDowngrade()
+            ? "Không khả dụng"
+            : "Nâng cấp"}
         </button>
       )}
     </div>

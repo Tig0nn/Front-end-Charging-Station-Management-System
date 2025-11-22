@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { walletAPI } from "../../lib/apiServices.js";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // CSS animation cho loading spinner
 const styles = document.createElement("style");
@@ -257,6 +258,7 @@ export default function WalletPage() {
   }; // =============== RENDER JSX ===============
   return (
     <div className="min-h-screen bg-gray-50">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Container chính */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* ========== Card hiển thị số dư ví ========== */}
@@ -307,8 +309,7 @@ export default function WalletPage() {
           </div>
         </div>{" "}
         {/* ========== Cards thống kê (Chi tiêu, Nạp tiền, Số lượng GD) ========== */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Card 1: Chi tiêu tháng này */}
           <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-blue-500/15 hover:shadow-xl hover:-translate-y-1">
             <div className="flex items-center gap-2 text-blue-600 mb-4">

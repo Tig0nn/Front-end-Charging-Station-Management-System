@@ -477,22 +477,26 @@ const BookingForm = () => {
                               <h3 className="font-bold text-lg">
                                 {charger.name}
                               </h3>
-                              <span
-                                className={`px-2 py-1 rounded text-xs font-semibold ${
-                                  charger.status === "AVAILABLE"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {charger.status}
-                              </span>
+                              {/* Badge hiển thị kết quả check availability */}
+                              {availability && !isCheckingAll ? (
+                                <span
+                                  className={`px-2 py-1 rounded text-xs font-semibold ${
+                                    isAvailable
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {isAvailable ? "Khả dụng" : "Không khả dụng"}
+                                </span>
+                              ) : isCheckingAll ? (
+                                <span className="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600">
+                                  Đang kiểm tra...
+                                </span>
+                              ) : null}
                             </div>
                             <p className="text-sm text-gray-600 mb-2">
                               <i className="bi bi-lightning-charge"></i>{" "}
                               {charger.chargingPower}
-                            </p>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {charger.connectorType}
                             </p>
 
                             {isCheckingAll && (

@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 
+/**
+ * useUserLocation - Hook quản lý vị trí GPS và tâm bản đồ
+ * Chức năng: Lấy GPS từ browser, quản lý mapCenter
+ */
 export const useUserLocation = (defaultCenter = [10.8231, 106.6297]) => {
   const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -15,8 +19,8 @@ export const useUserLocation = (defaultCenter = [10.8231, 106.6297]) => {
           setUserLocation(location);
           setMapCenter(location);
         },
-        (error) => {
-          console.warn("Could not get user location:", error);
+        () => {
+          console.warn("Không thể lấy vị trí người dùng");
         }
       );
     }

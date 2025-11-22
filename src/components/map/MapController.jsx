@@ -1,16 +1,18 @@
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
 
+/**
+ * MapController - Điều khiển map programmatic (pan/zoom)
+ * Chức năng: Di chuyển và zoom bản đồ bằng code
+ */
 const MapController = ({ center, zoom, shouldResetZoom = false }) => {
   const map = useMap();
 
   useEffect(() => {
     if (center && shouldResetZoom) {
-      // Chỉ reset zoom khi shouldResetZoom = true
-      map.setView(center, zoom);
+      map.setView(center, zoom); // Reset cả vị trí và zoom
     } else if (center) {
-      // Chỉ pan đến vị trí mới, không thay đổi zoom
-      map.panTo(center);
+      map.panTo(center); // Chỉ di chuyển, giữ nguyên zoom
     }
   }, [center, zoom, map, shouldResetZoom]);
 
