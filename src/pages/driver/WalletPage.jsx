@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { walletAPI } from "../../lib/apiServices.js";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
 
 // CSS animation cho loading spinner
 const styles = document.createElement("style");
