@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { chargingPointsAPI, vehiclesAPI } from "../lib/apiServices.js";
+import { chargingPointsAPI } from "../lib/apiServices.js";
 import {
   XMarkIcon,
   BoltIcon,
@@ -28,15 +28,27 @@ export default function ChargerSelectionModal({
   const [chargers, setChargers] = useState([]);
   const [chargerLoading, setChargerLoading] = useState(true);
   const [selectedCharger, setSelectedCharger] = useState(null);
-
   // State cho màn hình chọn xe
-  const [vehicles, setVehicles] = useState([]);
-  const [vehicleLoading, setVehicleLoading] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  // const [vehicles, setVehicles] = useState([]);
+  // const [vehicleLoading, setVehicleLoading] = useState(false);
+  // const [selectedVehicle, setSelectedVehicle] = useState(null); // COMMENTED - không dùng object xe nữa
+
+  // --- MỚI: Lấy vehicleId từ localStorage thay vì chọn từ danh sách ---
+  const [selectedVehicleId, setSelectedVehicleId] = useState(null);
 
   // State để điều khiển giao diện
-  const [view, setView] = useState("chargers"); // 'chargers' hoặc 'vehicles'
+  // const [view, setView] = useState("chargers"); // COMMENTED - không cần chuyển view nữa
   const [isStarting, setIsStarting] = useState(false); // Trạng thái khi nhấn nút "Bắt đầu"
+
+  // Lấy VehicleID từ localStorage
+  useEffect(() => {
+    const storedVehicleId = localStorage.getItem("selectedVehicleId");
+    if (storedVehicleId) {
+      setSelectedVehicleId(storedVehicleId); // Lưu ID thay vì object
+    } else {
+      setError("Vui lòng chọn xe trước khi bắt đầu sạc.");
+    }
+  }, []); // Chỉ chạy 1 lần khi mount
 
   // --- CÁC HÀM GỌI API ---
 
@@ -68,35 +80,33 @@ export default function ChargerSelectionModal({
     }
   };
   // --- HÀM LẤY DANH SÁCH XE CỦA NGƯỜI DÙNG ---
-  const fetchVehicles = async () => {
-    try {
-      setVehicleLoading(true);
-      setError(null);
-      const response = await vehiclesAPI.getMyVehicles();
-      if (response.data && response.data.result) {
-        const userVehicles = response.data.result;
-        setVehicles(userVehicles);
-        console.log("User vehicles:", userVehicles);
-        if (userVehicles.length === 1) {
-          setSelectedVehicle(userVehicles[0]);
-        }
-      } else {
-        setVehicles([]);
-      }
-      console.log("Fetched vehicles:", vehicles);
-    } catch (err) {
-      console.error("Error fetching vehicles:", err);
-      setError("Không thể tải danh sách xe của bạn.");
-      setVehicles([]);
-    } finally {
-      setVehicleLoading(false);
-    }
-  };
-
+  // const fetchVehicles = async () => {
+  //   try {
+  //     setVehicleLoading(true);
+  //     setError(null);
+  //     const response = await vehiclesAPI.getMyVehicles();
+  //     if (response.data && response.data.result) {
+  //       const userVehicles = response.data.result;
+  //       setVehicles(userVehicles);
+  //       console.log("User vehicles:", userVehicles);
+  //       if (userVehicles.length === 1) {
+  //         setSelectedVehicle(userVehicles[0]);
+  //       }
+  //     } else {
+  //       setVehicles([]);
+  //     }
+  //     console.log("Fetched vehicles:", vehicles);
+  //   } catch (err) {
+  //     console.error("Error fetching vehicles:", err);
+  //     setError("Không thể tải danh sách xe của bạn.");
+  //     setVehicles([]);
+  //   } finally {
+  //     setVehicleLoading(false);
+  //   }
+  // };
   useEffect(() => {
     fetchChargers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [station]);
+  }, [station]); // Khi station thay đổi, fetch lại chargers
 
   //  Auto-select charger from QR code
   useEffect(() => {
@@ -106,8 +116,8 @@ export default function ChargerSelectionModal({
         console.log(" Auto-selecting charger from QR:", charger);
         setSelectedCharger(charger);
         // Skip to vehicle selection
-        setView("vehicles");
-        fetchVehicles();
+        //setView("vehicles");
+        //fetchVehicles();
       } else if (charger) {
         setError(
           `Trụ sạc ${charger.name} hiện không khả dụng. Vui lòng chọn trụ khác.`
@@ -126,27 +136,32 @@ export default function ChargerSelectionModal({
       setSelectedCharger(charger);
     }
   };
+  // const handleSelectVehicle = (vehicle) => {
+  //   setSelectedVehicle(vehicle);
+  // };
 
-  const handleSelectVehicle = (vehicle) => {
-    setSelectedVehicle(vehicle);
-  };
+  // COMMENTED - không cần chuyển sang màn hình chọn xe nữa
+  // const handleProceedToVehicleSelection = () => {
+  //   if (!selectedCharger) return;
+  //   setView("vehicles");
+  //   fetchVehicles();
+  // };
 
-  const handleProceedToVehicleSelection = () => {
-    if (!selectedCharger) return;
-    setView("vehicles");
-    fetchVehicles();
-  };
+  // COMMENTED - không cần quay lại nữa
+  // const handleGoBackToChargerSelection = () => {
+  //   setView("chargers");
+  //   setError(null);
+  // };
 
-  const handleGoBackToChargerSelection = () => {
-    setView("chargers");
-    setError(null); // Xóa lỗi có thể xảy ra ở màn hình chọn xe
-  };
-
+  // --- MỚI: Bắt đầu sạc trực tiếp với vehicleId từ localStorage ---
   const handleConfirmAndStartCharging = async () => {
-    if (!selectedCharger || !selectedVehicle) return;
+    if (!selectedCharger || !selectedVehicleId) {
+      setError("Vui lòng chọn trụ sạc và xe.");
+      return;
+    }
     setIsStarting(true);
     try {
-      await onStartCharging(selectedCharger, selectedVehicle, targetSoc);
+      await onStartCharging(selectedCharger, selectedVehicleId, targetSoc); // Dùng vehicleId thay vì vehicle object
       onClose();
     } catch (err) {
       console.error(err);
@@ -189,6 +204,39 @@ export default function ChargerSelectionModal({
 
   const renderChargerView = () => (
     <>
+      {" "}
+      <div className="px-8 pt-7 pb-5 border-b bg-white sticky top-0 z-20">
+        <label
+          htmlFor="soc-slider"
+          className="block font-semibold text-gray-700 mb-2"
+        >
+          Sạc đến mức pin mong muốn:{" "}
+          <span className="font-bold text-emerald-600">{targetSoc}%</span>
+        </label>
+
+        <div className="relative">
+          <input
+            id="soc-slider"
+            type="range"
+            min="10"
+            max="100"
+            step="1"
+            value={targetSoc}
+            onChange={(e) => setTargetSoc(parseInt(e.target.value))}
+            className="w-full h-2 rounded-lg cursor-pointer appearance-none bg-gray-200"
+            style={{
+              background: `linear-gradient(to right, #10b981 0%, #10b981 ${
+                ((targetSoc - 10) / 90) * 100
+              }%, #e5e7eb ${((targetSoc - 10) / 90) * 100}%, #e5e7eb 100%)`,
+            }}
+          />
+        </div>
+
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>10%</span>
+          <span>100%</span>
+        </div>
+      </div>
       <div className="flex-1 overflow-y-auto px-8 py-7 modal-body-scroll">
         {chargerLoading ? (
           <div className="text-center py-10">
@@ -200,50 +248,52 @@ export default function ChargerSelectionModal({
             <p className="text-red-500 font-semibold">{error}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-            {chargers.map((charger) => (
-              <div
-                key={charger.pointId}
-                onClick={() => handleSelectCharger(charger)}
-                className={`bg-white border-2 rounded-2xl p-4 text-center transition-all duration-300 relative ${
-                  charger.status === "AVAILABLE"
-                    ? "cursor-pointer hover:-translate-y-1"
-                    : "cursor-not-allowed opacity-70"
-                } ${
-                  selectedCharger?.pointId === charger.pointId
-                    ? "border-emerald-500 scale-[1.02]"
-                    : "border-gray-200"
-                }`}
-              >
-                {selectedCharger?.pointId === charger.pointId && (
-                  <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center">
-                    <CheckCircleIcon className="w-6 h-6" />
-                  </div>
-                )}
-                <div className="h-12 flex items-center justify-center mb-2">
-                  {getChargerIcon(charger.status)}
-                </div>
-                <h3 className="text-lg font-extrabold text-gray-900 mb-1">
-                  {charger.name}
-                </h3>
-                <p className="text-sm text-gray-600 my-0.5 font-semibold">
-                  {formatPower(charger.chargingPower)}
-                </p>
-                <p className="text-xs text-gray-500 my-0.5 mb-2 font-medium">
-                  {charger.connectorType}
-                </p>
+          <>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
+              {chargers.map((charger) => (
                 <div
-                  className={`inline-block px-3 py-1 rounded-xl text-xs font-bold uppercase mt-1 ${
+                  key={charger.pointId}
+                  onClick={() => handleSelectCharger(charger)}
+                  className={`bg-white border-2 rounded-2xl p-4 text-center transition-all duration-300 relative ${
                     charger.status === "AVAILABLE"
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-gray-200 text-gray-600"
+                      ? "cursor-pointer hover:-translate-y-1"
+                      : "cursor-not-allowed opacity-70"
+                  } ${
+                    selectedCharger?.pointId === charger.pointId
+                      ? "border-emerald-500 scale-[1.02]"
+                      : "border-gray-200"
                   }`}
                 >
-                  {getChargerStatusText(charger.status)}
+                  {selectedCharger?.pointId === charger.pointId && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center">
+                      <CheckCircleIcon className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="h-12 flex items-center justify-center mb-2">
+                    {getChargerIcon(charger.status)}
+                  </div>
+                  <h3 className="text-lg font-extrabold text-gray-900 mb-1">
+                    {charger.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 my-0.5 font-semibold">
+                    {formatPower(charger.chargingPower)}
+                  </p>
+                  <p className="text-xs text-gray-500 my-0.5 mb-2 font-medium">
+                    {charger.connectorType}
+                  </p>
+                  <div
+                    className={`inline-block px-3 py-1 rounded-xl text-xs font-bold uppercase mt-1 ${
+                      charger.status === "AVAILABLE"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {getChargerStatusText(charger.status)}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
       <div className="px-8 py-5 border-t flex justify-end gap-3">
@@ -253,163 +303,23 @@ export default function ChargerSelectionModal({
         >
           Hủy
         </button>
-        <button
+        {/* COMMENTED - nút Tiếp tục cũ */}
+        {/* <button
           className="px-7 py-3.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleProceedToVehicleSelection}
           disabled={!selectedCharger}
         >
           Tiếp tục
-        </button>
-      </div>
-    </>
-  );
+        </button> */}
 
-  
-
-  const renderVehicleView = () => (
-    <>
-    
-      {/* =================== SLIDER FIXED AT TOP =================== */}
-      {vehicles.length > 0 && (
-        <div className="px-8 pt-7 pb-5 border-b bg-white sticky top-0 z-20">
-          <label
-            htmlFor="soc-slider"
-            className="block font-semibold text-gray-700 mb-2"
-          >
-            Sạc đến mức pin mong muốn:{" "}
-            <span className="font-bold text-emerald-600">{targetSoc}%</span>
-          </label>          <style>
-            {`
-              #soc-slider::-webkit-slider-thumb {
-                appearance: none;
-                width: 20px;
-                height: 20px;
-                border-radius: 50%;
-                background: ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'};
-                cursor: pointer;
-                border: 3px solid white;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-                transition: all 0.3s ease;
-              }
-              #soc-slider::-webkit-slider-thumb:hover {
-                transform: scale(1.2);
-                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-              }
-              #soc-slider::-moz-range-thumb {
-                width: 20px;
-                height: 20px;
-                border-radius: 50%;
-                background: ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'};
-                cursor: pointer;
-                border: 3px solid white;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-                transition: all 0.3s ease;
-              }
-              #soc-slider::-moz-range-thumb:hover {
-                transform: scale(1.2);
-                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-              }
-            `}
-          </style>
-          <input
-            id="soc-slider"
-            type="range"
-            min="10"
-            max="100"
-            step="1"
-            value={targetSoc}
-            onChange={(e) => setTargetSoc(parseInt(e.target.value))}
-            className="w-full h-2 rounded-lg cursor-pointer appearance-none transition-all duration-300"
-            style={{
-              background: `linear-gradient(to right, 
-                ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'} 0%, 
-                ${targetSoc < 20 ? '#dc2626' : targetSoc <= 50 ? '#eab308' : '#059669'} ${((targetSoc - 10) / 90) * 100}%, 
-                #e5e7eb ${((targetSoc - 10) / 90) * 100}%, 
-                #e5e7eb 100%)`
-            }}
-          />
-
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>10%</span>
-            <span>100%</span>
-          </div>
-        </div>
-      )}
-
-      {/*Danh sách xe   */}
-      <div className="flex-1 overflow-y-auto px-8 py-7">
-        {vehicleLoading ? (
-          <div className="text-center py-10">
-            <ArrowPathIcon className="w-10 h-10 text-emerald-500 animate-spin mx-auto" />
-            <p>Đang tải danh sách xe...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-10">
-            <ExclamationTriangleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <p className="text-red-500 font-semibold">{error}</p>
-          </div>
-        ) : (
-          <div className="space-y-3 mt-2">
-            {vehicles.length > 0 ? (
-              vehicles.map((vehicle) => (
-                <div
-                  key={vehicle.vehicleId}
-                  onClick={() => handleSelectVehicle(vehicle)}
-                  className={`flex items-center gap-4 rounded-lg border-2 p-4 cursor-pointer transition-all
-                  ${
-                    selectedVehicle?.vehicleId === vehicle.vehicleId
-                      ? "border-emerald-500 bg-emerald-50 shadow-md"
-                      : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
-                  }
-                `}
-                >
-                  <TruckIcon className="h-8 w-8 text-gray-600" />
-
-                  <div>
-                    <p className="font-semibold">
-                      {vehicle.brand} {vehicle.model}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {vehicle.licensePlate}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Pin:{" "}
-                      <span className="font-bold">
-                        {vehicle.currentSocPercent}%
-                      </span>
-                    </p>
-                  </div>
-
-                  {selectedVehicle?.vehicleId === vehicle.vehicleId && (
-                    <CheckCircleIcon className="h-6 w-6 text-emerald-600 ml-auto" />
-                  )}
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-500">
-                Bạn chưa có phương tiện nào.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Nút*/}
-      <div className="px-8 py-5 border-t flex justify-between gap-3 bg-white">
-        <button
-          className="px-7 py-3.5 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-2"
-          onClick={handleGoBackToChargerSelection}
-        >
-          <ChevronLeftIcon className="w-5 h-5" /> Quay lại
-        </button>
-
+        {/* MỚI - nút Bắt đầu sạc trực tiếp */}
         <button
           className="px-7 py-3.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
           onClick={handleConfirmAndStartCharging}
-          disabled={!selectedVehicle || isStarting}
+          disabled={!selectedCharger || !selectedVehicleId || isStarting}
         >
           {isStarting ? (
-            <ArrowPathIcon className="w-5 h-5 animate-spin" />
+            <BoltIcon className="w-5 h-5 animate-spin" />
           ) : (
             <BoltIcon className="w-5 h-5" />
           )}
@@ -418,7 +328,96 @@ export default function ChargerSelectionModal({
       </div>
     </>
   );
-
+  // =================== COMMENTED - renderVehicleView CŨ - KHÔNG DÙNG NỮA ===================
+  // const renderVehicleView = () => (
+  //   <>
+  //     {/* SLIDER FIXED AT TOP */}
+  //     {vehicles.length > 0 && (
+  //       <div className="px-8 pt-7 pb-5 border-b bg-white sticky top-0 z-20">
+  //         <label
+  //           htmlFor="soc-slider"
+  //           className="block font-semibold text-gray-700 mb-2"
+  //         >
+  //           Sạc đến mức pin mong muốn:{" "}
+  //           <span className="font-bold text-emerald-600">{targetSoc}%</span>
+  //         </label>
+  //         <input
+  //           id="soc-slider"
+  //           type="range"
+  //           min="10"
+  //           max="100"
+  //           step="1"
+  //           value={targetSoc}
+  //           onChange={(e) => setTargetSoc(parseInt(e.target.value))}
+  //           className="w-full h-2 rounded-lg cursor-pointer appearance-none transition-all duration-300"
+  //         />
+  //         <div className="flex justify-between text-xs text-gray-500 mt-1">
+  //           <span>10%</span>
+  //           <span>100%</span>
+  //         </div>
+  //       </div>
+  //     )}
+  //     {/* VEHICLE LIST (SCROLLABLE) */}
+  //     <div className="flex-1 overflow-y-auto px-8 py-7">
+  //       {vehicleLoading ? (
+  //         <div className="text-center py-10">
+  //           <ArrowPathIcon className="w-10 h-10 text-emerald-500 animate-spin mx-auto" />
+  //           <p>Đang tải danh sách xe...</p>
+  //         </div>
+  //       ) : error ? (
+  //         <div className="text-center py-10">
+  //           <ExclamationTriangleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+  //           <p className="text-red-500 font-semibold">{error}</p>
+  //         </div>
+  //       ) : (
+  //         <div className="space-y-3 mt-2">
+  //           {vehicles.length > 0 ? (
+  //             vehicles.map((vehicle) => (
+  //               <div
+  //                 key={vehicle.vehicleId}
+  //                 onClick={() => handleSelectVehicle(vehicle)}
+  //                 className="flex items-center gap-4 rounded-lg border-2 p-4 cursor-pointer transition-all"
+  //               >
+  //                 <TruckIcon className="h-8 w-8 text-gray-600" />
+  //                 <div>
+  //                   <p className="font-semibold">{vehicle.brand} {vehicle.model}</p>
+  //                   <p className="text-sm text-gray-500">{vehicle.licensePlate}</p>
+  //                   <p className="text-sm text-gray-500">Pin: <span className="font-bold">{vehicle.currentSocPercent}%</span></p>
+  //                 </div>
+  //                 {selectedVehicle?.vehicleId === vehicle.vehicleId && (
+  //                   <CheckCircleIcon className="h-6 w-6 text-emerald-600 ml-auto" />
+  //                 )}
+  //               </div>
+  //             ))
+  //           ) : (
+  //             <p className="text-center text-gray-500">Bạn chưa có phương tiện nào.</p>
+  //           )}
+  //         </div>
+  //       )}
+  //     </div>
+  //     {/* FOOTER BUTTONS */}
+  //     <div className="px-8 py-5 border-t flex justify-between gap-3 bg-white">
+  //       <button
+  //         className="px-7 py-3.5 rounded-xl font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center gap-2"
+  //         onClick={handleGoBackToChargerSelection}
+  //       >
+  //         <ChevronLeftIcon className="w-5 h-5" /> Quay lại
+  //       </button>
+  //       <button
+  //         className="px-7 py-3.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+  //         onClick={handleConfirmAndStartCharging}
+  //         disabled={!selectedVehicle || isStarting}
+  //       >
+  //         {isStarting ? (
+  //           <ArrowPathIcon className="w-5 h-5 animate-spin" />
+  //         ) : (
+  //           <BoltIcon className="w-5 h-5" />
+  //         )}
+  //         {isStarting ? "Đang bắt đầu..." : "Bắt đầu sạc"}
+  //       </button>
+  //     </div>
+  //   </>
+  // );
   return (
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-5"
@@ -431,7 +430,10 @@ export default function ChargerSelectionModal({
         <div className="px-8 py-7 border-b relative">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900">
-              {view === "chargers" ? "Chọn trụ sạc" : "Chọn phương tiện"}
+              {/* COMMENTED - title cũ có chuyển đổi view */}
+              {/* {view === "chargers" ? "Chọn trụ sạc" : "Chọn phương tiện"} */}
+              {/* MỚI - chỉ hiển thị "Chọn trụ sạc" */}
+              Chọn trụ sạc
             </h2>
             <p className="text-gray-600 mt-1">{station.stationName}</p>
           </div>
@@ -442,7 +444,10 @@ export default function ChargerSelectionModal({
             <XMarkIcon className="w-6 h-6" />
           </button>
         </div>
-        {view === "chargers" ? renderChargerView() : renderVehicleView()}
+        {/* COMMENTED - render có điều kiện view cũ */}
+        {/* {view === "chargers" ? renderChargerView() : renderVehicleView()} */}
+        {/* MỚI - chỉ render charger view */}
+        {renderChargerView()}
       </div>
     </div>
   );

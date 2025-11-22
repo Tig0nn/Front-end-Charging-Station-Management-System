@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { walletAPI } from "../../lib/apiServices.js";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // CSS animation cho loading spinner
 const styles = document.createElement("style");
@@ -257,6 +258,7 @@ export default function WalletPage() {
   }; // =============== RENDER JSX ===============
   return (
     <div className="min-h-screen bg-gray-50">
+      <ToastContainer position="top-right" autoClose={3000} />
       {/* Container chính */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* ========== Card hiển thị số dư ví ========== */}

@@ -307,7 +307,7 @@ const AdminChargingPointManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full px-1">
         {/* Delete Confirmation Modal */}
         {deleteModal.show && (
           <div
@@ -317,7 +317,7 @@ const AdminChargingPointManagement = () => {
             }
           >
             <div
-              className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+              className="bg-white rounded-xl shadow-2xl  p-6"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -353,7 +353,7 @@ const AdminChargingPointManagement = () => {
                   </p>
                 </div>
                 <p className="text-sm text-gray-500 mt-3">
-                  Hành động này không thể hoàn tác.
+                  ⚠️ Hành động này không thể hoàn tác.
                 </p>
               </div>
 

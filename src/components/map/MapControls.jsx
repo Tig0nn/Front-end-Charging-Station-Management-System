@@ -5,6 +5,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
+/**
+ * MapControls - Các nút điều khiển floating trên bản đồ
+ * Chức năng: GPS, Refresh, Clear Route
+ */
 const MapControls = ({
   showRoute,
   onGetUserLocation,
@@ -13,6 +17,7 @@ const MapControls = ({
 }) => {
   return (
     <div className="map-controls">
+      {/* Nút GPS - Lấy vị trí hiện tại */}
       <button
         onClick={onGetUserLocation}
         className="control-button"
@@ -20,9 +25,13 @@ const MapControls = ({
       >
         <MapPinIcon className="icon-control" />
       </button>
+
+      {/* Nút Refresh - Tải lại danh sách trạm */}
       <button onClick={onRefresh} className="control-button" title="Làm mới">
         <ArrowPathIcon className="icon-control" />
       </button>
+
+      {/* Nút Clear Route - Xóa đường đi (chỉ hiện khi có route) */}
       {showRoute && (
         <button
           onClick={onClearRoute}

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "leaflet/dist/leaflet.css";
 import "./MapPage.css";
-import { stationsAPI, chargingPointsAPI } from "../../lib/apiServices.js";
-import ChargerSelectionModal from "../../components/ChargerSelectionModal";
 
+import ChargerSelectionModal from "../../components/ChargerSelectionModal";
 import {
   StationList,
   MapView,
@@ -14,352 +14,234 @@ import {
 } from "../../components/map";
 import LoadingSpinner from "../../components/loading_spins/LoadingSpinner.jsx";
 
+import { useStations } from "../../hooks/useStations";
+import { useUserLocation } from "../../hooks/useUserLocation";
+import { calculateDistance } from "../../lib/geoUtils";
+import { chargingPointsAPI } from "../../lib/apiServices";
+
+/**
+ * MapPage - Trang bản đồ trạm sạc
+ * Chức năng: Hiển thị map, search trạm, chỉ đường, QR scan, bắt đầu sạc
+ */
 export default function MapPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [stations, setStations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([10.8231, 106.6297]); // Default: Ho Chi Minh City
+
+  // Hooks
+  const { stations, loading, error, refetch } = useStations();
+  const { userLocation, mapCenter, setMapCenter, getUserLocation } =
+    useUserLocation();
+
+  // State
   const [selectedStation, setSelectedStation] = useState(null);
   const [showChargerModal, setShowChargerModal] = useState(false);
   const [stationForCharging, setStationForCharging] = useState(null);
   const [routeInfo, setRouteInfo] = useState(null);
   const [showRoute, setShowRoute] = useState(false);
   const [routeDestination, setRouteDestination] = useState(null);
+
+  // Từ khóa search trạm
   const [searchQuery, setSearchQuery] = useState("");
-  const [preSelectedPointId, setPreSelectedPointId] = useState(null); // For QR code flow
 
-  // Kiểm tra session đang hoạt động khi component mount
-  // Nếu có, chuyển hướng người dùng đến trang session
+  // ID trụ sạc được pre-select (từ QR code)
+  const [preSelectedPointId, setPreSelectedPointId] = useState(null);
 
+  /**
+   * ===== EFFECT 1: KIỂM TRA SESSION ĐANG HOẠT ĐỘNG =====
+   * Ngăn user mở nhiều phiên sạc cùng lúc
+   * Nếu đang có session -> Chuyển hướng về trang session
+   */
   useEffect(() => {
-    const activeId = localStorage.getItem("currentSessionId");
-
+    const activeId = localStorage.getItem("activeSessionId");
     if (activeId) {
-      console.log(
-        "MapPage: Phát hiện session đang hoạt động, đang chuyển hướng..."
-      );
-      alert(
-        "Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng bạn đến trang phiên sạc..."
-      );
-      // Dùng { replace: true } để người dùng không thể nhấn "Back" quay lại MapPage
+      alert("Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng...");
       navigate(`/driver/session/${activeId}`, { replace: true });
     }
   }, [navigate]);
 
-  // Fetch stations from API
-  useEffect(() => {
-    fetchStations();
-    getUserLocation();
-  }, []);
-
-  // --- 🆕 HANDLE QR CODE FLOW ---
+  /**
+   * ===== EFFECT 2: XỬ LÝ QR CODE TỪ URL =====
+   *
+   * Flow QR Code:
+   * 1. User quét QR trên trụ sạc
+   * 2. QR chứa URL: /map?pointId=xxx&stationId=yyy
+   * 3. Parse URL params
+   * 4. Tìm trạm theo stationId
+   * 5. Pre-select trụ sạc theo pointId
+   * 6. Mở modal để user chọn xe và targetSOC
+   * 7. Xóa params khỏi URL
+   */
   useEffect(() => {
     const pointId = searchParams.get("pointId");
     const stationId = searchParams.get("stationId");
 
+    // Chỉ xử lý khi có pointId và đã load xong stations
     if (pointId && stations.length > 0) {
-      console.log(
-        "🔍 QR Code detected! pointId:",
-        pointId,
-        "stationId:",
-        stationId
-      );
-
-      // Tìm station chứa charging point này
-      let targetStation = null;
-
-      if (stationId) {
-        // Nếu có stationId từ QR, tìm trực tiếp
-        targetStation = stations.find((s) => s.stationId === stationId);
-      }
+      // Tìm trạm theo stationId
+      let targetStation = stationId
+        ? stations.find((s) => s.stationId === stationId)
+        : null;
 
       if (targetStation) {
-        console.log("✅ Found station from QR:", targetStation);
+        // Lưu pointId để pre-select trong modal
         setPreSelectedPointId(pointId);
+
+        // Set trạm để mở modal
         setStationForCharging(targetStation);
+
+        // Mở modal chọn trụ
         setShowChargerModal(true);
 
-        // Clear URL params sau khi xử lý
-        setSearchParams({});
-      } else {
-        console.warn("Station not found for pointId:", pointId);
-        alert("Không tìm thấy trạm sạc. Vui lòng thử lại.");
+        // Xóa params khỏi URL (cleanup)
         setSearchParams({});
       }
     }
   }, [searchParams, stations, setSearchParams]);
 
-  const fetchStations = async () => {
+  /**
+   * ===== HANDLER: BẮT ĐẦU PHIÊN SẠC =====
+   * Được gọi từ ChargerSelectionModal khi user chọn:
+   * - Trụ sạc (charger)
+   * - Xe (vehicle)
+   * - Mức pin mục tiêu (targetSoc)
+   *
+   * @param {Object} charger - Trụ sạc được chọn
+   * @param {string} vehicle - ID của xe
+   * @param {number} targetSoc - % pin mục tiêu (0-100)
+   */
+  const handleStartCharging = async (charger, vehicle, targetSoc) => {
     try {
-      setLoading(true);
-      const response = await stationsAPI.getAllDetails();
-      console.log(" Stations API response:", response);
+      // Đóng modal
+      setShowChargerModal(false);
 
-      let stationsData = [];
-      if (response.data?.result && Array.isArray(response.data.result)) {
-        stationsData = response.data.result;
-      } else if (response.result && Array.isArray(response.result)) {
-        stationsData = response.result;
-      } else if (Array.isArray(response.data)) {
-        stationsData = response.data;
-      }
+      // Hiển thị toast loading
+      const loadingToast = toast.loading("Đang khởi động phiên sạc...");
 
-      console.log(" Parsed stations data:", stationsData);
-
-      // --- 💡 HELPER FUNCTION ĐỂ LẤY TỔNG SỐ TRỤ TỪ CHUỖI SUMMARY ---
-      // Ví dụ: "T:8 | H:8 | Đ:0 | B:0" -> trả về 8
-      const getTotalFromSummary = (summary) => {
-        if (!summary) return 0;
-        const totalMatch = summary.match(/T:(\d+)/); // Tìm chuỗi "T:" theo sau là số
-        if (totalMatch && totalMatch[1]) {
-          return parseInt(totalMatch[1], 10) || 0;
-        }
-        return 0;
-      };
-      // -----------------------------------------------------------
-
-      const mappedStations = stationsData.map((station) => {
-        // --- 💡 LOGIC LẤY TỔNG SỐ TRỤ MỚI ---
-        let realTotal = 0;
-        if (station.totalChargingPoints > 0) {
-          // 1. Ưu tiên totalChargingPoints nếu nó đúng (lớn hơn 0)
-          realTotal = station.totalChargingPoints;
-        } else if (station.chargingPointsCount > 0) {
-          // 2. Ưu tiên chargingPointsCount nếu nó đúng
-          realTotal = station.chargingPointsCount;
-        } else {
-          // 3. Phương án cuối: Lấy từ chuỗi summary "T:8"
-          realTotal = getTotalFromSummary(station.chargingPointsSummary);
-        }
-        // -----------------------------------
-
-        // Map backend fields to frontend fields
-        return {
-          stationId: station.stationId,
-          stationName: station.name,
-          address: station.address,
-          latitude: station.latitude,
-          longitude: station.longitude,
-          status: station.status,
-
-          // --- 💡 ÁP DỤNG GIÁ TRỊ "realTotal" ĐÚNG VÀO ĐÂY ---
-          chargingPointsCount: realTotal,
-          totalChargingPoints: realTotal,
-          availableChargingPoints: station.availableChargingPoints || 0, // Trụ trống (đã trừ trụ đang sạc)
-          activeChargingPoints: station.activeChargingPoints || 0, // Trụ hoạt động (trừ bảo trì, offline)
-          // -------------------------------------------------
-
-          offlineChargingPoints: station.offlineChargingPoints || 0,
-          maintenanceChargingPoints: station.maintenanceChargingPoints || 0,
-          chargingPointsSummary: station.chargingPointsSummary || "",
-
-          // Legacy fields (cũng cập nhật luôn)
-          totalChargers: realTotal,
-          availableChargers: station.availableChargingPoints || 0, // Sử dụng availableChargingPoints
-
-          // Thông tin bổ sung
-          revenue: station.revenue || 0,
-          usagePercent: station.usagePercent || 0,
-          staffId: station.staffId,
-          staffName: station.staffName,
-
-          // Thông tin liên hệ
-          pricePerKwh: "3,500đ/kWh",
-          hotline: station.contactPhone || "N/A",
-          contactPhone: station.contactPhone,
-          operatorName: station.operatorName,
-          email: station.operatorName
-            ? `${station.operatorName}@email.com`
-            : "N/A",
-        };
+      // Gọi API start charging
+      const response = await chargingPointsAPI.startCharging({
+        chargingPointId: charger.pointId,
+        vehicleId: vehicle,
+        targetSocPercent: targetSoc,
       });
 
-      setStations(mappedStations);
-      setError(null);
+      // Parse sessionId từ response
+      const sessionId = response.data?.result?.sessionId;
 
-      console.log(` Loaded ${mappedStations.length} stations`);
+      if (sessionId) {
+        // Dismiss loading toast
+        toast.dismiss(loadingToast);
+
+        // Hiển thị success toast
+        toast.success("Khởi động phiên sạc thành công!");
+
+        // Lưu sessionId vào localStorage
+        localStorage.setItem("activeSessionId", sessionId);
+
+        // Chuyển hướng đến trang session để theo dõi
+        navigate(`/driver/session/${sessionId}`);
+      } else {
+        throw new Error("Không nhận được ID phiên sạc.");
+      }
     } catch (err) {
-      console.error("Error fetching stations:", err);
-      setError("Không thể tải danh sách trạm sạc");
-      setStations([]);
-    } finally {
-      setLoading(false);
+      // Dismiss mọi toast
+      toast.dismiss();
+
+      // Hiển thị error
+      toast.error(`Lỗi: ${err.response?.data?.message || err.message}`);
     }
   };
 
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const location = [
-            position.coords.latitude,
-            position.coords.longitude,
-          ];
-          setUserLocation(location);
-          setMapCenter(location);
-        },
-        (error) => {
-          console.warn("Could not get user location:", error);
-        }
-      );
-    }
-  };
-
+  /**
+   * ===== HANDLER: MỞ MODAL CHỌN TRỤ SẠC =====
+   * Được gọi khi user nhấn nút "Sạc ngay"
+   *
+   * @param {Object} station - Trạm sạc được chọn
+   */
   const handleOpenChargerModal = (station) => {
-    // Lấy currentSessionId từ localStorage
-    const currentId = localStorage.getItem("currentSessionId");
-
-    // --- THÊM LOGIC KIỂM TRA VÀO ĐÂY ---
-    if (currentId) {
-      // 1. Báo cho người dùng
-      alert(
-        "Bạn đang trong một phiên sạc. Đang điều hướng bạn đến phiên sạc..."
-      );
-
-      // 2. Điều hướng họ đến phiên sạc đó
-      navigate(`/driver/session/${currentId}`);
-
-      // 3. Dừng hàm ngay lập tức để không mở modal
+    if (localStorage.getItem("activeSessionId")) {
+      alert("Bạn đang trong một phiên sạc.");
       return;
     }
-    //log station ra
-    console.log("Opening modal for station:", station);
+
+    // Set trạm và mở modal
     setStationForCharging(station);
     setShowChargerModal(true);
   };
 
-  const handleCloseChargerModal = () => {
-    setShowChargerModal(false);
-    setStationForCharging(null);
-  };
-  const handleStartCharging = async (charger, vehicle, targetSoc) => {
-    console.log("--- BẮT ĐẦU LUỒNG SẠC ---");
-    console.log("1. Dữ liệu nhận được:", { charger, vehicle, targetSoc });
-
-    try {
-      // 1. Đóng modal ngay lập tức để người dùng thấy phản hồi
-      setShowChargerModal(false);
-
-      // 2. Tạo payload chính xác
-      const payload = {
-        chargingPointId: charger.pointId,
-        vehicleId: vehicle.vehicleId,
-        targetSocPercent: targetSoc,
-      };
-
-      // 3. Gọi API để bắt đầu phiên sạc
-      console.log("3. Đang gọi API startCharging...");
-      const loadingToast = toast.loading("Đang khởi động phiên sạc...");
-
-      const response = await chargingPointsAPI.startCharging(payload);
-
-      // 4. Lấy sessionId từ kết quả trả về
-      const sessionId = response.data?.result?.sessionId;
-
-      console.log("4. API Response thành công:", response.data);
-      console.log("5. Trích xuất sessionId:", sessionId);
-
-      if (sessionId) {
-        console.log(
-          `6. Thành công! Đang điều hướng đến /driver/session/${sessionId}`
-        );
-
-        toast.dismiss(loadingToast);
-        toast.success(" Khởi động phiên sạc thành công!");
-
-        localStorage.setItem("activeSessionId", sessionId);
-        navigate(`/driver/session/${sessionId}`);
-      } else {
-        throw new Error("Không nhận được ID phiên sạc từ máy chủ.");
-      }
-    } catch (err) {
-      console.error("LỖI khi bắt đầu phiên sạc:", err);
-      toast.error(
-        `Không thể bắt đầu phiên sạc: ${
-          err.response?.data?.message || err.message
-        }`
-      );
-    }
-  };
-
+  /**
+   * ===== HANDLER: HIỂN THỊ ĐƯỜNG DẪN =====
+   * Được gọi khi user nhấn nút "Chỉ đường"
+   *
+   * Flow:
+   * 1. Kiểm tra có GPS không
+   * 2. Kiểm tra trạm có tọa độ không
+   * 3. Set destination và bật showRoute
+   * 4. RoutingControl sẽ vẽ đường đi
+   * 5. OSRM API tính toán và trả về routeInfo
+   *
+   * @param {Object} station - Trạm cần chỉ đường đến
+   */
   const handleShowDirections = (station) => {
+    // Kiểm tra GPS
     if (!userLocation) {
-      alert("Không thể xác định vị trí của bạn. Vui lòng bật GPS.");
-      return;
+      return alert("Vui lòng bật GPS để dùng tính năng này.");
     }
 
-    if (!station.latitude || !station.longitude) {
-      alert("Trạm sạc không có thông tin vị trí.");
-      return;
+    // Kiểm tra tọa độ trạm
+    if (!station.latitude) {
+      return alert("Trạm không có tọa độ.");
     }
 
+    // Set destination (tọa độ trạm)
     setRouteDestination([station.latitude, station.longitude]);
+
+    // Bật hiển thị route
     setShowRoute(true);
+
+    // Highlight trạm
     setSelectedStation(station);
   };
 
-  const handleClearRoute = () => {
-    setShowRoute(false);
-    setRouteDestination(null);
-    setRouteInfo(null);
-  };
-
-  const handleStationClick = (station) => {
-    setSelectedStation(station);
-    // Có thể thêm zoom tới station ở đây nếu cần
-  };
-
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of Earth in km
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance.toFixed(1);
-  };
-
+  /**
+   * ===== RENDER: LOADING STATE =====
+   * Hiển thị spinner khi đang fetch stations
+   */
   if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-spinner">
           <LoadingSpinner />
-          <p className="loading-text"> Đang tải bản đồ trạm sạc...</p>
+          <p className="loading-text">Đang tải bản đồ trạm sạc...</p>
         </div>
       </div>
     );
   }
 
+  /**
+   * ===== RENDER: MAIN UI =====
+   */
   return (
     <div className="map-page-container">
-      {/* Map Container - Bên trái */}
+      {/* Toast notifications container */}
+      <ToastContainer position="top-right" autoClose={3000} />
+
+      {/* 
+        ===== LEFT SIDE: BẢN ĐỒ =====
+      */}
       <div className="map-container">
-        {/* Header cho Map với thanh tìm kiếm */}
+        {/* Header với search bar */}
         <div className="map-header">
           <div className="d-flex align-items-center justify-content-between gap-3">
             {/* Tiêu đề */}
             <div className="d-flex align-items-center gap-2">
               <i
-                className="bi bi-geo-alt"
-                style={{ fontSize: "20px", color: "#10b981" }}
+                className="bi bi-geo-alt text-green-600"
+                style={{ fontSize: "20px" }}
               ></i>
-              <h2
-                className="mb-0"
-                style={{ fontSize: "18px", fontWeight: "600" }}
-              >
-                Bản đồ trạm sạc
-              </h2>
+              <h2 className="mb-0 text-lg font-semibold">Bản đồ trạm sạc</h2>
             </div>
 
-            {/* Thanh tìm kiếm */}
+            {/* Search input */}
             <div className="map-search-container">
               <i className="bi bi-search map-search-icon"></i>
               <input
@@ -369,11 +251,11 @@ export default function MapPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {/* Nút xóa search (chỉ hiện khi có text) */}
               {searchQuery && (
                 <button
                   className="map-search-clear"
                   onClick={() => setSearchQuery("")}
-                  aria-label="Xóa tìm kiếm"
                 >
                   <i className="bi bi-x-circle-fill"></i>
                 </button>
@@ -382,6 +264,17 @@ export default function MapPage() {
           </div>
         </div>
 
+        {/* 
+          Component MapView: Render Leaflet map
+          Props truyền xuống:
+          - mapCenter: Tâm bản đồ
+          - userLocation: Vị trí GPS user
+          - stations: Danh sách trạm
+          - showRoute: Có vẽ route không
+          - routeDestination: Tọa độ đích
+          - selectedStation: Trạm đang chọn
+          - Callbacks: onStationClick, onShowDirections, onRouteFound
+        */}
         <MapView
           mapCenter={mapCenter}
           userLocation={userLocation}
@@ -389,24 +282,36 @@ export default function MapPage() {
           showRoute={showRoute}
           routeDestination={routeDestination}
           selectedStation={selectedStation}
-          onStationClick={handleStationClick}
+          onStationClick={setSelectedStation}
           onShowDirections={handleShowDirections}
           onRouteFound={setRouteInfo}
         />
 
-        {/* Map Controls */}
+        {/* 
+          MapControls: Các nút floating (GPS, Refresh, Clear Route)
+          Vị trí: Góc phải trên bản đồ
+        */}
         <MapControls
           showRoute={showRoute}
-          onGetUserLocation={getUserLocation}
-          onRefresh={fetchStations}
-          onClearRoute={handleClearRoute}
+          onGetUserLocation={getUserLocation} // Từ useUserLocation hook
+          onRefresh={refetch} // Từ useStations hook
+          onClearRoute={() => {
+            setShowRoute(false);
+            setRouteDestination(null);
+            setRouteInfo(null);
+          }}
         />
 
-        {/* Route Info Panel */}
+        {/* 
+          RouteInfoPanel: Hiển thị khoảng cách & thời gian
+          Chỉ hiện khi showRoute = true
+        */}
         {showRoute && <RouteInfoPanel routeInfo={routeInfo} />}
       </div>
 
-      {/* Station List Sidebar - Bên phải */}
+      {/* 
+        ===== RIGHT SIDE: SIDEBAR DANH SÁCH TRẠM =====
+      */}
       <StationList
         stations={stations}
         error={error}
@@ -414,18 +319,23 @@ export default function MapPage() {
         selectedStation={selectedStation}
         userLocation={userLocation}
         onSearchChange={setSearchQuery}
-        onStationClick={handleStationClick}
+        onStationClick={(s) => {
+          setSelectedStation(s);
+          // Optional: Zoom tới trạm khi click list
+          if (s.latitude && s.longitude)
+            setMapCenter([s.latitude, s.longitude]);
+        }}
         onShowDirections={handleShowDirections}
         onStartCharging={handleOpenChargerModal}
-        onRetry={fetchStations}
+        onRetry={refetch}
         calculateDistance={calculateDistance}
       />
 
-      {/* Charger Selection Modal */}
+      {/* MODAL */}
       {showChargerModal && stationForCharging && (
         <ChargerSelectionModal
           station={stationForCharging}
-          onClose={handleCloseChargerModal}
+          onClose={() => setShowChargerModal(false)}
           onStartCharging={handleStartCharging}
           preSelectedPointId={preSelectedPointId}
         />

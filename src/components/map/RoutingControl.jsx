@@ -4,6 +4,10 @@ import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
+/**
+ * RoutingControl - Vẽ đường đi trên bản đồ sử dụng OSRM
+ * Chức năng: Tính route tối ưu, vẽ đường đi, trả về khoảng cách & thời gian
+ */
 const RoutingControl = ({ start, end, onRouteFound }) => {
   const map = useMap();
   const routingControlRef = useRef(null);
@@ -11,24 +15,24 @@ const RoutingControl = ({ start, end, onRouteFound }) => {
   useEffect(() => {
     if (!start || !end || !map) return;
 
-    // Remove existing routing control if any
+    // Xóa routing control cũ (nếu có)
     if (routingControlRef.current) {
       map.removeControl(routingControlRef.current);
       routingControlRef.current = null;
     }
 
-    // Create routing control
+    // Tạo routing control mới
     const routingControl = L.Routing.control({
       waypoints: [L.latLng(start[0], start[1]), L.latLng(end[0], end[1])],
       routeWhileDragging: false,
-      showAlternatives: false, // Tắt hiển thị route thay thế để tránh nhấp nháy
+      showAlternatives: false,
       addWaypoints: false,
-      fitSelectedRoutes: false, // ⭐ Tắt auto zoom
-      show: false, // Ẩn bảng hướng dẫn mặc định
+      fitSelectedRoutes: false,
+      show: false,
       lineOptions: {
         styles: [
           {
-            color: "#10b981", // Màu xanh lá đẹp hơn
+            color: "#10b981",
             opacity: 0.8,
             weight: 6,
           },
@@ -37,7 +41,7 @@ const RoutingControl = ({ start, end, onRouteFound }) => {
         missingRouteTolerance: 0,
       },
       createMarker: function () {
-        return null; // Don't create markers for waypoints
+        return null; // Không tạo marker (đã có marker riêng)
       },
       router: L.Routing.osrmv1({
         serviceUrl: "https://router.project-osrm.org/route/v1",
@@ -45,18 +49,14 @@ const RoutingControl = ({ start, end, onRouteFound }) => {
       }),
     }).addTo(map);
 
-    // Store reference
     routingControlRef.current = routingControl;
 
-    // Handle route found event
+    // Event: Khi tìm thấy route
     routingControl.on("routesfound", function (e) {
       const routes = e.routes;
       const summary = routes[0].summary;
 
-      // Convert meters to kilometers
       const distanceInKm = (summary.totalDistance / 1000).toFixed(1);
-
-      // Convert seconds to minutes
       const timeInMinutes = Math.round(summary.totalTime / 60);
 
       if (onRouteFound) {
@@ -72,7 +72,7 @@ const RoutingControl = ({ start, end, onRouteFound }) => {
       });
     });
 
-    // Cleanup function
+    // Cleanup: Xóa control khi component unmount hoặc route thay đổi
     return () => {
       if (map && routingControlRef.current) {
         try {
@@ -84,7 +84,7 @@ const RoutingControl = ({ start, end, onRouteFound }) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start, end, map]); // onRouteFound intentionally omitted to prevent re-render
+  }, [start, end, map]);
 
   return null;
 };

@@ -23,18 +23,18 @@ const GoogleCallback = () => {
         }
         console.log("🔵 FULL TOKEN:", token);
 
-        // ✅ IMPORTANT: Clear old user data before setting new token
+        //  IMPORTANT: Clear old user data before setting new token
         localStorage.removeItem("user");
         localStorage.removeItem("role");
         localStorage.removeItem("currentUserId");
-        console.log("🧹 Cleared old user data from localStorage");
+        console.log(" Cleared old user data from localStorage");
 
         // Lưu token vào localStorage và axios instance
         setAuthToken(token);
-        console.log("🔵 Calling API to get driver info...");
+        console.log(" Calling API to get driver info...");
         // Sử dụng apiServices thay vì fetch thủ công
         const response = await apiServices.users.getProfile();
-        console.log("✅ User info response:", response.data);
+        console.log(" User info response:", response.data);
 
         const responseData = response.data.result || response.data;
 
@@ -60,7 +60,7 @@ const GoogleCallback = () => {
         localStorage.setItem("user", JSON.stringify(userInfo));
         localStorage.setItem("role", "DRIVER");
 
-        console.log("✅ Login successful, redirecting to driver map...");
+        console.log(" Login successful, redirecting to driver map...");
 
         // Check if user has phone - redirect accordingly
         if (!userInfo.phone) {
@@ -71,7 +71,7 @@ const GoogleCallback = () => {
         }
       } catch (err) {
         // Lỗi từ API hoặc network
-        console.error("Callback error:", err);
+        console.error(" Callback error:", err);
         let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
 
         if (err.response) {
