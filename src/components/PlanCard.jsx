@@ -115,7 +115,7 @@ const PlanCard = ({
             !plan.isCurrent && onSelect(plan);
           }}
         >
-          {plan.isCurrent ? "Đang sử dụng" : "Nâng cấp"}
+          {plan.isCurrent ? "Đang sử dụng" : "Đăng kí"}
         </button>
       )}
     </div>

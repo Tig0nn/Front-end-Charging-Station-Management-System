@@ -340,7 +340,7 @@ export default function PaymentPage() {
           </div>
         )}
         <div className="text-start mb-8">
-          {currentSubscription.daysUntilExpiry !== undefined ? (
+          {currentSubscription.daysUntilExpiry > 0 ? (
             <>
               <p className="!text-lg font-bold !text-[#22c55e] mb-2">
                 <i class="bi bi-hourglass-split" />

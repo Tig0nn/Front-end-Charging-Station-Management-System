@@ -19,7 +19,7 @@ const ProfileTabs = () => {
     {
       id: "payment",
       path: "payment",
-      label: "Thanh toán",
+      label: "Gói thuê bao",
       icon: "bi-credit-card",
     },
   ];

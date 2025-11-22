@@ -33,39 +33,35 @@ const getStatusInfo = (point) => {
   return { text: point.status, bg: "secondary" };
 };
 
-// Định dạng tiền
-const formatCurrency = (value) => {
-  if (typeof value !== "number") return "0 đ";
-  return value.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
-};
+
 
 const AdminChargingPointManagement = () => {
-    const timerRef = useRef(null);
-    const [stations, setStations] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, ERROR, IN_USE, MAINTENANCE, AVAILABLE
-    const [deleteModal, setDeleteModal] = useState({
-        show: false,
-        point: null,
-        stationId: null,
-    });
-    const [editModal, setEditModal] = useState({
-        show: false,
-        point: null,
-        stationId: null,
-    });
-    const [editForm, setEditForm] = useState({
-        chargingPower: "POWER_22KW",
-    });
-    const [createModal, setCreateModal] = useState({
-        show: false,
-        stationId: null,
-    });
-    const [createForm, setCreateForm] = useState({
-        chargingPower: "POWER_22KW",
-    });
+  const timerRef = useRef(null);
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, ERROR, IN_USE, MAINTENANCE, AVAILABLE
+  const [deleteModal, setDeleteModal] = useState({
+    show: false,
+    point: null,
+    stationId: null,
+  });
+  const [editModal, setEditModal] = useState({
+    show: false,
+    point: null,
+    stationId: null,
+  });
+  const [editForm, setEditForm] = useState({
+    chargingPower: "POWER_22KW",
+  });
+  const [createModal, setCreateModal] = useState({
+    show: false,
+    stationId: null,
+  });
+  const [createForm, setCreateForm] = useState({
+    chargingPower: "POWER_22KW",
+  });
 
   // Load tất cả stations và charging points với session info
   const loadStationsData = async (showLoadingSpinner = true) => {
@@ -172,35 +168,35 @@ const AdminChargingPointManagement = () => {
     };
   }, []);
 
-    // Filter stations
-    const filteredStations = stations
-        .filter(
-            (station) =>
-                station.stationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                station.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                station.chargingPoints.some((point) =>
-                    point.name?.toLowerCase().includes(searchTerm.toLowerCase())
-                )
+  // Filter stations
+  const filteredStations = stations
+    .filter(
+      (station) =>
+        station.stationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        station.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        station.chargingPoints.some((point) =>
+          point.name?.toLowerCase().includes(searchTerm.toLowerCase())
         )
-        .filter((station) => {
-            if (statusFilter === "ALL") return true;
-            
-            return station.chargingPoints.some((p) => {
-                if (statusFilter === "ERROR") {
-                    return p.status === "OUT_OF_SERVICE" || p.status === "UNAVAILABLE";
-                }
-                if (statusFilter === "IN_USE") {
-                    return p.status === "CHARGING" || (p.status === "AVAILABLE" && p.currentSessionId);
-                }
-                if (statusFilter === "MAINTENANCE") {
-                    return p.status === "MAINTENANCE";
-                }
-                if (statusFilter === "AVAILABLE") {
-                    return p.status === "AVAILABLE" && !p.currentSessionId;
-                }
-                return true;
-            });
-        });
+    )
+    .filter((station) => {
+      if (statusFilter === "ALL") return true;
+
+      return station.chargingPoints.some((p) => {
+        if (statusFilter === "ERROR") {
+          return p.status === "OUT_OF_SERVICE" || p.status === "UNAVAILABLE";
+        }
+        if (statusFilter === "IN_USE") {
+          return p.status === "CHARGING" || (p.status === "AVAILABLE" && p.currentSessionId);
+        }
+        if (statusFilter === "MAINTENANCE") {
+          return p.status === "MAINTENANCE";
+        }
+        if (statusFilter === "AVAILABLE") {
+          return p.status === "AVAILABLE" && !p.currentSessionId;
+        }
+        return true;
+      });
+    });
 
   // Handle create charging point (placeholder)
   const handleCreatePoint = async () => {
@@ -321,36 +317,36 @@ const AdminChargingPointManagement = () => {
     );
   }
 
-    return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
-            <ToastContainer position="top-right" autoClose={3000} />
-            <div className="max-w-7xl mx-auto">
-                {/* Delete Confirmation Modal */}
-                {deleteModal.show && (
-                    <div
-                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-                        onClick={() =>
-                            setDeleteModal({ show: false, point: null, stationId: null })
-                        }
-                    >
-                        <div
-                            className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* Header */}
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-xl font-bold text-gray-900">
-                                    Xác nhận xóa trụ sạc
-                                </h3>
-                                <button
-                                    onClick={() =>
-                                        setDeleteModal({ show: false, point: null, stationId: null })
-                                    }
-                                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                    <i className="bi bi-x-lg text-2xl"></i>
-                                </button>
-                            </div>
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="max-w-7xl mx-auto">
+        {/* Delete Confirmation Modal */}
+        {deleteModal.show && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() =>
+              setDeleteModal({ show: false, point: null, stationId: null })
+            }
+          >
+            <div
+              className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-gray-900">
+                  Xác nhận xóa trụ sạc
+                </h3>
+                <button
+                  onClick={() =>
+                    setDeleteModal({ show: false, point: null, stationId: null })
+                  }
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <i className="bi bi-x-lg text-2xl"></i>
+                </button>
+              </div>
 
               {/* Content */}
               <div className="mb-6">
@@ -489,21 +485,21 @@ const AdminChargingPointManagement = () => {
                   </button>
                   {(editModal.point?.status === "OUT_OF_SERVICE" ||
                     editModal.point?.status === "MAINTENANCE") && (
-                    <button
-                      onClick={() => handleUpdateStatus("AVAILABLE")}
-                      className="w-full px-4 py-3 text-white rounded-lg font-semibold transition-colors"
-                      style={{ backgroundColor: "#22c55e" }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#16a34a")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#22c55e")
-                      }
-                    >
-                      <i className="bi bi-play-circle me-2"></i>
-                      Kích hoạt
-                    </button>
-                  )}
+                      <button
+                        onClick={() => handleUpdateStatus("AVAILABLE")}
+                        className="w-full px-4 py-3 text-white rounded-lg font-semibold transition-colors"
+                        style={{ backgroundColor: "#22c55e" }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#16a34a")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#22c55e")
+                        }
+                      >
+                        <i className="bi bi-play-circle me-2"></i>
+                        Kích hoạt
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
@@ -595,73 +591,73 @@ const AdminChargingPointManagement = () => {
           </div>
         )}
 
-                {/* Header */}
-                <div className="mb-8">
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                Quản lý Trụ sạc
-                            </h1>
-                            <p className="text-gray-600">
-                                Quản lý và theo dõi trạng thái tất cả trụ sạc trong hệ thống
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => loadStationsData(true)}
-                            disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2 text-white !rounded-lg font-semibold transition-colors"
-                            style={{ backgroundColor: "#22c55e" }}
-                            onMouseEnter={(e) =>
-                                !loading &&
-                                (e.currentTarget.style.backgroundColor = "#16a34a")
-                            }
-                            onMouseLeave={(e) =>
-                                !loading &&
-                                (e.currentTarget.style.backgroundColor = "#22c55e")
-                            }
-                        >
-                            {loading ? (
-                                <>
-                                    <span className="animate-spin">⟳</span>
-                                    <span>Đang tải...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <i className="bi bi-arrow-clockwise"></i>
-                                    <span>Làm mới</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </div>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Quản lý Trụ sạc
+              </h1>
+              <p className="text-gray-600">
+                Quản lý và theo dõi trạng thái tất cả trụ sạc trong hệ thống
+              </p>
+            </div>
+            <button
+              onClick={() => loadStationsData(true)}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 text-white !rounded-lg font-semibold transition-colors"
+              style={{ backgroundColor: "#22c55e" }}
+              onMouseEnter={(e) =>
+                !loading &&
+                (e.currentTarget.style.backgroundColor = "#16a34a")
+              }
+              onMouseLeave={(e) =>
+                !loading &&
+                (e.currentTarget.style.backgroundColor = "#22c55e")
+              }
+            >
+              {loading ? (
+                <>
+                  <span className="animate-spin">⟳</span>
+                  <span>Đang tải...</span>
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-arrow-clockwise"></i>
+                  <span>Làm mới</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
-                {/* Search & Filter */}
-                <div className="mb-6 flex gap-4">
-                    <div className="relative flex-1">
-                        <Search
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                            size={20}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Tìm theo tên trạm sạc hoặc tên trụ sạc..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22c55e] focus:border-transparent"
-                        />
-                    </div>
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-6 py-3 border border-gray-300 rounded-lg font-semibold bg-white text-gray-700 focus:ring-2 focus:ring-[#22c55e] focus:border-transparent cursor-pointer"
-                    >
-                        <option value="ALL">Tất cả trạng thái</option>
-                        <option value="AVAILABLE">Sẵn sàng</option>
-                        <option value="IN_USE">Đang sử dụng</option>
-                        <option value="MAINTENANCE">Bảo trì</option>
-                        <option value="ERROR">Lỗi</option>
-                    </select>
-                </div>
+        {/* Search & Filter */}
+        <div className="mb-6 flex gap-4">
+          <div className="relative flex-1">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Tìm theo tên trạm sạc hoặc tên trụ sạc..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22c55e] focus:border-transparent"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-6 py-3 border border-gray-300 rounded-lg font-semibold bg-white text-gray-700 focus:ring-2 focus:ring-[#22c55e] focus:border-transparent cursor-pointer"
+          >
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="AVAILABLE">Sẵn sàng</option>
+            <option value="IN_USE">Đang sử dụng</option>
+            <option value="MAINTENANCE">Bảo trì</option>
+            <option value="ERROR">Lỗi</option>
+          </select>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -718,47 +714,47 @@ const AdminChargingPointManagement = () => {
           </div>
         </div>
 
-                {/* Stations List */}
-                <div className="space-y-6">
-                    {filteredStations.map((station) => (
-                        <div key={station.stationId} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                            {/* Station Header */}
-                            <div className="bg-gradient-to-r from-[#22c55e] to-[#16a34a] text-white p-6">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <h2 className="text-2xl font-bold mb-2">
-                                            {station.stationName}
-                                        </h2>
-                                        <p className="text-green-100 flex items-center gap-2">
-                                            <MapPin size={16} />
-                                            {station.address}
-                                        </p>
-                                        <p className="text-green-100 text-sm mt-2">
-                                            {station.chargingPoints.length} trụ sạc •{" "}
-                                            {
-                                                station.chargingPoints.filter(
-                                                    (p) => p.status === "AVAILABLE" || p.status === "CHARGING"
-                                                ).length
-                                            }{" "}
-                                            hoạt động
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() =>
-                                            setCreateModal({ show: true, stationId: station.stationId })
-                                        }
-                                        className="flex items-center gap-2 px-4 py-2 bg-white text-[#22c55e] !rounded-lg font-semibold hover:bg-green-50 transition-colors"
-                                    >
-                                        <Plus size={20} />
-                                        Tạo trụ sạc
-                                    </button>
-                                </div>
-                            </div>
+        {/* Stations List */}
+        <div className="space-y-6">
+          {filteredStations.map((station) => (
+            <div key={station.stationId} className="bg-white rounded-xl shadow-lg overflow-hidden">
+              {/* Station Header */}
+              <div className="bg-gradient-to-r from-[#22c55e] to-[#16a34a] text-white p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2">
+                      {station.stationName}
+                    </h2>
+                    <p className="text-green-100 flex items-center gap-2">
+                      <MapPin size={16} />
+                      {station.address}
+                    </p>
+                    <p className="text-green-100 text-sm mt-2">
+                      {station.chargingPoints.length} trụ sạc •{" "}
+                      {
+                        station.chargingPoints.filter(
+                          (p) => p.status === "AVAILABLE" || p.status === "CHARGING"
+                        ).length
+                      }{" "}
+                      hoạt động
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      setCreateModal({ show: true, stationId: station.stationId })
+                    }
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-[#22c55e] !rounded-lg font-semibold hover:bg-green-50 transition-colors"
+                  >
+                    <Plus size={20} />
+                    Tạo trụ sạc
+                  </button>
+                </div>
+              </div>
 
               {/* Charging Points */}
               <div className="p-6">
                 {!station.chargingPoints ||
-                station.chargingPoints.length === 0 ? (
+                  station.chargingPoints.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">
                     Chưa có trụ sạc nào
                   </p>
@@ -767,7 +763,6 @@ const AdminChargingPointManagement = () => {
                     {station.chargingPoints.map((point) => {
                       const statusInfo = getStatusInfo(point);
                       const isCharging = statusInfo.text === "Đang sạc";
-                      const sessionInfo = point.currentSessionInfo;
 
                       return (
                         <div
@@ -793,27 +788,8 @@ const AdminChargingPointManagement = () => {
                           {/* Session Info if charging */}
                           {isCharging && point.currentSessionId && (
                             <div className="bg-green-50 p-3 rounded-lg mb-3">
-                              <div className="font-semibold text-green-800 mb-2">
+                              <div className="text-center font-semibold text-green-800 mb-2">
                                 Đang phục vụ khách
-                              </div>
-                              <div className="text-sm text-gray-700 space-y-1">
-                                <div className="flex justify-between">
-                                  <span>Pin:</span>
-                                  <span className="font-semibold">
-                                    {sessionInfo?.soc ?? "..."}%
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Phí:</span>
-                                  <span className="font-semibold">
-                                    {formatCurrency(sessionInfo?.totalCost)}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="text-xs text-gray-500 mt-2">
-                                Session:{" "}
-                                {point.currentSessionId.substring(0, 8)}
-                                ...
                               </div>
                             </div>
                           )}
@@ -831,73 +807,75 @@ const AdminChargingPointManagement = () => {
                             </div>
                           )}
 
-                                                    {/* Actions */}
-                                                    <div className="flex gap-2">
-                                                        {statusInfo.text !== "Đang sạc" && !isCharging && (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setEditModal({
-                                                                        show: true,
-                                                                        point,
-                                                                        stationId: station.stationId,
-                                                                    });
-                                                                    setEditForm({
-                                                                        chargingPower: point.chargingPower,
-                                                                    });
-                                                                }}
-                                                                className="flex-1 px-3 py-2 text-white text-sm !rounded-lg font-semibold transition-colors"
-                                                                style={{ backgroundColor: "#22c55e" }}
-                                                                onMouseEnter={(e) =>
-                                                                    (e.currentTarget.style.backgroundColor = "#16a34a")
-                                                                }
-                                                                onMouseLeave={(e) =>
-                                                                    (e.currentTarget.style.backgroundColor = "#22c55e")
-                                                                }
-                                                            >
-                                                                Chỉnh sửa
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() =>
-                                                                setDeleteModal({
-                                                                    show: true,
-                                                                    point,
-                                                                    stationId: station.stationId,
-                                                                })
-                                                            }
-                                                            className="px-3 py-2 bg-red-100 text-red-700 text-sm !rounded-lg hover:bg-red-200 transition-colors"
-                                                            title="Xóa trụ sạc"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
+                          {/* Actions */}
+                          <div className="flex gap-2">
+                            {statusInfo.text !== "Đang sạc" && !isCharging && (
+                              <button
+                                onClick={() => {
+                                  setEditModal({
+                                    show: true,
+                                    point,
+                                    stationId: station.stationId,
+                                  });
+                                  setEditForm({
+                                    chargingPower: point.chargingPower,
+                                  });
+                                }}
+                                className="flex-1 px-3 py-2 text-white text-sm !rounded-lg font-semibold transition-colors"
+                                style={{ backgroundColor: "#22c55e" }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.backgroundColor = "#16a34a")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.backgroundColor = "#22c55e")
+                                }
+                              >
+                                Chỉnh sửa
+                              </button>
+                            )}
+                            {statusInfo.text !== "Đang sạc" && !isCharging && (
+                              <button
+                                onClick={() =>
+                                  setDeleteModal({
+                                    show: true,
+                                    point,
+                                    stationId: station.stationId,
+                                  })
+                                }
+                                className="px-3 py-2 bg-red-100 text-red-700 text-sm !rounded-lg hover:bg-red-200 transition-colors"
+                                title="Xóa trụ sạc"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                                                          )}
+                          </div>
+                          
                         </div>
-                    ))}
-                </div>
-
-                {filteredStations.length === 0 && (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">
-                            {statusFilter !== "ALL"
-                                ? `Không tìm thấy trạm nào có trụ sạc ${
-                                    statusFilter === "ERROR" ? "lỗi" :
-                                    statusFilter === "IN_USE" ? "đang sử dụng" :
-                                    statusFilter === "MAINTENANCE" ? "bảo trì" :
-                                    "sẵn sàng"
-                                }`
-                                : "Không tìm thấy trạm sạc nào"}
-                        </p>
-                    </div>
+                      );
+                    })}
+                  </div>
                 )}
+              </div>
             </div>
+          ))}
         </div>
-    );
+
+        {filteredStations.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              {statusFilter !== "ALL"
+                ? `Không tìm thấy trạm nào có trụ sạc ${statusFilter === "ERROR" ? "lỗi" :
+                  statusFilter === "IN_USE" ? "đang sử dụng" :
+                    statusFilter === "MAINTENANCE" ? "bảo trì" :
+                      "sẵn sàng"
+                }`
+                : "Không tìm thấy trạm sạc nào"}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default AdminChargingPointManagement;
