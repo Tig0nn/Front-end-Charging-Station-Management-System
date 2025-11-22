@@ -415,10 +415,8 @@ const TransactionHistory = () => {
                     <div className="border rounded p-2" style={{ backgroundColor: "#f0fdf4" }}>
                       <small className="text-muted d-block mb-1 text-xs">Trạng thái thanh toán</small>
                       <div className="font-semibold text-sm">
-                        {detailSession.paymentStatus === "PAID" ? (
+                        {detailSession.paymentStatus === "COMPLETED" ? (
                           <span className="text-green-600">Đã thanh toán</span>
-                        ) : detailSession.paymentStatus === "PENDING" ? (
-                          <span className="text-yellow-600">Đang xử lý</span>
                         ) : (
                           <span className="text-red-600">Chưa thanh toán</span>
                         )}
@@ -714,8 +712,10 @@ const ChargingHabits = () => {
     const h = new Date(s.startTime).getHours();
     hourBins[Math.floor(h / 2)]++;
   });
+  //Spread operator
   const maxIdx = hourBins.indexOf(Math.max(...hourBins));
   const pad = (n) => String(n).padStart(2, "0");
+  //Template Literals cho phép nhúng biến và biểu thức trực tiếp vào chuỗi
   const popularHours = `${pad(maxIdx * 2)}:00 - ${pad(
     (maxIdx * 2 + 2) % 24
   )}:00`;
@@ -731,6 +731,7 @@ const ChargingHabits = () => {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="hour" />
           <YAxis allowDecimals={false} />
+          {/*Hiện khi hover*/}
           <Tooltip formatter={(value) => [value, "Số lần sạc"]} />
           <Legend />
           <Bar dataKey="count" name="Số lần sạc" fill="#22c55e" />
@@ -780,7 +781,7 @@ const ChargingHabits = () => {
             <h3 className="font-semibold text-gray-800">Thống kê khác</h3>
           </div>
           <div className="space-y-4">
-            <div className="bg-white/80 rounded-lg p-4 hover:bg-white transition-colors">
+            <div className="bg-white/80 rounded-lg p-4">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#22c55e]/10">
                   <i className="bi bi-clock-history text-[#22c55e] text-xl"></i>
@@ -794,7 +795,7 @@ const ChargingHabits = () => {
               </div>
             </div>
 
-            <div className="bg-white/80 rounded-lg p-4 hover:bg-white transition-colors">
+            <div className="bg-white/80 rounded-lg p-4">
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#22c55e]/10">
                   <i className="bi bi-speedometer2 text-[#22c55e] text-xl"></i>
@@ -826,8 +827,8 @@ export default function HistoryPage() {
 
   const tabs = [
     {
-      path: "transactions",
-      label: "Giao dịch",
+      path: "sessions",
+      label: "Phiên sạc",
       icon: "bi bi-coin",
     },
     {
@@ -981,8 +982,8 @@ export default function HistoryPage() {
       </div>
 
       <Routes>
-        <Route index element={<Navigate to="transactions" replace />} />
-        <Route path="transactions" element={<TransactionHistory />} />
+        <Route index element={<Navigate to="sessions" replace />} />
+        <Route path="sessions" element={<TransactionHistory />} />
         <Route path="analysis" element={<CostAnalysis />} />
         <Route path="habits" element={<ChargingHabits />} />
       </Routes>

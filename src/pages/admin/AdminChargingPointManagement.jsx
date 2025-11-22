@@ -90,37 +90,6 @@ const AdminChargingPointManagement = () => {
                 chargersResponse?.result ||
                 [];
 
-              // Fetch session details for charging points
-              const activePoints = chargingPoints.filter(
-                (p) => p.currentSessionId
-              );
-
-              const detailPromises = activePoints.map((point) =>
-                chargingPointsAPI
-                  .simulateCharging(point.currentSessionId)
-                  .then((res) => res.data.result)
-                  .catch((err) => {
-                    console.error(
-                      `Lỗi lấy chi tiết session ${point.currentSessionId}:`,
-                      err
-                    );
-                    return null;
-                  })
-              );
-
-              const sessionDetails = await Promise.all(detailPromises);
-
-              const detailsMap = {};
-              sessionDetails.forEach((session) => {
-                if (session && session.sessionId) {
-                  detailsMap[session.sessionId] = session;
-                }
-              });
-
-              chargingPoints = chargingPoints.map((point) => ({
-                ...point,
-                currentSessionInfo: detailsMap[point.currentSessionId] || null,
-              }));
             } catch (err) {
               console.warn(
                 `Could not load chargers for station ${station.stationId}, ${err}`
@@ -481,7 +450,7 @@ const AdminChargingPointManagement = () => {
                     className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
                   >
                     <i className="bi bi-pause-circle me-2"></i>
-                    Tạm dừng
+                    Dừng hoạt động
                   </button>
                   {(editModal.point?.status === "OUT_OF_SERVICE" ||
                     editModal.point?.status === "MAINTENANCE") && (
