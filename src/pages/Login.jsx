@@ -1,5 +1,5 @@
 import "tailwindcss";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.jsx";
 import GoogleLoginButton from "../components/GoogleLoginButton.jsx";
@@ -23,8 +23,6 @@ function Login() {
     password: "",
   });
 
-  // State quản lý ghi nhớ đăng nhập
-  const [remember, setRemember] = useState(false);
 
   // Handle input changes
   const handleChangeValue = (e) => {
@@ -41,19 +39,7 @@ function Login() {
     }
   };
 
-  //Lấy thông tin đăng nhập trong component Login lần đầu render
-  useEffect(() => {
-    // Chỉ đọc email/pass đã lưu
-    const savedEmail = localStorage.getItem("savedEmail");
-    const savedPassword = localStorage.getItem("savedPassword");
 
-    if (savedEmail && savedPassword) {
-      // Nếu có, điền vào form và check ô "Ghi nhớ"
-      setForm({ email: savedEmail, password: savedPassword });
-      setRemember(true);
-    }
-    // Không cần logic lastActive hay dọn dẹp gì cả
-  }, []);
 
   // Xử lý đăng nhập
   const handleSubmit = async (e) => {
@@ -74,14 +60,7 @@ function Login() {
       console.log("Login result:", result);
       if (result.success) {
         const role = String(result.user?.role || "").toUpperCase();
-        if (remember) {
-          localStorage.setItem("savedEmail", form.email || ""); //lưu email tạm thời
-          localStorage.setItem("savedPassword", form.password || ""); //lưu password tạm thời
-        } else {
-          localStorage.removeItem("savedEmail");
-          localStorage.removeItem("savedPassword");
-          localStorage.removeItem("loginTime");
-        }
+
 
         if (role === "DRIVER") {
           navigate(result.needsProfile ? "/driver/add-info" : "/driver");
@@ -144,7 +123,6 @@ function Login() {
                   name="email"
                   type="email"
                   placeholder="driver@gmail.com"
-                  value={form.email}
                   onChange={handleChangeValue}
                   onFocus={handleFocus}
                   className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
@@ -164,7 +142,6 @@ function Login() {
                   name="password"
                   type="password"
                   placeholder="••••••••"
-                  value={form.password}
                   onChange={handleChangeValue}
                   onFocus={handleFocus}
                   className={`w-full h-12 px-4 border rounded-lg placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none transition-all ${
@@ -181,24 +158,6 @@ function Login() {
                   {loginErr}
                 </Alert>
               )}
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center gap-2">
-                  <input
-                    id="remember"
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 text-emerald-600 border-gray-400 rounded focus:ring-emerald-500 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="remember"
-                    className="text-sm text-gray-700 select-none cursor-pointer"
-                  >
-                    Ghi nhớ đăng nhập
-                  </label>
-                </div>
-              </div>
               {/* Login Button */}
               <button
                 type="submit"
