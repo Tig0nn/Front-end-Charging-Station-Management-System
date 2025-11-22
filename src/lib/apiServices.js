@@ -97,6 +97,18 @@ const apiServices = {
       );
       return api.get(`/api/revenues?${queryParams.toString()}`);
     },
+    exportReportsMonthly: () =>
+      api.get(`/api/revenues/reports/monthly`, {
+        responseType: 'blob',
+      }),
+    exportReportsWeekly: () =>
+      api.get(`/api/revenues/reports/weekly`, {
+        responseType: 'blob',
+      }),
+    exportReportsDaily: () =>
+      api.get(`/api/revenues/reports/daily`, {
+        responseType: 'blob',
+      }),
   },
 
   // =========================

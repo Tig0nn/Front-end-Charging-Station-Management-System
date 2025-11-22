@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { plansAPI, dashboardAPI } from "../../lib/apiServices";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Modal, Button } from "react-bootstrap";
 
 // Import các component con
 import PlanCard from "../../components/PlanCard";
@@ -77,6 +78,8 @@ export default function PaymentPage() {
   const [error, setError] = useState(null);
   const [currentSubscription, setCurrentSubscription] = useState(null);
   const [availablePlans, setAvailablePlans] = useState([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [planToSubscribe, setPlanToSubscribe] = useState(null);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -198,24 +201,27 @@ export default function PaymentPage() {
       return;
     }
 
-    // Confirm before subscribing
-    const confirmed = window.confirm(
-      `Xác nhận đăng ký gói "${plan.name}"?\n\n` +
-        `Phí tháng: ${plan.monthlyFee?.toLocaleString("vi-VN")}đ\n` +
-        `Giá điện: ${plan.pricePerKwh?.toLocaleString("vi-VN")}đ/kWh\n\n` +
-        `Số tiền sẽ được trừ trực tiếp từ ví của bạn.\n` +
-        `Bạn sẽ nhận được email xác nhận sau khi đăng ký thành công.`
-    );
+    // Show confirmation modal
+    setPlanToSubscribe(plan);
+    setShowConfirmModal(true);
+  };
 
-    if (!confirmed) return;
+  const handleCloseModal = () => {
+    setShowConfirmModal(false);
+    setPlanToSubscribe(null);
+  };
+
+  const confirmSubscription = async () => {
+    if (!planToSubscribe) return;
 
     try {
       setLoading(true);
       setError(null);
+      setShowConfirmModal(false);
 
       // Call backend API to subscribe - payment from wallet
       // API: POST /api/plans/subscribe/{planId}
-      const response = await plansAPI.subscribe(plan.id);
+      const response = await plansAPI.subscribe(planToSubscribe.id);
 
       // Extract plan data from response
       // Response: { code: 0, message: "string", result: { planId, name, ... } }
@@ -251,7 +257,7 @@ export default function PaymentPage() {
       const successMessage =
         response?.data?.message ||
         response?.message ||
-        `Đăng ký gói ${plan.name} thành công!`;
+        `Đăng ký gói ${planToSubscribe.name} thành công!`;
 
       toast.success(
         `${successMessage}\n\nVui lòng kiểm tra email để xem thông tin chi tiết.`,
@@ -262,6 +268,7 @@ export default function PaymentPage() {
       );
 
       setSelectedPlan(null);
+      setPlanToSubscribe(null);
     } catch (error) {
       // Handle error
       const backendMessage =
@@ -389,6 +396,85 @@ export default function PaymentPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <Modal show={showConfirmModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton className="border-bottom">
+          <Modal.Title className="d-flex align-items-center gap-2">
+            <i className="bi bi-question-circle text-primary"></i>
+            Xác nhận đăng ký
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body className="py-4">
+          {planToSubscribe && (
+            <>
+              <div className="text-center mb-4">
+                <h5 className="fw-bold text-gray-900 mb-2">
+                  Xác nhận đăng ký gói "{planToSubscribe.name}"?
+                </h5>
+              </div>
+
+              <div className="bg-light rounded p-3 mb-3">
+                <div className="d-flex justify-content-between mb-2">
+                  <span className="text-muted">Phí tháng:</span>
+                  <span className="fw-semibold">
+                    {planToSubscribe.monthlyFee?.toLocaleString("vi-VN")}đ
+                  </span>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <span className="text-muted">Giá điện:</span>
+                  <span className="fw-semibold">
+                    {planToSubscribe.pricePerKwh?.toLocaleString("vi-VN")}đ/kWh
+                  </span>
+                </div>
+              </div>
+
+              <div className="alert alert-info mb-3">
+                <i className="bi bi-wallet2 me-2"></i>
+                <small>
+                  Số tiền sẽ được trừ trực tiếp từ ví của bạn.
+                </small>
+              </div>
+
+              <div className="alert alert-success mb-0">
+                <i className="bi bi-envelope me-2"></i>
+                <small>
+                  Bạn sẽ nhận được email xác nhận sau khi đăng ký thành công.
+                </small>
+              </div>
+            </>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer className="border-top">
+          <Button
+            variant="secondary"
+            onClick={handleCloseModal}
+            disabled={loading}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant="success"
+            onClick={confirmSubscription}
+            disabled={loading}
+            className="d-flex align-items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm"></span>
+                <span>Đang xử lý...</span>
+              </>
+            ) : (
+              <>
+                <i className="bi bi-check-circle"></i>
+                <span>Xác nhận đăng ký</span>
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Form, Spinner, Alert, Button } from "react-bootstrap";
+import { Row, Col, Card, Form, Spinner, Alert, Button, Modal } from "react-bootstrap";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -37,9 +37,84 @@ const Reports = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [period, setPeriod] = useState("monthly"); // 🆕 Track selected period
+  const [period, setPeriod] = useState("monthly");
+  const [exporting, setExporting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
-  // 🆕 Load data from API - Dynamic based on selected period
+  const handleOpenExportModal = () => {
+    setShowExportModal(true);
+  };
+
+  const handleCloseExportModal = () => {
+    setShowExportModal(false);
+  };
+
+  const exportReports = async (exportPeriod) => {
+    try {
+      setExporting(true);
+      setError("");
+      setShowExportModal(false);
+
+      console.log(`📥 Đang xuất báo cáo PDF (${exportPeriod})...`);
+
+      // Call appropriate API based on selected period
+      let response;
+      if (exportPeriod === "daily") {
+        response = await revenueAPI.exportReportsDaily();
+      } else if (exportPeriod === "weekly") {
+        response = await revenueAPI.exportReportsWeekly();
+      } else {
+        response = await revenueAPI.exportReportsMonthly();
+      }
+
+      // Check if response is a blob
+      if (!(response.data instanceof Blob)) {
+        throw new Error("Response không phải file PDF");
+      }
+
+      // Create blob URL
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // Generate filename with current date
+      const currentDate = new Date();
+      const periodLabel = 
+        exportPeriod === "daily" ? "Ngay" :
+        exportPeriod === "weekly" ? "Tuan" : 
+        "Thang";
+      
+      const filename = `BaoCaoDoanhThu_${periodLabel}_${currentDate.getFullYear()}_${String(
+        currentDate.getMonth() + 1
+      ).padStart(2, "0")}_${String(currentDate.getDate()).padStart(2, "0")}.pdf`;
+
+      // Create download link
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ Xuất báo cáo thành công:", filename);
+      // Optional: Show success toast if you have toast library
+      // toast.success(`Đã tải xuống báo cáo: ${filename}`);
+    } catch (err) {
+      console.error("❌ Lỗi xuất báo cáo:", err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Không thể xuất báo cáo. Vui lòng thử lại.";
+      setError(errorMessage);
+      // Optional: Show error toast
+      // toast.error(errorMessage);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const loadReportsData = async (selectedPeriod = period) => {
     try {
       setLoading(true);
@@ -310,6 +385,19 @@ const Reports = () => {
                 </small>
               </div>
               <div className="d-flex gap-2">
+                <Button
+                  onClick={handleOpenExportModal}
+                  disabled={exporting || loading}
+                  className="d-flex align-items-center gap-2"
+                  style={{
+                    backgroundColor: "#000000ff",
+                    borderColor: "#000000ff",
+                    color: "white",
+                  }}
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                  <span>Xuất báo cáo</span>
+                </Button>
                 <Form.Select
                   size="sm"
                   value={period}
@@ -321,7 +409,7 @@ const Reports = () => {
                   <option value="yearly">Theo năm</option>
                 </Form.Select>
                 <Button
-                  onClick= {() => loadReportsData(period)}
+                  onClick={() => loadReportsData(period)}
                   disabled={loading}
                   className="d-flex align-items-center gap-2"
                   style={{
@@ -470,6 +558,92 @@ const Reports = () => {
           </Col>
         </Row>
       )}
+
+      {/* Export Report Modal */}
+      <Modal show={showExportModal} onHide={handleCloseExportModal} centered>
+        <Modal.Header closeButton className="border-bottom">
+          <Modal.Title className="d-flex align-items-center gap-2">
+            <i className="bi bi-file-earmark-pdf text-danger"></i>
+            Xuất báo cáo PDF
+          </Modal.Title>
+        </Modal.Header>
+        
+        <Modal.Body className="py-4">
+          <p className="text-muted mb-3">
+            Chọn kỳ báo cáo bạn muốn xuất:
+          </p>
+          
+          <div className="d-grid gap-3">
+            {/* Daily Report */}
+            <Button
+              variant="outline-primary"
+              className="d-flex align-items-center justify-content-between p-3 text-start"
+              onClick={() => exportReports("daily")}
+              disabled={exporting}
+            >
+              <div className="d-flex align-items-center gap-3">
+                <i className="bi bi-calendar-day fs-4"></i>
+                <div>
+                  <div className="fw-semibold">Báo cáo theo ngày</div>
+                  <small className="text-muted">Doanh thu hôm nay</small>
+                </div>
+              </div>
+              <i className="bi bi-chevron-right"></i>
+            </Button>
+
+            {/* Weekly Report */}
+            <Button
+              variant="outline-success"
+              className="d-flex align-items-center justify-content-between p-3 text-start"
+              onClick={() => exportReports("weekly")}
+              disabled={exporting}
+            >
+              <div className="d-flex align-items-center gap-3">
+                <i className="bi bi-calendar-week fs-4"></i>
+                <div>
+                  <div className="fw-semibold">Báo cáo theo tuần</div>
+                  <small className="text-muted">Doanh thu tuần này</small>
+                </div>
+              </div>
+              <i className="bi bi-chevron-right"></i>
+            </Button>
+
+            {/* Monthly Report */}
+            <Button
+              variant="outline-danger"
+              className="d-flex align-items-center justify-content-between p-3 text-start"
+              onClick={() => exportReports("monthly")}
+              disabled={exporting}
+            >
+              <div className="d-flex align-items-center gap-3">
+                <i className="bi bi-calendar-month fs-4"></i>
+                <div>
+                  <div className="fw-semibold">Báo cáo theo tháng</div>
+                  <small className="text-muted">Doanh thu tháng này</small>
+                </div>
+              </div>
+              <i className="bi bi-chevron-right"></i>
+            </Button>
+          </div>
+
+          {exporting && (
+            <div className="text-center mt-4">
+              <Spinner animation="border" size="sm" className="me-2" />
+              <span className="text-muted">Đang xuất báo cáo...</span>
+            </div>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer className="border-top">
+          <Button 
+            variant="secondary" 
+            onClick={handleCloseExportModal}
+            disabled={exporting}
+          >
+            Đóng
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
