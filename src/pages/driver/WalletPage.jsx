@@ -307,7 +307,8 @@ export default function WalletPage() {
           </div>
         </div>{" "}
         {/* ========== Cards thống kê (Chi tiêu, Nạp tiền, Số lượng GD) ========== */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          
           {/* Card 1: Chi tiêu tháng này */}
           <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-blue-500/15 hover:shadow-xl hover:-translate-y-1">
             <div className="flex items-center gap-2 text-blue-600 mb-4">

@@ -118,7 +118,7 @@ export default function MainLayoutStaff({ children }) {
   const tabs = [
     {
       path: "/staff/station",
-      label: "Điểm sạc",
+      label: "Trụ sạc",
       icon: "bi-gear-fill",
     },
     {

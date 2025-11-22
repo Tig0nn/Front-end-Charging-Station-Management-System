@@ -76,7 +76,7 @@ export default function MapPage() {
 
       const response = await chargingPointsAPI.startCharging({
         chargingPointId: charger.pointId,
-        vehicleId: vehicle.vehicleId,
+        vehicleId: vehicle,
         targetSocPercent: targetSoc,
       });
 
