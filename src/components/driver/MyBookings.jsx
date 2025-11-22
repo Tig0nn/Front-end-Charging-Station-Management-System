@@ -7,6 +7,11 @@ const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  
+  // State cho modal chọn targetSocPercent
+  const [showChargingModal, setShowChargingModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [targetSocPercent, setTargetSocPercent] = useState(0);
 
   useEffect(() => {
     loadBookings();
@@ -62,13 +67,13 @@ const MyBookings = () => {
     const statusMap = {
       CONFIRMED: {
         label: "Đã xác nhận",
-        className: "bg-green-100 text-green-800",
+        className: "bg-green-100 text-green-800", // Màu xanh lá cho CONFIRMED
       },
-      CHECKED_IN: {
-        label: "Đã check-in",
-        className: "bg-blue-100 text-blue-800",
+      IN_PROGRESS: {
+        label: "Đang diễn ra",
+        className: "bg-yellow-100 text-yellow-800", // Màu vàng cho IN_PROGRESS
       },
-      CANCELLED: {
+      CANCELLED_BY_USER: {
         label: "Đã hủy",
         className: "bg-red-100 text-red-800",
       },
@@ -97,40 +102,66 @@ const MyBookings = () => {
   };
 
   const canCheckIn = (booking) => {
+    // Chỉ hiện nút "Sạc ngay" khi status CONFIRMED và trong khoảng ±10 phút
     if (booking.bookingStatus !== "CONFIRMED") return false;
 
     const bookingTime = new Date(booking.bookingTime);
     const now = new Date();
     const diffMinutes = (bookingTime - now) / (1000 * 60);
 
-    // Có thể check-in từ 15 phút trước đến 15 phút sau giờ đặt
-    return diffMinutes >= -15 && diffMinutes <= 15;
+    // Có thể check-in từ 10 phút trước đến 10 phút sau giờ đặt
+    return diffMinutes >= -10 && diffMinutes <= 10;
   };
 
   const canCancel = (booking) => {
-    if (booking.bookingStatus !== "CONFIRMED") return false;
-
-    const bookingTime = new Date(booking.bookingTime);
-    const now = new Date();
-
-    // Có thể hủy nếu chưa quá giờ đặt
-    return now < bookingTime;
+    // Chỉ cho phép hủy khi status là CONFIRMED (chưa bắt đầu sạc)
+    return booking.bookingStatus === "CONFIRMED";
   };
 
-  const handleCheckIn = async (bookingId) => {
+  const handleCheckIn = async (booking) => {
+    // Mở modal để chọn targetSocPercent
+    setSelectedBooking(booking);
+    
+    // Tính toán maxTargetSoc: currentSocPercent + desiredPercentage
+    const currentSoc = booking.currentSocPercent || 0;
+    const maxTargetSoc = Math.min(100, currentSoc + booking.desiredPercentage);
+    
+    // Set giá trị mặc định là maxTargetSoc
+    setTargetSocPercent(maxTargetSoc);
+    setShowChargingModal(true);
+  };
+
+  const handleStartCharging = async () => {
+    if (!selectedBooking) return;
+
     try {
-      setActionLoading(bookingId);
-      await apiServices.bookings.checkInBooking(bookingId);
-      toast.success("Check-in thành công! Bắt đầu sạc ngay.", {
-        icon: "✅",
+      setActionLoading(selectedBooking.id);
+      
+      // Bước 1: Check-in booking
+      await apiServices.bookings.checkInBooking(selectedBooking.id);
+      
+      // Bước 2: Bắt đầu phiên sạc
+      const chargingData = {
+        chargingPointId: selectedBooking.chargingPointId,
+        vehicleId: selectedBooking.vehicleId,
+        targetSocPercent: parseInt(targetSocPercent)
+      };
+      
+      await apiServices.chargingPoints.startCharging(chargingData);
+      
+      toast.success("Bắt đầu sạc thành công!", {
+        icon: "⚡",
         duration: 5000,
       });
+      
+      setShowChargingModal(false);
+      setSelectedBooking(null);
       loadBookings();
     } catch (err) {
-      console.error("Error checking in:", err);
+      console.error("Error starting charging:", err);
       const errorMsg =
         err?.response?.data?.message || err?.message || "Lỗi không xác định";
-      toast.error(`Check-in thất bại! ${errorMsg}`, {
+      toast.error(`Bắt đầu sạc thất bại! ${errorMsg}`, {
         duration: 5000,
       });
     } finally {
@@ -212,126 +243,264 @@ const MyBookings = () => {
 
       {/* Bookings List */}
       <div className="grid grid-cols-1 gap-4">
-        {bookings.map((booking) => (
-          <div
-            key={booking.id}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-              {/* Left Section - Info */}
-              <div className="flex-1 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">
-                      {booking.stationName}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      <i className="bi bi-geo-alt-fill text-red-500"></i>{" "}
-                      {booking.stationAddress}
-                    </p>
-                  </div>
-                  {getStatusBadge(booking.bookingStatus)}
-                </div>
+        {bookings.map((booking) => {
+          // Debug: Log booking info
+          console.log("Booking:", {
+            id: booking.id,
+            status: booking.bookingStatus,
+            canCheckIn: canCheckIn(booking),
+            canCancel: canCancel(booking),
+            bookingTime: booking.bookingTime,
+          });
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700">
-                      <strong>Trụ sạc:</strong> {booking.chargingPointName}
-                    </span>
+          return (
+            <div
+              key={booking.id}
+              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                {/* Left Section - Info */}
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-1">
+                        {booking.stationName}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        <i className="bi bi-geo-alt-fill text-red-500"></i>{" "}
+                        {booking.stationAddress}
+                      </p>
+                    </div>
+                    {getStatusBadge(booking.bookingStatus)}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700">
-                      <strong>Xe:</strong> {booking.vehicleLicensePlate} (
-                      {booking.vehicleModel})
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700">
-                      <strong>Giờ đặt:</strong>{" "}
-                      {formatDateTime(booking.bookingTime)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700">
-                      <strong>Mức pin mong muốn:</strong>{" "}
-                      {booking.desiredPercentage}%
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700">
-                      <strong>Tiền cọc:</strong>{" "}
-                      {formatCurrency(booking.depositAmount)}
-                    </span>
-                  </div>
-                  {booking.estimatedEndTime && (
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-gray-700">
-                        <strong>Dự kiến kết thúc:</strong>{" "}
-                        {formatDateTime(booking.estimatedEndTime)}
+                        <strong>Trụ sạc:</strong> {booking.chargingPointName}
                       </span>
                     </div>
-                  )}
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-700">
+                        <strong>Xe:</strong> {booking.vehicleLicensePlate} (
+                        {booking.vehicleModel})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-700">
+                        <strong>Giờ đặt:</strong>{" "}
+                        {formatDateTime(booking.bookingTime)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-700">
+                        <strong>Mức pin mong muốn:</strong>{" "}
+                        {booking.desiredPercentage}%
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-700">
+                        <strong>Tiền cọc:</strong>{" "}
+                        {formatCurrency(booking.depositAmount)}
+                      </span>
+                    </div>
+                    {booking.estimatedEndTime && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-700">
+                          <strong>Dự kiến kết thúc:</strong>{" "}
+                          {formatDateTime(booking.estimatedEndTime)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Right Section - Actions */}
-              <div className="flex flex-col gap-2 md:min-w-[180px]">
-                {canCheckIn(booking) && (
-                  <button
-                    onClick={() => handleCheckIn(booking.id)}
-                    disabled={actionLoading === booking.id}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {actionLoading === booking.id ? (
-                      <>
-                        <span className="animate-spin">⏳</span>
-                        <span>Đang xử lý...</span>
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-check-circle"></i>
-                        <span>Check-in</span>
-                      </>
-                    )}
-                  </button>
-                )}
+                {/* Right Section - Actions */}
+                <div className="flex flex-col gap-2 md:min-w-[180px]">
+                  {canCheckIn(booking) && (
+                    <button
+                      onClick={() => handleCheckIn(booking)}
+                      disabled={actionLoading === booking.id}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {actionLoading === booking.id ? (
+                        <>
+                          <span className="animate-spin">⏳</span>
+                          <span>Đang xử lý...</span>
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-lightning-charge-fill"></i>
+                          <span>Sạc ngay</span>
+                        </>
+                      )}
+                    </button>
+                  )}
 
-                {canCancel(booking) && (
-                  <button
-                    onClick={() => handleCancel(booking.id)}
-                    disabled={actionLoading === booking.id}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {actionLoading === booking.id ? (
-                      <>
-                        <span className="animate-spin">⏳</span>
-                        <span>Đang xử lý...</span>
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-x-circle"></i>
-                        <span>Hủy booking</span>
-                      </>
-                    )}
-                  </button>
-                )}
+                  {canCancel(booking) && (
+                    <button
+                      onClick={() => handleCancel(booking.id)}
+                      disabled={actionLoading === booking.id}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {actionLoading === booking.id ? (
+                        <>
+                          <span className="animate-spin">⏳</span>
+                          <span>Đang xử lý...</span>
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-x-circle"></i>
+                          <span>Hủy booking</span>
+                        </>
+                      )}
+                    </button>
+                  )}
 
-                {!canCheckIn(booking) && !canCancel(booking) && (
+                  {/* {!canCheckIn(booking) && !canCancel(booking) && (
                   <div className="text-sm text-gray-500 italic text-center">
                     {booking.bookingStatus === "CONFIRMED" &&
                       "Chưa đến giờ check-in"}
                     {booking.bookingStatus === "CHECKED_IN" &&
                       "Đang trong phiên sạc"}
+                    {booking.bookingStatus === "IN_PROGRESS" &&
+                      "Đang sạc"}
                     {booking.bookingStatus === "CANCELLED" && "Đã bị hủy"}
                     {booking.bookingStatus === "EXPIRED" && "Đã hết hạn"}
                     {booking.bookingStatus === "COMPLETED" && "Đã hoàn thành"}
                   </div>
-                )}
+                )} */}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {/* Modal chọn mức sạc */}
+      {showChargingModal && selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <i className="bi bi-lightning-charge-fill text-green-500"></i>
+              Chọn mức pin mục tiêu
+            </h3>
+            
+            <div className="mb-6">
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  <strong>Pin hiện tại:</strong> {selectedBooking.currentSocPercent || 0}%
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  <strong>Mức pin mong muốn:</strong> {selectedBooking.desiredPercentage}%
+                </p>
+                <p className="text-sm text-green-600 font-semibold">
+                  <strong>Mức pin tối đa có thể sạc:</strong>{" "}
+                  {Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage)}%
+                </p>
+              </div>
+
+              <label className="block font-semibold mb-2">
+                Mức pin mục tiêu: {targetSocPercent}%
+              </label>
+              
+              <style>
+                {`
+                  #target-soc-slider::-webkit-slider-thumb {
+                    appearance: none;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"};
+                    cursor: pointer;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                  }
+                  #target-soc-slider::-webkit-slider-thumb:hover {
+                    transform: scale(1.2);
+                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+                  }
+                  #target-soc-slider::-moz-range-thumb {
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"};
+                    cursor: pointer;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                  }
+                  #target-soc-slider::-moz-range-thumb:hover {
+                    transform: scale(1.2);
+                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+                  }
+                `}
+              </style>
+              
+              <input
+                id="target-soc-slider"
+                type="range"
+                min={selectedBooking.currentSocPercent || 0}
+                max={Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage)}
+                step="1"
+                value={targetSocPercent}
+                onChange={(e) => setTargetSocPercent(e.target.value)}
+                className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300"
+                style={{
+                  background: `linear-gradient(to right, 
+                    ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"} 0%, 
+                    ${targetSocPercent < 50 ? "#ef4444" : targetSocPercent <= 80 ? "#eab308" : "#22c55e"} ${
+                    ((targetSocPercent - (selectedBooking.currentSocPercent || 0)) /
+                      (Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage) - 
+                       (selectedBooking.currentSocPercent || 0))) * 100
+                  }%, 
+                    #e5e7eb ${
+                    ((targetSocPercent - (selectedBooking.currentSocPercent || 0)) /
+                      (Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage) - 
+                       (selectedBooking.currentSocPercent || 0))) * 100
+                  }%, 
+                    #e5e7eb 100%)`,
+                }}
+              />
+              
+              <div className="flex justify-between text-sm text-gray-600 mt-1">
+                <span>{selectedBooking.currentSocPercent || 0}%</span>
+                <span>{Math.min(100, (selectedBooking.currentSocPercent || 0) + selectedBooking.desiredPercentage)}%</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowChargingModal(false);
+                  setSelectedBooking(null);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold transition-all"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleStartCharging}
+                disabled={actionLoading}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {actionLoading ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-lightning-charge-fill"></i>
+                    <span>Bắt đầu sạc</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -74,12 +74,6 @@ const BookingForm = () => {
   const [loadingChargers, setLoadingChargers] = useState(false);
   const [chargerAvailability, setChargerAvailability] = useState({});
 
-  const getMinDateTime = () => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() + 1);
-    return now;
-  };
-
   const getMaxDateTime = () => {
     const max = new Date();
     max.setHours(max.getHours() + 24);
@@ -361,8 +355,30 @@ const BookingForm = () => {
                   timeIntervals={30}
                   timeFormat="HH:mm"
                   dateFormat="yyyy-MM-dd HH:mm"
-                  minDate={getMinDateTime()}
+                  minDate={new Date()}
                   maxDate={getMaxDateTime()}
+                  minTime={(() => {
+                    if (!bookingTime) return new Date(0, 0, 0, 0, 0);
+                    const now = new Date();
+                    const isToday =
+                      bookingTime.toDateString() === now.toDateString();
+                    if (isToday) {
+                      return now;
+                    }
+                    // default earliest time
+                    return new Date(0, 0, 0, 0, 0);
+                  })()}
+                  maxTime={(() => {
+                    if (!bookingTime) return new Date(0, 0, 0, 23, 59);
+                    const max = getMaxDateTime();
+                    const isMaxDay =
+                      bookingTime.toDateString() === max.toDateString();
+                    if (isMaxDay) {
+                      return max;
+                    }
+                    // default latest time
+                    return new Date(0, 0, 0, 23, 59);
+                  })()}
                   placeholderText="Chọn ngày và giờ"
                   customInput={<CustomInputButton />}
                   wrapperClassName="w-full"
@@ -476,7 +492,6 @@ const BookingForm = () => {
                               {charger.chargingPower}
                             </p>
                             <p className="text-sm text-gray-600 mb-2">
-                              <i className="bi bi-plug"></i>{" "}
                               {charger.connectorType}
                             </p>
 
@@ -496,12 +511,6 @@ const BookingForm = () => {
                               >
                                 {isAvailable ? (
                                   <>
-                                    <div className="font-semibold mb-1">
-                                      ✅ Khả dụng cho booking
-                                    </div>
-                                    <div>
-                                      {translateMessage(availability.message)}
-                                    </div>
                                     <div className="mt-1 text-xs opacity-75">
                                       Sạc tối đa:{" "}
                                       {Math.floor(
