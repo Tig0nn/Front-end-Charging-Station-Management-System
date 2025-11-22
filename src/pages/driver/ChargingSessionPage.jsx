@@ -97,7 +97,7 @@ export default function ChargingSessionPage() {
         if (status === "COMPLETED" || status === "STOPPED") {
           console.log("Phiên sạc kết thúc, xóa localStorage và dừng polling.");
           // File này chỉ removeItem khi thực sự hoàn tất
-          localStorage.removeItem("currentSessionId");
+          localStorage.removeItem("activeSessionId");
 
           if (timerRef.current) {
             clearInterval(timerRef.current);
@@ -144,7 +144,7 @@ export default function ChargingSessionPage() {
           // (Phòng trường hợp timer bị dừng do lỗi mạng tạm thời)
           if (!timerRef.current) {
             console.log("Polling đã TẮT, khởi động lại...");
-            timerRef.current = setInterval(fetchSession, 500);
+            timerRef.current = setInterval(fetchSession, 1000);
           }
         } else {
           console.log("Quay lại tab, phiên đã kết thúc. Không gọi API.");
@@ -220,7 +220,6 @@ export default function ChargingSessionPage() {
       }
 
       // 2. Xóa localStorage
-      localStorage.removeItem("currentSessionId");
       localStorage.removeItem("activeSessionId");
 
       // 3. Cập nhật state session để hiển thị màn hình hoàn tất NGAY LẬP TỨC
@@ -246,7 +245,6 @@ export default function ChargingSessionPage() {
         <div className="max-w-6xl mx-auto text-center">
           {/* Thông báo không có phiên sạc */}
           <div className="bg-white rounded-2xl shadow-sm py-16 px-6 border mb-8">
-            <div className="text-5xl mb-4">⚡</div>
             <h2 className="text-2xl font-semibold mb-2">
               {error
                 ? "Phiên sạc không hợp lệ"
@@ -405,19 +403,10 @@ export default function ChargingSessionPage() {
                   <div className="relative mb-4">
                     <div className="absolute inset-0 bg-emerald-400 blur-2xl opacity-30 rounded-full"></div>
                     <div className="relative bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 p-6 rounded-full shadow-xl shadow-emerald-500/30">
-                      <svg
-                        className="w-16 h-16 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                      <i
+                        className="bi bi-check-circle-fill text-white"
+                        style={{ fontSize: "4rem" }}
+                      ></i>
                     </div>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-2">
@@ -430,19 +419,10 @@ export default function ChargingSessionPage() {
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   {/* Time Card */}
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-                    <svg
-                      className="w-6 h-6 text-blue-600 mx-auto mb-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <i
+                      className="bi bi-clock-history text-blue-600"
+                      style={{ fontSize: "2.2rem" }}
+                    ></i>
                     <div className="text-xs text-blue-600 mb-1 uppercase tracking-wider">
                       Thời gian
                     </div>
@@ -453,17 +433,10 @@ export default function ChargingSessionPage() {
 
                   {/* Energy Card */}
                   <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200 rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-                    <svg
-                      className="w-6 h-6 text-emerald-600 mx-auto mb-2"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <i
+                      className="bi bi-lightning-charge-fill text-emerald-600"
+                      style={{ fontSize: "2.2rem" }}
+                    ></i>
                     <div className="text-xs text-emerald-600 mb-1 uppercase tracking-wider">
                       Năng lượng
                     </div>
@@ -471,22 +444,14 @@ export default function ChargingSessionPage() {
                       {(session.energyConsumedKwh || 0).toFixed(1)} kWh
                     </div>
                   </div>
+                  {/* tăng letter spacing stracking-tight tracking-normal tracking-widetracking-wider tracking-widest*/}
 
                   {/* Cost Card */}
                   <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200 rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-                    <svg
-                      className="w-6 h-6 text-amber-600 mx-auto mb-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <i
+                      className="bi bi-battery-half text-amber-600"
+                      style={{ fontSize: "2.2rem" }}
+                    ></i>
                     <div className="text-xs text-amber-600 mb-1 uppercase tracking-wider">
                       Chi phí
                     </div>
@@ -549,17 +514,10 @@ export default function ChargingSessionPage() {
                 <div className="relative">
                   <div className="absolute inset-0 bg-emerald-400 blur-3xl opacity-30 rounded-full animate-pulse"></div>
                   <div className="relative bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 p-6 rounded-full shadow-2xl shadow-emerald-500/40">
-                    <svg
-                      className="w-20 h-20 fill-white text-white drop-shadow-lg"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <i
+                      className="bi bi-lightning-charge-fill text-white drop-shadow-lg"
+                      style={{ fontSize: "2.2rem" }}
+                    ></i>
                   </div>
                 </div>
               </div>
@@ -578,19 +536,10 @@ export default function ChargingSessionPage() {
                 <div className="bg-gradient-to-br from-blue-50 via-blue-50 to-blue-100 border-2 border-blue-200 rounded-2xl p-7 text-center shadow-lg shadow-blue-100/50 hover:shadow-xl hover:shadow-blue-200/60 transition-all duration-300 hover:-translate-y-1">
                   <div className="flex justify-center mb-4">
                     <div className="bg-blue-100 p-3 rounded-xl">
-                      <svg
-                        className="w-9 h-9 text-blue-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                      <i
+                        className="bi bi-clock-history text-blue-600"
+                        style={{ fontSize: "2.2rem" }}
+                      ></i>
                     </div>
                   </div>
                   <div className="text-xs text-blue-600 mb-3 uppercase tracking-wider">
@@ -607,17 +556,10 @@ export default function ChargingSessionPage() {
                 <div className="bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100 border-2 border-emerald-200 rounded-2xl p-7 text-center shadow-lg shadow-emerald-100/50 hover:shadow-xl hover:shadow-emerald-200/60 transition-all duration-300 hover:-translate-y-1">
                   <div className="flex justify-center mb-4">
                     <div className="bg-emerald-100 p-3 rounded-xl">
-                      <svg
-                        className="w-9 h-9 text-emerald-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <i
+                        className="bi bi-lightning-charge-fill text-emerald-600"
+                        style={{ fontSize: "2.2rem" }}
+                      ></i>
                     </div>
                   </div>
                   <div className="text-xs text-emerald-600 mb-3 uppercase tracking-wider">
@@ -633,19 +575,10 @@ export default function ChargingSessionPage() {
                 <div className="bg-gradient-to-br from-amber-50 via-amber-50 to-amber-100 border-2 border-amber-200 rounded-2xl p-7 text-center shadow-lg shadow-amber-100/50 hover:shadow-xl hover:shadow-amber-200/60 transition-all duration-300 hover:-translate-y-1">
                   <div className="flex justify-center mb-4">
                     <div className="bg-amber-100 p-3 rounded-xl">
-                      <svg
-                        className="w-9 h-9 text-amber-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 12h10m-5-5v10m5-5a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                      <i
+                        className="bi bi-battery-half text-amber-600"
+                        style={{ fontSize: "2.2rem" }}
+                      ></i>
                     </div>
                   </div>
                   <div className="text-xs text-amber-600 mb-3 uppercase tracking-wider">

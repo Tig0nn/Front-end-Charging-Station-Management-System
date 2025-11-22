@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import apiServices from "../../lib/apiServices";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../loading_spins/LoadingSpinner";
+import { useNavigate } from "react-router-dom";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -16,6 +17,8 @@ const MyBookings = () => {
   useEffect(() => {
     loadBookings();
   }, []);
+  // thêm useNavigate để chuyển khi đã có session sạc
+  const navigate = useNavigate();
 
   const loadBookings = async () => {
     try {
@@ -101,6 +104,14 @@ const MyBookings = () => {
     );
   };
 
+  useEffect(() => {
+    const activeId = localStorage.getItem("activeSessionId");
+    if (activeId) {
+      alert("Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng...");
+      navigate(`/driver/session/${activeId}`, { replace: true });
+    }
+  }, [navigate]);
+
   const canCheckIn = (booking) => {
     // Chỉ hiện nút "Sạc ngay" khi status CONFIRMED và trong khoảng ±10 phút
     if (booking.bookingStatus !== "CONFIRMED") return false;
@@ -146,14 +157,16 @@ const MyBookings = () => {
         vehicleId: selectedBooking.vehicleId,
         targetSocPercent: parseInt(targetSocPercent),
       };
-
-      await apiServices.chargingPoints.startCharging(chargingData);
-
-      toast.success("Bắt đầu sạc thành công!", {
-        icon: "⚡",
-        duration: 5000,
-      });
-
+      // Gọi API bắt đầu sạc
+      const response = await apiServices.chargingPoints.startCharging(
+        chargingData
+      );
+      const sessionId = response.data?.result?.sessionId;
+      if (sessionId) {
+        toast.success("Khởi động phiên sạc thành công!");
+        localStorage.setItem("activeSessionId", sessionId);
+        navigate(`/driver/session/${sessionId}`);
+      }
       setShowChargingModal(false);
       setSelectedBooking(null);
       loadBookings();
@@ -407,52 +420,6 @@ const MyBookings = () => {
                 Mức pin mục tiêu: {targetSocPercent}%
               </label>
 
-              <style>
-                {`
-                  #target-soc-slider::-webkit-slider-thumb {
-                    appearance: none;
-                    width: 20px;
-                    height: 20px;
-                    border-radius: 50%;
-                    background: ${
-                      targetSocPercent < 50
-                        ? "#ef4444"
-                        : targetSocPercent <= 80
-                        ? "#eab308"
-                        : "#22c55e"
-                    };
-                    cursor: pointer;
-                    border: 3px solid white;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-                    transition: all 0.3s ease;
-                  }
-                  #target-soc-slider::-webkit-slider-thumb:hover {
-                    transform: scale(1.2);
-                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-                  }
-                  #target-soc-slider::-moz-range-thumb {
-                    width: 20px;
-                    height: 20px;
-                    border-radius: 50%;
-                    background: ${
-                      targetSocPercent < 50
-                        ? "#ef4444"
-                        : targetSocPercent <= 80
-                        ? "#eab308"
-                        : "#22c55e"
-                    };
-                    cursor: pointer;
-                    border: 3px solid white;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-                    transition: all 0.3s ease;
-                  }
-                  #target-soc-slider::-moz-range-thumb:hover {
-                    transform: scale(1.2);
-                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-                  }
-                `}
-              </style>
-
               <input
                 id="target-soc-slider"
                 type="range"
@@ -467,43 +434,11 @@ const MyBookings = () => {
                 onChange={(e) => setTargetSocPercent(e.target.value)}
                 className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300"
                 style={{
-                  background: `linear-gradient(to right, 
-                    ${
-                      targetSocPercent < 50
-                        ? "#ef4444"
-                        : targetSocPercent <= 80
-                        ? "#eab308"
-                        : "#22c55e"
-                    } 0%, 
-                    ${
-                      targetSocPercent < 50
-                        ? "#ef4444"
-                        : targetSocPercent <= 80
-                        ? "#eab308"
-                        : "#22c55e"
-                    } ${
-                    ((targetSocPercent -
-                      (selectedBooking.currentSocPercent || 0)) /
-                      (Math.min(
-                        100,
-                        (selectedBooking.currentSocPercent || 0) +
-                          selectedBooking.desiredPercentage
-                      ) -
-                        (selectedBooking.currentSocPercent || 0))) *
-                    100
-                  }%, 
-                    #e5e7eb ${
-                      ((targetSocPercent -
-                        (selectedBooking.currentSocPercent || 0)) /
-                        (Math.min(
-                          100,
-                          (selectedBooking.currentSocPercent || 0) +
-                            selectedBooking.desiredPercentage
-                        ) -
-                          (selectedBooking.currentSocPercent || 0))) *
-                      100
-                    }%, 
-                    #e5e7eb 100%)`,
+                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${
+                    ((targetSocPercent - 10) / 90) * 100
+                  }%, #e5e7eb ${
+                    ((targetSocPercent - 10) / 90) * 100
+                  }%, #e5e7eb 100%)`,
                 }}
               />
 

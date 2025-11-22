@@ -39,10 +39,10 @@ export default function MapPage() {
   const [routeInfo, setRouteInfo] = useState(null);
   const [showRoute, setShowRoute] = useState(false);
   const [routeDestination, setRouteDestination] = useState(null);
-  
+
   // Từ khóa search trạm
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // ID trụ sạc được pre-select (từ QR code)
   const [preSelectedPointId, setPreSelectedPointId] = useState(null);
 
@@ -52,7 +52,7 @@ export default function MapPage() {
    * Nếu đang có session -> Chuyển hướng về trang session
    */
   useEffect(() => {
-    const activeId = localStorage.getItem("currentSessionId");
+    const activeId = localStorage.getItem("activeSessionId");
     if (activeId) {
       alert("Bạn có một phiên sạc đang hoạt động. Đang chuyển hướng...");
       navigate(`/driver/session/${activeId}`, { replace: true });
@@ -61,7 +61,7 @@ export default function MapPage() {
 
   /**
    * ===== EFFECT 2: XỬ LÝ QR CODE TỪ URL =====
-   * 
+   *
    * Flow QR Code:
    * 1. User quét QR trên trụ sạc
    * 2. QR chứa URL: /map?pointId=xxx&stationId=yyy
@@ -85,13 +85,13 @@ export default function MapPage() {
       if (targetStation) {
         // Lưu pointId để pre-select trong modal
         setPreSelectedPointId(pointId);
-        
+
         // Set trạm để mở modal
         setStationForCharging(targetStation);
-        
+
         // Mở modal chọn trụ
         setShowChargerModal(true);
-        
+
         // Xóa params khỏi URL (cleanup)
         setSearchParams({});
       }
@@ -104,7 +104,7 @@ export default function MapPage() {
    * - Trụ sạc (charger)
    * - Xe (vehicle)
    * - Mức pin mục tiêu (targetSoc)
-   * 
+   *
    * @param {Object} charger - Trụ sạc được chọn
    * @param {string} vehicle - ID của xe
    * @param {number} targetSoc - % pin mục tiêu (0-100)
@@ -113,7 +113,7 @@ export default function MapPage() {
     try {
       // Đóng modal
       setShowChargerModal(false);
-      
+
       // Hiển thị toast loading
       const loadingToast = toast.loading("Đang khởi động phiên sạc...");
 
@@ -126,17 +126,17 @@ export default function MapPage() {
 
       // Parse sessionId từ response
       const sessionId = response.data?.result?.sessionId;
-      
+
       if (sessionId) {
         // Dismiss loading toast
         toast.dismiss(loadingToast);
-        
+
         // Hiển thị success toast
         toast.success("Khởi động phiên sạc thành công!");
-        
+
         // Lưu sessionId vào localStorage
         localStorage.setItem("activeSessionId", sessionId);
-        
+
         // Chuyển hướng đến trang session để theo dõi
         navigate(`/driver/session/${sessionId}`);
       } else {
@@ -145,7 +145,7 @@ export default function MapPage() {
     } catch (err) {
       // Dismiss mọi toast
       toast.dismiss();
-      
+
       // Hiển thị error
       toast.error(`Lỗi: ${err.response?.data?.message || err.message}`);
     }
@@ -154,16 +154,15 @@ export default function MapPage() {
   /**
    * ===== HANDLER: MỞ MODAL CHỌN TRỤ SẠC =====
    * Được gọi khi user nhấn nút "Sạc ngay"
-   * 
+   *
    * @param {Object} station - Trạm sạc được chọn
    */
   const handleOpenChargerModal = (station) => {
-    // Kiểm tra xem có session đang hoạt động không
-    if (localStorage.getItem("currentSessionId")) {
+    if (localStorage.getItem("activeSessionId")) {
       alert("Bạn đang trong một phiên sạc.");
       return;
     }
-    
+
     // Set trạm và mở modal
     setStationForCharging(station);
     setShowChargerModal(true);
@@ -172,14 +171,14 @@ export default function MapPage() {
   /**
    * ===== HANDLER: HIỂN THỊ ĐƯỜNG DẪN =====
    * Được gọi khi user nhấn nút "Chỉ đường"
-   * 
+   *
    * Flow:
    * 1. Kiểm tra có GPS không
    * 2. Kiểm tra trạm có tọa độ không
    * 3. Set destination và bật showRoute
    * 4. RoutingControl sẽ vẽ đường đi
    * 5. OSRM API tính toán và trả về routeInfo
-   * 
+   *
    * @param {Object} station - Trạm cần chỉ đường đến
    */
   const handleShowDirections = (station) => {
@@ -187,7 +186,7 @@ export default function MapPage() {
     if (!userLocation) {
       return alert("Vui lòng bật GPS để dùng tính năng này.");
     }
-    
+
     // Kiểm tra tọa độ trạm
     if (!station.latitude) {
       return alert("Trạm không có tọa độ.");
@@ -195,10 +194,10 @@ export default function MapPage() {
 
     // Set destination (tọa độ trạm)
     setRouteDestination([station.latitude, station.longitude]);
-    
+
     // Bật hiển thị route
     setShowRoute(true);
-    
+
     // Highlight trạm
     setSelectedStation(station);
   };
@@ -294,8 +293,8 @@ export default function MapPage() {
         */}
         <MapControls
           showRoute={showRoute}
-          onGetUserLocation={getUserLocation}  // Từ useUserLocation hook
-          onRefresh={refetch}                  // Từ useStations hook
+          onGetUserLocation={getUserLocation} // Từ useUserLocation hook
+          onRefresh={refetch} // Từ useStations hook
           onClearRoute={() => {
             setShowRoute(false);
             setRouteDestination(null);
